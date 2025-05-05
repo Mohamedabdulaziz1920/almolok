@@ -20,7 +20,7 @@ export const createOrder = async (clientSideCart: Cart) => {
     await connectToDatabase()
     const session = await auth()
     const user = session?.user
-    if (!user?.id) throw new Error('User not authenticated')
+    if (!user?._id) throw new Error('User not authenticated')
 
     const hasInvalidItems = clientSideCart.items.some(
       (item) => !item.playerId || typeof item.playerId !== 'string'
@@ -29,7 +29,7 @@ export const createOrder = async (clientSideCart: Cart) => {
       throw new Error('All items must have a valid Player ID')
     }
 
-    const createdOrder = await createOrderFromCart(clientSideCart, user.id)
+    const createdOrder = await createOrderFromCart(clientSideCart, user._id)
     return {
       success: true,
       message: 'Order placed successfully',
@@ -211,7 +211,7 @@ export async function getMyOrders({
   limit = limit || pageSize
   await connectToDatabase()
   const session = await auth()
-  const userId = session?.user?.id
+  const userId = session?.user?._id
   if (!userId) throw new Error('User is not authenticated')
 
   const skipAmount = (Number(page) - 1) * limit
