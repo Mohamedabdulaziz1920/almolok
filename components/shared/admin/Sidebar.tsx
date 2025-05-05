@@ -13,7 +13,6 @@ import UserButton from '@/components/shared/header/user-button'
 
 import {
   LayoutDashboard,
-  Package,
   ShoppingCart,
   ListOrdered,
   Settings,

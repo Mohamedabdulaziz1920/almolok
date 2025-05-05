@@ -1,12 +1,19 @@
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, User, Wallet, CreditCard, History, Shield } from 'lucide-react'
+import {
+  Home,
+  PackageCheckIcon,
+  User,
+  Wallet,
+  CreditCard,
+  History,
+  Shield,
+} from 'lucide-react'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { auth } from '@/auth'
 import { getUserById } from '@/lib/actions/user.actions' // المسار حسب تنظيم مشروعك
-
 const PAGE_TITLE = 'Your Account'
 
 export const metadata: Metadata = {
@@ -16,7 +23,7 @@ export const metadata: Metadata = {
 export default async function AccountPage() {
   const t = await getTranslations('AccountPage')
   const session = await auth()
-  const userId = session?.user?.id
+  const userId = session?.user?._id
 
   if (!userId) {
     return <div>لا يوجد مستخدم مسجل الدخول</div>
@@ -67,6 +74,9 @@ export default async function AccountPage() {
           <Card>
             <Link href='/account/orders'>
               <CardContent className='flex items-start gap-4 p-6'>
+                <div>
+                  <PackageCheckIcon className='w-12 h-12 text-primary' />
+                </div>
                 <div>
                   <h2 className='text-xl font-bold text-sidebar-text'>
                     {t('Orders')}
