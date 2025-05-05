@@ -41,7 +41,6 @@ export const ProductInputSchema = z.object({
     .int()
     .nonnegative('count in stock must be a non-negative number'),
   tags: z.array(z.string()).default([]),
-  packages: z.array(z.string()).optional(),
   avgRating: z.coerce
     .number()
     .min(0, 'Average rating must be at least 0')
@@ -264,18 +263,4 @@ export const SettingInputSchema = z.object({
     .array(PaymentMethodSchema)
     .min(1, 'At least one payment method is required'),
   defaultPaymentMethod: z.string().min(1, 'Payment method is required'),
-})
-// Package
-export const PackageInputSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  slug: z.string().min(1, 'Slug is required'),
-  price: z.coerce.number().min(0, 'Price must be at least 0'),
-  image: z.string().min(1, 'Image is required'),
-  description: z.string().optional(),
-  currency: z.enum(['USD', 'SAR', 'YER']),
-  isPublished: z.boolean().default(false),
-})
-
-export const PackageUpdateSchema = PackageInputSchema.extend({
-  _id: z.string(),
 })

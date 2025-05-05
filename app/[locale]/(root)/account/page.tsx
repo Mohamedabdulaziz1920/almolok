@@ -1,14 +1,6 @@
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Home,
-  PackageCheckIcon,
-  User,
-  Wallet,
-  CreditCard,
-  History,
-  Shield,
-} from 'lucide-react'
+import { Home, User, Wallet, CreditCard, History, Shield } from 'lucide-react'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
@@ -75,9 +67,6 @@ export default async function AccountPage() {
           <Card>
             <Link href='/account/orders'>
               <CardContent className='flex items-start gap-4 p-6'>
-                <div>
-                  <PackageCheckIcon className='w-12 h-12 text-primary' />
-                </div>
                 <div>
                   <h2 className='text-xl font-bold text-sidebar-text'>
                     {t('Orders')}

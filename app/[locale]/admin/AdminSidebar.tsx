@@ -4,7 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import { Home, Package, ShoppingCart, Users, Settings, FileText } from 'lucide-react'
+import {
+  Home,
+  Package,
+  ShoppingCart,
+  Users,
+  Settings,
+  FileText,
+} from 'lucide-react'
 
 const sidebarLinks = [
   { key: 'overview', href: '/admin/overview', icon: <Home size={18} /> },
@@ -20,9 +27,9 @@ export default function AdminSidebar() {
   const t = useTranslations('AdminNav')
 
   return (
-    <aside className="hidden md:flex h-screen w-64 flex-col border-r bg-white shadow-lg p-4 sticky top-0">
-      <h1 className="text-xl font-bold mb-6 px-2 text-primary">لوحة التحكم</h1>
-      <nav className="space-y-2">
+    <aside className='hidden md:flex h-screen w-64 flex-col border-r shadow-lg p-4 sticky top-0'>
+      <h1 className='text-xl font-bold mb-6 px-2 text-primary'>لوحة التحكم</h1>
+      <nav className='space-y-2'>
         {sidebarLinks.map((link) => (
           <Link
             key={link.href}

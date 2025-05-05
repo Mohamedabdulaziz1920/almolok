@@ -84,13 +84,6 @@ const productSchema = new Schema<IProduct>(
       },
     ],
     // ✨ الحقل الجديد لربط الباقات بالمنتج:
-    packages: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Package',
-        default: [],
-      },
-    ],
   },
   {
     timestamps: true,

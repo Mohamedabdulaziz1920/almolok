@@ -12,13 +12,11 @@ import {
   Settings,
   FileText,
   Boxes,
-  PackagePlus,
 } from 'lucide-react'
 
 const sidebarLinks = [
   { key: 'overview', href: '/admin/overview', icon: <Home size={18} /> },
   { key: 'products', href: '/admin/products', icon: <Package size={18} /> },
-  { key: 'packages', href: '/admin/packages', icon: <PackagePlus size={18} /> },
   { key: 'categories', href: '/admin/categories', icon: <Boxes size={18} /> },
   { key: 'orders', href: '/admin/orders', icon: <ShoppingCart size={18} /> },
   { key: 'users', href: '/admin/users', icon: <Users size={18} /> },

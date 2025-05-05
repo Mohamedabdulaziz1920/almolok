@@ -96,17 +96,3 @@ export type CategoryType = {
   slug: string
   image: string
 }
-
-// Package
-export type PackageType = {
-  _id: string
-  name: string
-  slug: string
-  price: number
-  image: string
-  description: string
-  currency: 'USD' | 'SAR' | 'YER'
-  isPublished: boolean
-  createdAt?: Date
-  updatedAt?: Date
-}
