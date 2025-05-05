@@ -1,7 +1,14 @@
 import React from 'react'
 import { auth } from '@/auth'
 import Image from 'next/image'
-import { Home, CreditCard, History, User, Shield } from 'lucide-react'
+import {
+  Home,
+  CreditCard,
+  PackageCheckIcon,
+  History,
+  User,
+  Shield,
+} from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
@@ -12,7 +19,7 @@ const links = [
     label: 'إضافة رصيد',
     icon: CreditCard,
   },
-  { href: '/account/orders', label: 'طلباتي' },
+  { href: '/account/orders', label: 'طلباتي', icon: PackageCheckIcon },
   { href: '/account/wallet/history', label: 'معاملاتي', icon: History },
   { href: '/account/manage', label: 'بياناتي', icon: User },
   { href: '/account/security', label: 'الحماية', icon: Shield },
