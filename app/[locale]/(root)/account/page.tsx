@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default async function AccountPage() {
   const t = await getTranslations('AccountPage')
   const session = await auth()
-  const userId = session?.user?._id
+  const userId = session?.user?.id
 
   if (!userId) {
     return <div>لا يوجد مستخدم مسجل الدخول</div>

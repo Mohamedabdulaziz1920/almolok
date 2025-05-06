@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
-import { Order } from '@/lib/db/models/order.model'
+import Order from '@/lib/db/models/order.model'
 import User from '@/lib/db/models/user.model'
-import { ObjectId } from 'mongoose'
+import mongoose from 'mongoose'
 
 export const POST = async (request: NextRequest) => {
   try {
     await connectToDatabase()
 
-    let { userId, orderItems, totalAmount, paymentMethod } =
-      await request.json()
+    const {
+      userId,
+      orderItems,
+      totalAmount,
+      paymentMethod: rawPaymentMethod,
+    } = await request.json()
 
-    // تعديل طريقة الدفع لتكون 'wallet' إن وُجدت
-    paymentMethod = paymentMethod === 'wallet' ? 'wallet' : paymentMethod
+    const paymentMethod =
+      rawPaymentMethod === 'wallet' ? 'wallet' : rawPaymentMethod
 
-    // تحقق من الحقول المطلوبة
     if (
       !userId ||
       !orderItems ||
@@ -28,7 +31,6 @@ export const POST = async (request: NextRequest) => {
       )
     }
 
-    // تحقق من كل عنصر في الطلب
     for (const item of orderItems) {
       if (
         !item.productId ||
@@ -43,13 +45,11 @@ export const POST = async (request: NextRequest) => {
       }
     }
 
-    // جلب المستخدم
     const user = await User.findById(userId)
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // التحقق من الرصيد إذا كانت طريقة الدفع هي "balance"
     if (paymentMethod === 'balance') {
       if (user.balance < totalAmount) {
         return NextResponse.json(
@@ -58,14 +58,12 @@ export const POST = async (request: NextRequest) => {
         )
       }
 
-      // خصم المبلغ من الرصيد
       user.balance -= totalAmount
       await user.save()
     }
 
-    // إنشاء الطلب
     const newOrder = new Order({
-      user: new ObjectId(userId),
+      user: new mongoose.Types.ObjectId(userId),
       items: orderItems,
       paymentMethod,
       itemsPrice: totalAmount,

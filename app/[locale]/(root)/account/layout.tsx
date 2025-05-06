@@ -36,7 +36,7 @@ export default async function AccountLayout({
   return (
     <div className='flex flex-col md:flex-row min-h-screen bg-gray-50'>
       {/* سايدبار على الشاشات الكبيرة */}
-      <aside className='hidden md:flex fixed right-0 top-0 h-full w-64 bg-gray-900 border-l border-gray-800 flex-col p-4 overflow-y-auto'>
+      <aside className='hidden md:flex sticky top-0 h-screen w-64 bg-gray-900 border-l border-gray-800 flex-col p-4 overflow-y-auto z-30'>
         {/* صورة المستخدم */}
         <div className='flex items-center gap-3 pb-6 border-b border-gray-800 mb-4'>
           <div className='relative w-10 h-10 rounded-full overflow-hidden'>
