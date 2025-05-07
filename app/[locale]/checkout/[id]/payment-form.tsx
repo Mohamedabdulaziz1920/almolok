@@ -44,7 +44,7 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
         taxPrice,
         totalPrice,
         isPaid,
-        userId: user.id, // تأكد من تمرير `userId` بدلاً من `userId` مباشرة
+        userId: user._id, // تأكد من تمرير `userId` بدلاً من `userId` مباشرة
         balance: userBalance,
       })
       toast({ description: 'تم الدفع بنجاح!' })
