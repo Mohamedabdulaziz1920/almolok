@@ -4,25 +4,23 @@ import { Cart, IOrderList } from '@/types'
 import { formatError, round2 } from '../utils'
 import { connectToDatabase } from '@/lib/db'
 import { auth } from '@/auth'
-import { Order } from '../db/models/order.model'
+import OrderModel from '../db/models/order.model'
 import User from '../db/models/user.model'
 import Product from '../db/models/product.model'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { revalidatePath } from 'next/cache'
 import { sendPurchaseReceipt } from '@/emails'
 import { getSetting } from './setting.actions'
-type DateRange = {
-  from?: string
-  to?: string
-}
+import Order from '../db/models/order.model' // إذا كان Order هو model
+
+type DateRange = { from?: string; to?: string }
 
 export const createOrder = async (clientSideCart: Cart) => {
   try {
     await connectToDatabase()
     const session = await auth()
     const user = session?.user
-
-    if (!user || !user.id) throw new Error('User not authenticated')
+    if (!user?._id) throw new Error('User not authenticated')
 
     const hasInvalidItems = clientSideCart.items.some(
       (item) => !item.playerId || typeof item.playerId !== 'string'
@@ -31,7 +29,7 @@ export const createOrder = async (clientSideCart: Cart) => {
       throw new Error('All items must have a valid Player ID')
     }
 
-    const createdOrder = await createOrderFromCart(clientSideCart, user.id)
+    const createdOrder = await createOrderFromCart(clientSideCart, user._id)
     return {
       success: true,
       message: 'Order placed successfully',
@@ -46,65 +44,79 @@ export const createOrderFromCart = async (
   clientSideCart: Cart,
   userId: string
 ) => {
-  const hasInvalidItems = clientSideCart.items.some(
-    (item) => !item.playerId || typeof item.playerId !== 'string'
-  )
-  if (hasInvalidItems) {
-    throw new Error('All items must have a valid Player ID')
-  }
+  await connectToDatabase()
 
-  const itemsPrice = round2(
-    clientSideCart.items.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
+  const session = await mongoose.startSession()
+  session.startTransaction()
+
+  try {
+    const itemsPrice = round2(
+      clientSideCart.items.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      )
     )
-  )
+    const taxPrice = round2(itemsPrice * 0.15)
+    const totalPrice = round2(itemsPrice + taxPrice)
 
-  const taxPrice = round2(itemsPrice * 0.15)
-  const totalPrice = round2(itemsPrice + taxPrice)
+    const user = await User.findById(userId).session(session)
+    if (!user) throw new Error('User not found')
 
-  const user = await User.findById(userId)
-  if (!user) throw new Error('User not found')
-  if (user.balance < totalPrice) throw new Error('Insufficient balance')
+    const balance = round2(user.balance)
+    if (balance < totalPrice) throw new Error('Insufficient balance')
 
-  // خصم الرصيد من المستخدم
-  user.balance -= totalPrice
-  await user.save()
+    user.balance = round2(balance - totalPrice)
+    await user.save({ session })
 
-  // بناء العناصر المطلوبة بتفاصيل كاملة
-  const orderItems = clientSideCart.items.map((item) => ({
-    product: item.product, // معرف المنتج
-    name: item.name,
-    slug: item.slug,
-    category: item.category,
-    playerId: item.playerId,
-    quantity: item.quantity,
-    countInStock: item.countInStock,
-    image: item.image,
-    price: item.price,
-    clientId: item.clientId,
-  }))
+    const orderItems = clientSideCart.items.map((item) => ({
+      product: item.product,
+      name: item.name,
+      slug: item.slug,
+      category: item.category,
+      playerId: item.playerId,
+      quantity: item.quantity,
+      countInStock: item.countInStock,
+      image: item.image,
+      price: item.price,
+      clientId: item.clientId,
+    }))
 
-  const order = await Order.create({
-    user: userId,
-    items: orderItems,
-    paymentMethod: 'balance',
-    itemsPrice,
-    taxPrice,
-    totalPrice,
-    isPaid: true,
-    paidAt: new Date(),
-    balanceUsed: totalPrice,
-    balance: user.balance,
-  })
+    const order = await OrderModel.create(
+      [
+        {
+          user: userId,
+          items: orderItems,
+          paymentMethod: 'balance',
+          itemsPrice,
+          taxPrice,
+          totalPrice,
+          isPaid: true,
+          paidAt: new Date(),
+          balanceUsed: totalPrice,
+          balance: user.balance,
+        },
+      ],
+      { session }
+    )
 
-  return order
+    await session.commitTransaction()
+    session.endSession()
+
+    return order[0]
+  } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
+    throw error
+  }
 }
 
 export async function updateOrderToPaid(orderId: string) {
   try {
     await connectToDatabase()
-    const order = await Order.findById(orderId).populate('user', 'name email')
+    const order = await OrderModel.findById(orderId).populate(
+      'user',
+      'name email'
+    )
     if (!order) throw new Error('Order not found')
     if (order.isPaid) throw new Error('Order is already paid')
 
@@ -115,7 +127,6 @@ export async function updateOrderToPaid(orderId: string) {
     await updateProductStock(order._id)
 
     if (order.user?.email) await sendPurchaseReceipt({ order })
-
     revalidatePath(`/account/orders/${orderId}`)
 
     return { success: true, message: 'Order paid successfully' }
@@ -128,11 +139,11 @@ const updateProductStock = async (orderId: string) => {
   const session = await mongoose.connection.startSession()
   try {
     session.startTransaction()
-    const order = await Order.findById(orderId).session(session)
+    const order = await OrderModel.findById(orderId).session(session)
     if (!order) throw new Error('Order not found')
 
     for (const item of order.items) {
-      const product = await Product.findById(item.productId).session(session)
+      const product = await Product.findById(item.product).session(session)
       if (!product) throw new Error('Product not found')
       product.countInStock -= item.quantity
       await product.save({ session })
@@ -150,18 +161,14 @@ const updateProductStock = async (orderId: string) => {
 export async function deleteOrder(id: string) {
   try {
     await connectToDatabase()
-    const res = await Order.findByIdAndDelete(id)
+    const res = await OrderModel.findByIdAndDelete(id)
     if (!res) throw new Error('Order not found')
     revalidatePath('/admin/orders')
-    return {
-      success: true,
-      message: 'Order deleted successfully',
-    }
+    return { success: true, message: 'Order deleted successfully' }
   } catch (error) {
     return { success: false, message: formatError(error) }
   }
 }
-
 export async function getAllOrders({
   limit,
   page,
@@ -204,7 +211,7 @@ export async function getMyOrders({
   limit = limit || pageSize
   await connectToDatabase()
   const session = await auth()
-  const userId = session?.user?.id
+  const userId = session?.user?._id
   if (!userId) throw new Error('User is not authenticated')
 
   const skipAmount = (Number(page) - 1) * limit
@@ -349,45 +356,49 @@ export async function getOrderSummary(dateRange: DateRange) {
     salesChartData,
   }
 }
-
 export async function markOrderAsCompleted(orderId: string) {
-  try {
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { status: 'completed' },
-      { new: true }
-    )
-    return updatedOrder
-  } catch (error) {
-    console.error('Error marking order as completed:', error)
-    throw new Error('تعذر تحديث حالة الطلب إلى مكتمل')
-  }
+  if (!Types.ObjectId.isValid(orderId)) throw new Error('Invalid order ID')
+
+  const updatedOrder = await OrderModel.findByIdAndUpdate(
+    orderId,
+    {
+      status: 'completed',
+      isDelivered: true,
+      deliveredAt: new Date(),
+    },
+    { new: true }
+  )
+
+  if (!updatedOrder) throw new Error('Order not found')
+  return updatedOrder
 }
 
 export async function rejectOrder(orderId: string) {
-  try {
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { status: 'rejected' },
-      { new: true }
-    )
-    return updatedOrder
-  } catch (error) {
-    console.error('Error rejecting order:', error)
-    throw new Error('تعذر تحديث حالة الطلب إلى مرفوض')
-  }
+  if (!Types.ObjectId.isValid(orderId)) throw new Error('Invalid order ID')
+
+  const updatedOrder = await OrderModel.findByIdAndUpdate(
+    orderId,
+    {
+      status: 'rejected',
+    },
+    { new: true }
+  )
+
+  if (!updatedOrder) throw new Error('Order not found')
+  return updatedOrder
 }
 
 export async function markOrderAsPending(orderId: string) {
-  try {
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { status: 'pending' },
-      { new: true }
-    )
-    return updatedOrder
-  } catch (error) {
-    console.error('Error setting order to pending:', error)
-    throw new Error('تعذر تحديث حالة الطلب إلى قيد المعالجة')
-  }
+  if (!Types.ObjectId.isValid(orderId)) throw new Error('Invalid order ID')
+
+  const updatedOrder = await OrderModel.findByIdAndUpdate(
+    orderId,
+    {
+      status: 'pending',
+    },
+    { new: true }
+  )
+
+  if (!updatedOrder) throw new Error('Order not found')
+  return updatedOrder
 }
