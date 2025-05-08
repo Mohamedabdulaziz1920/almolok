@@ -1,113 +1,157 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
-import { IOrder, IOrderItem } from '@/lib/db/models/order.model' // تأكد من استيراد النوع المناسب هنا
-import { createOrderFromCart } from '@/lib/actions/order.actions'
+import Link from 'next/link'
+
 import { Button } from '@/components/ui/button'
-import ProductPrice from '@/components/shared/product/product-price'
 import { Card, CardContent } from '@/components/ui/card'
+import ProductPrice from '@/components/shared/product/product-price'
+import CheckoutFooter from './checkout-footer'
 
-type Props = {
-  order: IOrder // تأكد من أن order هو من نوع IOrder وليس IOrderItem[]
-  userBalance: number
-}
+import useCartStore from '@/hooks/use-cart-store'
+import useSettingStore from '@/hooks/use-setting-store'
+import useIsMounted from '@/hooks/use-is-mounted'
+import { useToast } from '@/hooks/use-toast'
+import { createOrder } from '@/lib/actions/order.actions'
+import { useTranslations } from 'next-intl'
+import { Checkbox } from '@/components/ui/checkbox'
 
-export default function OrderDetailsForm({ order, userBalance }: Props) {
-  const router = useRouter()
+const CheckoutForm = () => {
+  const t = useTranslations('Checkout')
+
   const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
+  const isMounted = useIsMounted()
 
-  // تفكيك العناصر المطلوبة من الكائن `order`
-  const { _id, items, itemsPrice, taxPrice, totalPrice, isPaid, user } = order // استخدام `user` بدلاً من `userId`
+  const {
+    setting: { site },
+  } = useSettingStore()
 
-  // تصحيح نوع `_id` إذا لزم الأمر
-  const orderId: string = _id.toString()
+  const {
+    cart: { items, itemsPrice, taxPrice = 0, totalPrice, balance },
+    clearCart,
+  } = useCartStore()
 
-  const handlePayment = async () => {
-    if (userBalance < totalPrice) {
+  const [useBalance, setUseBalance] = useState(false)
+
+  // تأكد من أن balance ليس undefined قبل استخدامه
+  const availableBalance = balance ?? 0
+
+  useEffect(() => {
+    if (!isMounted) return
+  }, [isMounted])
+
+  const handlePlaceOrder = async () => {
+    const orderTotal = useBalance ? totalPrice - availableBalance : totalPrice
+
+    if (useBalance && availableBalance < orderTotal) {
       toast({
-        description: 'رصيدك غير كافٍ لإتمام هذا الطلب',
+        description: t('insufficientBalance'),
         variant: 'destructive',
       })
       return
     }
 
-    setIsSubmitting(true)
+    const res = await createOrder({
+      items,
+      paymentMethod: useBalance ? 'Balance' : 'Card',
+      itemsPrice,
+      taxPrice,
+      totalPrice: orderTotal,
+    })
 
-    try {
-      // تمرير المعاملات المعدلة مع userId (استخدم `user._id` بدلاً من `userId`)
-      await createOrderFromCart({
-        items,
-        itemsPrice,
-        taxPrice,
-        totalPrice,
-        isPaid,
-        userId: user._id, // تأكد من تمرير `userId` بدلاً من `userId` مباشرة
-        balance: userBalance,
+    if (!res.success) {
+      toast({
+        description: res.message,
+        variant: 'destructive',
       })
-      toast({ description: 'تم الدفع بنجاح!' })
-      router.push(`/account/orders/${orderId}`)
-    } finally {
-      setIsSubmitting(false)
+    } else {
+      toast({
+        description: res.message,
+      })
+      clearCart()
+      router.push(`/checkout/${res.data?.orderId}`)
     }
   }
 
-  // إذا كان الطلب مدفوعًا بالفعل، قم بإعادة التوجيه مباشرة
-  if (isPaid) {
-    router.push(`/account/orders/${orderId}`)
-  }
+  const CheckoutSummary = () => (
+    <Card>
+      <CardContent className='p-4 space-y-4'>
+        <div>
+          <div className='text-lg font-bold'>{t('orderSummary')}</div>
+          <div className='space-y-2'>
+            <div className='flex justify-between'>
+              <span>{t('items')}</span>
+              <ProductPrice price={itemsPrice} plain />
+            </div>
+            <div className='flex justify-between'>
+              <span>{t('tax')}</span>
+              <ProductPrice price={taxPrice} plain />
+            </div>
+            <div className='flex justify-between pt-4 font-bold text-lg'>
+              <span>{t('orderTotal')}</span>
+              <ProductPrice
+                price={useBalance ? totalPrice - availableBalance : totalPrice}
+                plain
+              />
+            </div>
+          </div>
+        </div>
+
+        <Button onClick={handlePlaceOrder} className='rounded-full w-full'>
+          {t('placeYourOrder')}
+        </Button>
+
+        <p className='text-xs text-center'>
+          {t.rich('privacyAgreement', {
+            siteName: site.name,
+            privacyLink: (chunks) => (
+              <Link href='/page/privacy-policy'>{chunks}</Link>
+            ),
+            conditionsLink: (chunks) => (
+              <Link href='/page/conditions-of-use'>{chunks}</Link>
+            ),
+          })}
+        </p>
+      </CardContent>
+    </Card>
+  )
 
   return (
-    <main className='max-w-4xl mx-auto mt-8 space-y-6'>
-      <Card>
-        <CardContent className='p-6 space-y-4'>
-          <h2 className='text-xl font-semibold'>ملخص الطلب</h2>
+    <main className='max-w-6xl mx-auto p-4 space-y-6'>
+      <section>
+        <div className='text-primary text-lg font-bold'>{t('orderItems')}</div>
+        <ul className='mt-2 list-disc list-inside'>
+          {items.map((item, index) => (
+            <li key={index}>
+              {item.name} (Player ID: {item.playerId}) × {item.quantity} ={' '}
+              {item.price}
+            </li>
+          ))}
+        </ul>
+      </section>
 
-          <ul className='space-y-1'>
-            {items.map(
-              (
-                item: IOrderItem // إضافة النوع هنا
-              ) => (
-                <li key={item.product}>
-                  {item.name} × {item.quantity} ={' '}
-                  <ProductPrice price={item.price * item.quantity} plain />
-                </li>
-              )
-            )}
-          </ul>
+      <section>
+        <div className='flex items-center space-x-2'>
+          <Checkbox
+            id='use-balance'
+            checked={useBalance}
+            onCheckedChange={(checked) => setUseBalance(checked === true)} // تأكد من أن checked هو true أو false
+          />
+          <label htmlFor='use-balance' className='text-sm cursor-pointer'>
+            استخدم رصيدي للدفع
+          </label>
+        </div>
+      </section>
 
-          <div className='flex justify-between pt-4 border-t'>
-            <span>سعر المنتجات:</span>
-            <ProductPrice price={itemsPrice} plain />
-          </div>
+      <section>
+        <CheckoutSummary />
+      </section>
 
-          <div className='flex justify-between'>
-            <span>الضريبة:</span>
-            <ProductPrice price={taxPrice} plain />
-          </div>
-
-          <div className='flex justify-between font-bold text-lg'>
-            <span>الإجمالي:</span>
-            <ProductPrice price={totalPrice} plain />
-          </div>
-
-          <div className='pt-4'>
-            <p>
-              رصيدك الحالي: <b>{userBalance} ريال</b>
-            </p>
-          </div>
-
-          <Button
-            className='w-full mt-4'
-            onClick={handlePayment}
-            disabled={isSubmitting || userBalance < totalPrice}
-          >
-            {isSubmitting ? 'جاري المعالجة...' : 'تأكيد الطلب والدفع من الرصيد'}
-          </Button>
-        </CardContent>
-      </Card>
+      <CheckoutFooter />
     </main>
   )
 }
+
+export default CheckoutForm
