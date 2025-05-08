@@ -19,7 +19,7 @@ export const createOrder = async (clientSideCart: Cart) => {
   try {
     await connectToDatabase()
     const session = await auth()
-    const user = session?.user
+    const user = session?.user?.id
     if (!user?._id) throw new Error('User not authenticated')
 
     const hasInvalidItems = clientSideCart.items.some(
