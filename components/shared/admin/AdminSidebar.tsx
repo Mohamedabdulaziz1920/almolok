@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import {
   Home,
   Package,
@@ -29,7 +29,6 @@ import {
 import LanguageSwitcher from '@/components/shared/header/language-switcher'
 import ThemeSwitcher from '@/components/shared/header/theme-switcher'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useEffect, useState } from 'react'
 
 const sidebarLinks = [
   { key: 'overview', href: '/admin/overview', icon: <Home size={18} /> },
@@ -45,14 +44,8 @@ export default function AdminSidebar() {
   const pathname = usePathname()
   const t = useTranslations('AdminNav')
   const user = useCurrentUser()
-  const [collapsed, setCollapsed] = useState(false)
-
-  // Listen to toggle from header
-  useEffect(() => {
-    const toggleHandler = () => setCollapsed((prev) => !prev)
-    window.addEventListener('toggleSidebar', toggleHandler)
-    return () => window.removeEventListener('toggleSidebar', toggleHandler)
-  }, [])
+  const locale = useLocale()
+  const isRTL = locale === 'ar'
 
   const SidebarLinksContent = () => (
     <nav className='space-y-2'>
@@ -61,45 +54,45 @@ export default function AdminSidebar() {
           key={link.href}
           href={link.href}
           className={cn(
-            'flex items-center px-3 py-2 rounded-md transition-all hover:bg-gray-100 dark:hover:bg-gray-800',
+            'flex items-center gap-2 px-4 py-2 rounded-md transition-all hover:bg-gray-100 dark:hover:bg-gray-800',
             pathname.includes(link.href)
               ? 'bg-primary/10 text-primary font-medium'
               : 'text-muted-foreground'
           )}
         >
-          <div className='w-6'>{link.icon}</div>
-          {!collapsed && <span className='ml-2'>{t(`links.${link.key}`)}</span>}
+          {link.icon}
+          <span>{t(`links.${link.key}`)}</span>
         </Link>
       ))}
     </nav>
   )
 
   const SidebarHeader = () => (
-    <div className='flex items-center gap-2 mb-6 px-2'>
+    <div className='flex items-center gap-4 mb-6 px-4'>
       <Link href='/'>
         <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
       </Link>
-      {!collapsed && (
-        <h1 className='text-xl font-bold text-primary'>{t('Dashboard')}</h1>
-      )}
+      <h1 className='text-xl font-bold text-primary hidden md:inline'>
+        {t('Dashboard')}
+      </h1>
     </div>
   )
 
   const UserInfo = () =>
     user ? (
-      <div className='flex items-center gap-2 px-2 py-3 border dark:border-gray-700 rounded-lg'>
-        <Image src='/icons/logo.svg' width={32} height={32} alt='User' />
-        {!collapsed && (
-          <div className='text-sm'>
-            <p className='font-medium'>مرحباً {user.name}</p>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className='text-xs text-red-500 hover:underline flex items-center gap-1'
-            >
-              <LogOut size={14} /> {t('Logout')}
-            </button>
-          </div>
-        )}
+      <div className='flex items-center gap-3 px-4 py-3 border dark:border-gray-700 rounded-lg'>
+        <div className='bg-primary text-white rounded-full h-9 w-9 flex items-center justify-center font-semibold uppercase'>
+          <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
+        </div>
+        <div className='text-sm'>
+          <p className='font-medium'>مرحباً {user.name}</p>
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className='text-xs text-red-500 hover:underline flex items-center gap-1'
+          >
+            <LogOut size={14} /> {t('Logout')}
+          </button>
+        </div>
       </div>
     ) : null
 
@@ -107,16 +100,16 @@ export default function AdminSidebar() {
     <>
       {/* Sidebar Desktop */}
       <aside
-        id='admin-sidebar'
         className={cn(
-          'hidden lg:flex flex-col shadow-md p-4 overflow-y-auto bg-white dark:bg-gray-900 transition-all duration-300',
-          collapsed ? 'w-20' : 'w-64'
+          'w-64 lg:flex flex-col shadow-md p-4 overflow-y-auto hidden bg-white dark:bg-gray-900',
+          isRTL ? 'right-0' : 'left-0'
         )}
+        style={{ direction: isRTL ? 'rtl' : 'ltr' }}
       >
         <SidebarHeader />
         <UserInfo />
         <SidebarLinksContent />
-        <div className='mt-6 space-y-4 px-2'>
+        <div className='mt-6 space-y-4 px-4'>
           <LanguageSwitcher />
           <ThemeSwitcher />
         </div>
@@ -129,8 +122,9 @@ export default function AdminSidebar() {
             <MenuIcon className='h-6 w-6' />
           </SheetTrigger>
           <SheetContent
-            side='right'
+            side={isRTL ? 'right' : 'left'}
             className='p-4 w-64 max-w-full bg-white dark:bg-gray-900 flex flex-col'
+            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
           >
             <SheetHeader className='mb-4'>
               <div className='flex items-center justify-between'>
