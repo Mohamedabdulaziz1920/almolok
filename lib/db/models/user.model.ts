@@ -24,7 +24,7 @@ const userSchema = new Schema<IUser>(
   }
 )
 
-// تأكد من أن الـ Model يتم تعريفه بشكل صحيح باستخدام `models` لتجنب مشاكل إعادة التعريف
+// تأكد من أن الـ Model يتم تعريفه بشكل صحيح باستخدام models لتجنب مشاكل إعادة التعريف
 const User = models.User || model<IUser>('User', userSchema)
 
 export default User

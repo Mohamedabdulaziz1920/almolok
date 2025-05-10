@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 import { createOrder } from '@/lib/actions/order.actions'
 import { useTranslations } from 'next-intl'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useSession } from 'next-auth/react' // استيراد useSession
+import { useSession } from 'next-auth/react'  // استيراد useSession
 
 const CheckoutForm = () => {
   const t = useTranslations('Checkout')
@@ -38,7 +38,7 @@ const CheckoutForm = () => {
 
   // جلب الرصيد من الجلسة بدلاً من المتجر
   const { data: session } = useSession()
-  const availableBalance = session?.user?.balance ?? 0 // هنا نستخدم balance من الجلسة
+  const availableBalance = session?.user?.balance ?? 0  // هنا نستخدم balance من الجلسة
 
   useEffect(() => {
     if (!isMounted) return

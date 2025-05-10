@@ -45,11 +45,11 @@ export default function RechargePage() {
 
   return (
     <div className='p-4'>
-      <h1 className='text-2xl font-bold mb-4'>شحن رصيدك</h1>
+      <h1 className='text-2xl font-bold mb-4 text-black'>شحن رصيدك</h1>
 
       {/* إدخال المبلغ */}
       <div className='mb-4'>
-        <label className='block mb-2'>أدخل المبلغ الذي تريد شحنه:</label>
+        <label className='block mb-2 text-black'>أدخل المبلغ الذي تريد شحنه:</label>
         <input
           type='number'
           value={amount}
@@ -59,7 +59,7 @@ export default function RechargePage() {
       </div>
 
       {/* إدخال السبب */}
-      <div className='mb-4'>
+      <div className='mb-4 text-black'>
         <label className='block mb-2'>السبب (ملاحظة):</label>
         <textarea
           value={reason}
@@ -70,7 +70,7 @@ export default function RechargePage() {
 
       {/* اختيار وسيلة الدفع */}
       <div className='mb-4'>
-        <label className='block mb-2'>اختر وسيلة الدفع:</label>
+        <label className='block mb-2 text-black'>اختر وسيلة الدفع:</label>
         <select
           value={paymentMethod}
           onChange={(e) => setPaymentMethod(e.target.value)}
@@ -86,7 +86,7 @@ export default function RechargePage() {
         <Button
           onClick={handleRecharge}
           disabled={isProcessing}
-          className='bg-yellow-500 text-white px-4 py-2 rounded'
+          className='bg-yellow-500 text-black px-4 py-2 rounded'
         >
           {isProcessing ? 'جاري تقديم الطلب...' : 'تقديم طلب شحن الرصيد'}
         </Button>

@@ -17,6 +17,7 @@ import { IOrder } from '@/lib/db/models/order.model'
 import { formatDateTime, formatId } from '@/lib/utils'
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import ProductPrice from '@/components/shared/product/product-price'
+import { Badge } from '@/components/ui/badge'
 
 const PAGE_TITLE = 'Your Orders'
 export const metadata: Metadata = {
@@ -33,8 +34,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const orders = await getMyOrders({ page: currentPage })
 
   return (
-    <div className='max-w-5xl mx-auto space-y-4'>
-      <div className='flex gap-2'>
+    <div className='container mx-auto px-1 py-8'>
+      <div className='mb-8 flex gap-2'>
         <Link href='/account'>{t('YourAccount')}</Link>
         <span>›</span>
         <span>{t('YourOrders')}</span>
@@ -42,66 +43,79 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
       <h1 className='h1-bold pt-4'>{t('YourOrders')}</h1>
 
-      <div className='overflow-x-auto'>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('OrderId')}</TableHead>
-              <TableHead>{t('OrderDate')}</TableHead>
-              <TableHead>{t('OrderTotal')}</TableHead>
-              <TableHead>{t('OrderPaid')}</TableHead>
-              <TableHead>{t('OrderActive')}</TableHead>
-              <TableHead>{t('OrderActions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.data.length === 0 && (
+      <div className='rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950'>
+        <div className='overflow-x-auto'>
+          <Table className='min-w-full'>
+            <TableHeader className='bg-gray-50 dark:bg-gray-800'>
               <TableRow>
-                <TableCell colSpan={6} className='text-center py-6'>
-                  {t('NoOrders')}
-                </TableCell>
+                <TableHead>{t('OrderId')}</TableHead>
+                <TableHead className='text-right'>{t('OrderDate')}</TableHead>
+                <TableHead className='text-right'>{t('OrderTotal')}</TableHead>
+                <TableHead className='text-right'>{t('OrderPaid')}</TableHead>
+                <TableHead className='text-right'>{t('OrderStatus')}</TableHead>
+                <TableHead className='text-right'>{t('OrderActions')}</TableHead>
               </TableRow>
-            )}
+            </TableHeader>
+            <TableBody>
+              {orders.data.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className='text-center py-6'>
+                    {t('NoOrders')}
+                  </TableCell>
+                </TableRow>
+              )}
 
-            {orders.data.map((order: IOrder) => (
-              <TableRow key={String(order._id)}>
-                <TableCell>
-                  <Link
-                    href={`/account/orders/${String(order._id)}`}
-                    className='text-primary underline'
-                  >
-                    {formatId(order._id)}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <ProductPrice price={order.totalPrice} plain />
-                </TableCell>
+              {orders.data.map((order: IOrder) => (
+                <TableRow key={String(order._id)}>
+                  <TableCell>
+                    <Link
+                      href={`/account/orders/${String(order._id)}`}
+                      className='text-primary underline'
+                    >
+                      {formatId(order._id)}
+                    </Link>
+                  </TableCell>
 
-                <TableCell>
-                  {order.isPaid && order.paidAt
-                    ? formatDateTime(order.paidAt).dateTime
-                    : t('No')}
-                </TableCell>
+                  <TableCell className='text-right'>
+                    {formatDateTime(order.createdAt!).dateTime}
+                  </TableCell>
 
-                <TableCell>
-                  {order.status === 'completed'
-                    ? t('Completed')
-                    : order.status === 'rejected'
-                      ? t('Rejected')
-                      : t('Pending')}
-                </TableCell>
+                  <TableCell className='text-right'>
+                    <ProductPrice price={order.totalPrice} plain />
+                  </TableCell>
 
-                <TableCell>
-                  <Link href={`/account/orders/${String(order._id)}`}>
-                    <span className='text-blue-600 hover:underline'>
-                      {t('Details')}
-                    </span>
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <TableCell className='text-right'>
+                    {order.isPaid && order.paidAt
+                      ? formatDateTime(order.paidAt).dateTime
+                      : t('No')}
+                  </TableCell>
+
+                  <TableCell className='text-right'>
+                    <Badge
+                      className={`text-xs ${
+                        order.status === 'completed'
+                          ? 'bg-green-600'
+                          : order.status === 'rejected'
+                          ? 'bg-red-600'
+                          : 'bg-yellow-500'
+                      }`}
+                    >
+                      {t(order.status)}
+                    </Badge>
+                  </TableCell>
+
+                  <TableCell className='text-right'>
+                    <Link href={`/account/orders/${String(order._id)}`}>
+                      <span className='text-blue-600 hover:underline'>
+                        {t('Details')}
+                      </span>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
         {orders.totalPages > 1 && (
           <Pagination page={currentPage} totalPages={orders.totalPages} />

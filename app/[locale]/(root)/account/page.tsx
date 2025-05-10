@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default async function AccountPage() {
   const t = await getTranslations('AccountPage')
   const session = await auth()
-  const userId = session?.user?.id
+  const userId = session?.user.id
 
   if (!userId) {
     return <div>لا يوجد مستخدم مسجل الدخول</div>
@@ -36,9 +36,10 @@ export default async function AccountPage() {
   }
 
   return (
-    <div>
-      <div className='max-w-5xl mx-auto space-y-4'>
-        <h1 className='h1-bold py-4'>{PAGE_TITLE}</h1>
+    <div className='container mx-auto px-1 py-8'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
+        {PAGE_TITLE}</h1>
         <div className='grid md:grid-cols-3 gap-4 items-stretch'>
           {/* بطاقة المحفظة */}
           <Card className='border-sidebar-border'>

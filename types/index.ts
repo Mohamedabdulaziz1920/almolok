@@ -96,17 +96,29 @@ export type CategoryType = {
   slug: string
   image: string
 }
-
-// Package
-export type PackageType = {
-  _id: string
+// types.ts (أو ملف أنواع مشترك)
+type OrderItemInput = {
+  product: string
   name: string
   slug: string
-  price: number
+  category: string
+  playerId: string
+  quantity: number
+  countInStock: number
   image: string
-  description: string
-  currency: 'USD' | 'SAR' | 'YER'
-  isPublished: boolean
-  createdAt?: Date
-  updatedAt?: Date
+  price: number
 }
+
+type CreateOrderInput = {
+  user: string // userId
+  items: OrderItemInput[]
+  itemsPrice: number
+  taxPrice: number
+  totalPrice: number
+  paymentMethod: 'balance' // الدفع من الرصيد فقط
+  clientId: string
+  balanceUsed?: number
+  balance?: number // إضافة الرصيد هنا ليتم تمريره في العملية
+  status?: 'pending' | 'completed' | 'rejected' // الحالة (افتراضيًا pending)
+}
+export type { OrderItemInput, CreateOrderInput }

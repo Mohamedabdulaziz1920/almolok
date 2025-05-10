@@ -15,9 +15,9 @@ export const POST = async (request: NextRequest) => {
       paymentMethod: rawPaymentMethod,
     } = await request.json()
 
-    const paymentMethod =
-      rawPaymentMethod === 'wallet' ? 'wallet' : rawPaymentMethod
-
+    const paymentMethod = ['wallet', 'balance'].includes(rawPaymentMethod)
+      ? 'balance'
+      : rawPaymentMethod
     if (
       !userId ||
       !orderItems ||
@@ -49,9 +49,8 @@ export const POST = async (request: NextRequest) => {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-
     if (paymentMethod === 'balance') {
-      if (user.balance < totalAmount) {
+      if (!user.balance || user.balance < totalAmount) {
         return NextResponse.json(
           { error: 'Insufficient balance' },
           { status: 400 }
@@ -67,7 +66,6 @@ export const POST = async (request: NextRequest) => {
       items: orderItems,
       paymentMethod,
       itemsPrice: totalAmount,
-      shippingPrice: 0,
       taxPrice: 0,
       totalPrice: totalAmount,
       isPaid: paymentMethod === 'balance',

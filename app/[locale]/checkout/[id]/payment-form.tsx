@@ -1,16 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
-import { IOrder, IOrderItem } from '@/lib/db/models/order.model' // تأكد من استيراد النوع المناسب هنا
+import { IOrder, IOrderItem } from '@/lib/db/models/order.model'
 import { createOrderFromCart } from '@/lib/actions/order.actions'
 import { Button } from '@/components/ui/button'
 import ProductPrice from '@/components/shared/product/product-price'
 import { Card, CardContent } from '@/components/ui/card'
 
 type Props = {
-  order: IOrder // تأكد من أن order هو من نوع IOrder وليس IOrderItem[]
+  order: IOrder
   userBalance: number
 }
 
@@ -19,11 +19,25 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // تفكيك العناصر المطلوبة من الكائن `order`
-  const { _id, items, itemsPrice, taxPrice, totalPrice, isPaid, user } = order // استخدام `user` بدلاً من `userId`
+  const {
+    _id,
+    items,
+    itemsPrice,
+    taxPrice,
+    totalPrice,
+    paymentMethod,
+    user,
+    isPaid,
+  } = order
 
-  // تصحيح نوع `_id` إذا لزم الأمر
   const orderId: string = _id.toString()
+  const clientId = user._id.toString()
+
+  useEffect(() => {
+    if (isPaid) {
+      router.push(`/account/orders/${orderId}`)
+    }
+  }, [isPaid, orderId, router])
 
   const handlePayment = async () => {
     if (userBalance < totalPrice) {
@@ -37,26 +51,41 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
     setIsSubmitting(true)
 
     try {
-      // تمرير المعاملات المعدلة مع userId (استخدم `user._id` بدلاً من `userId`)
-      await createOrderFromCart({
-        items,
-        itemsPrice,
-        taxPrice,
-        totalPrice,
-        isPaid,
-        userId: user._id, // تأكد من تمرير `userId` بدلاً من `userId` مباشرة
-        balance: userBalance,
-      })
+      await createOrderFromCart(
+        {
+          items: items.map((item) => ({
+            image: item.image,
+            product: item.product.toString(),
+            name: item.name,
+            slug: item.slug,
+            category: item.category,
+            playerId: item.playerId,
+            quantity: item.quantity,
+            countInStock: item.countInStock,
+            price: item.price,
+            // 🚫 لا تضع clientId هنا
+          })),
+          itemsPrice,
+          taxPrice,
+          totalPrice,
+          paymentMethod,
+          balance: userBalance,
+          clientId: clientId, // ✅ فقط هنا
+        },
+        clientId // ✅ إذا كان مطلوبًا كوسيط ثانٍ في الدالة
+      )
+
       toast({ description: 'تم الدفع بنجاح!' })
       router.push(`/account/orders/${orderId}`)
+    } catch (error) {
+      console.error('Payment Error:', error)
+      toast({
+        description: 'حدث خطأ أثناء الدفع. حاول مرة أخرى.',
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  // إذا كان الطلب مدفوعًا بالفعل، قم بإعادة التوجيه مباشرة
-  if (isPaid) {
-    router.push(`/account/orders/${orderId}`)
   }
 
   return (
@@ -66,16 +95,12 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
           <h2 className='text-xl font-semibold'>ملخص الطلب</h2>
 
           <ul className='space-y-1'>
-            {items.map(
-              (
-                item: IOrderItem // إضافة النوع هنا
-              ) => (
-                <li key={item.product}>
-                  {item.name} × {item.quantity} ={' '}
-                  <ProductPrice price={item.price * item.quantity} plain />
-                </li>
-              )
-            )}
+            {items.map((item: IOrderItem) => (
+              <li key={item.product.toString()}>
+                {item.name} × {item.quantity} ={' '}
+                <ProductPrice price={item.price * item.quantity} plain />
+              </li>
+            ))}
           </ul>
 
           <div className='flex justify-between pt-4 border-t'>
@@ -95,7 +120,7 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
 
           <div className='pt-4'>
             <p>
-              رصيدك الحالي: <b>{userBalance} ريال</b>
+              رصيدك الحالي: <b>{userBalance}</b>
             </p>
           </div>
 

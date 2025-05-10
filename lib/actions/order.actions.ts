@@ -7,11 +7,10 @@ import { auth } from '@/auth'
 import OrderModel from '../db/models/order.model'
 import User from '../db/models/user.model'
 import Product from '../db/models/product.model'
-import mongoose, { Types } from 'mongoose'
+import mongoose from 'mongoose'
 import { revalidatePath } from 'next/cache'
 import { sendPurchaseReceipt } from '@/emails'
 import { getSetting } from './setting.actions'
-import Order from '../db/models/order.model' // إذا كان Order هو model
 
 type DateRange = { from?: string; to?: string }
 
@@ -20,7 +19,7 @@ export const createOrder = async (clientSideCart: Cart) => {
     await connectToDatabase()
     const session = await auth()
     const user = session?.user
-    if (!user?._id) throw new Error('User not authenticated')
+    if (!user?.id) throw new Error('User not authenticated')
 
     const hasInvalidItems = clientSideCart.items.some(
       (item) => !item.playerId || typeof item.playerId !== 'string'
@@ -29,7 +28,7 @@ export const createOrder = async (clientSideCart: Cart) => {
       throw new Error('All items must have a valid Player ID')
     }
 
-    const createdOrder = await createOrderFromCart(clientSideCart, user._id)
+    const createdOrder = await createOrderFromCart(clientSideCart, user.id)
     return {
       success: true,
       message: 'Order placed successfully',
@@ -40,10 +39,7 @@ export const createOrder = async (clientSideCart: Cart) => {
   }
 }
 
-export const createOrderFromCart = async (
-  clientSideCart: Cart,
-  userId: string
-) => {
+export const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
   await connectToDatabase()
 
   const session = await mongoose.startSession()
@@ -51,10 +47,7 @@ export const createOrderFromCart = async (
 
   try {
     const itemsPrice = round2(
-      clientSideCart.items.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0
-      )
+      clientSideCart.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
     )
     const taxPrice = round2(itemsPrice * 0.15)
     const totalPrice = round2(itemsPrice + taxPrice)
@@ -81,23 +74,18 @@ export const createOrderFromCart = async (
       clientId: item.clientId,
     }))
 
-    const order = await OrderModel.create(
-      [
-        {
-          user: userId,
-          items: orderItems,
-          paymentMethod: 'balance',
-          itemsPrice,
-          taxPrice,
-          totalPrice,
-          isPaid: true,
-          paidAt: new Date(),
-          balanceUsed: totalPrice,
-          balance: user.balance,
-        },
-      ],
-      { session }
-    )
+    const order = await OrderModel.create([{
+      user: userId,
+      items: orderItems,
+      paymentMethod: 'balance',
+      itemsPrice,
+      taxPrice,
+      totalPrice,
+      isPaid: true,
+      paidAt: new Date(),
+      balanceUsed: totalPrice,
+      balance: user.balance,
+    }], { session })
 
     await session.commitTransaction()
     session.endSession()
@@ -113,10 +101,7 @@ export const createOrderFromCart = async (
 export async function updateOrderToPaid(orderId: string) {
   try {
     await connectToDatabase()
-    const order = await OrderModel.findById(orderId).populate(
-      'user',
-      'name email'
-    )
+    const order = await OrderModel.findById(orderId).populate('user', 'name email')
     if (!order) throw new Error('Order not found')
     if (order.isPaid) throw new Error('Order is already paid')
 
@@ -169,6 +154,7 @@ export async function deleteOrder(id: string) {
     return { success: false, message: formatError(error) }
   }
 }
+
 export async function getAllOrders({
   limit,
   page,
@@ -181,20 +167,20 @@ export async function getAllOrders({
   } = await getSetting()
   limit = limit || pageSize
   await connectToDatabase()
-  const skipAmount = (Number(page) - 1) * limit
+  const skip = (page - 1) * limit
 
-  const [orders, ordersCount] = await Promise.all([
-    Order.find()
+  const [orders, count] = await Promise.all([
+    OrderModel.find()
       .populate('user', 'name')
       .sort({ createdAt: -1 })
-      .skip(skipAmount)
+      .skip(skip)
       .limit(limit),
-    Order.countDocuments(),
+    OrderModel.countDocuments(),
   ])
 
   return {
     data: JSON.parse(JSON.stringify(orders)) as IOrderList[],
-    totalPages: Math.ceil(ordersCount / limit),
+    totalPages: Math.ceil(count / limit),
   }
 }
 
@@ -212,21 +198,20 @@ export async function getMyOrders({
   await connectToDatabase()
   const session = await auth()
   const userId = session?.user?._id
-  if (!userId) throw new Error('User is not authenticated')
+  if (!userId) throw new Error('User not authenticated')
 
-  const skipAmount = (Number(page) - 1) * limit
-
-  const [orders, ordersCount] = await Promise.all([
-    Order.find({ user: userId })
+  const skip = (page - 1) * limit
+  const [orders, count] = await Promise.all([
+    OrderModel.find({ user: userId })
       .sort({ createdAt: -1 })
-      .skip(skipAmount)
+      .skip(skip)
       .limit(limit),
-    Order.countDocuments({ user: userId }),
+    OrderModel.countDocuments({ user: userId }),
   ])
 
   return {
     data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(ordersCount / limit),
+    totalPages: Math.ceil(count / limit),
   }
 }
 
@@ -239,42 +224,39 @@ export async function getOrdersByPlayerId(
   } = await getSetting()
   limit = limit || pageSize
   await connectToDatabase()
-  const skipAmount = (Number(page) - 1) * limit
+  const skip = (page - 1) * limit
 
-  const [orders, ordersCount] = await Promise.all([
-    Order.find({ 'items.playerId': playerId })
+  const [orders, count] = await Promise.all([
+    OrderModel.find({ 'items.playerId': playerId })
       .sort({ createdAt: -1 })
-      .skip(skipAmount)
+      .skip(skip)
       .limit(limit),
-    Order.countDocuments({ 'items.playerId': playerId }),
+    OrderModel.countDocuments({ 'items.playerId': playerId }),
   ])
 
   return {
     data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(ordersCount / limit),
+    totalPages: Math.ceil(count / limit),
   }
 }
 
 export async function getOrderById(orderId: string) {
   await connectToDatabase()
-  const order = await Order.findById(orderId)
+  const order = await OrderModel.findById(orderId).populate('user') // ✅ هذا السطر مهم
   if (!order) throw new Error('Order not found')
   return JSON.parse(JSON.stringify(order))
 }
 
+
 export async function getOrderSummary(dateRange: DateRange) {
   await connectToDatabase()
-
   const { from, to } = dateRange
   const fromDate = from ? new Date(from) : new Date(0)
   const toDate = to ? new Date(to) : new Date()
 
-  const paidOrders = await Order.find({
+  const paidOrders = await OrderModel.find({
     isPaid: true,
-    paidAt: {
-      $gte: fromDate,
-      $lte: toDate,
-    },
+    paidAt: { $gte: fromDate, $lte: toDate },
   }).populate('user', 'name')
 
   const totalSales = paidOrders.reduce(
@@ -282,60 +264,33 @@ export async function getOrderSummary(dateRange: DateRange) {
     0
   )
 
-  const monthlySales = await Order.aggregate([
-    {
-      $match: {
-        isPaid: true,
-        paidAt: { $gte: fromDate, $lte: toDate },
-      },
-    },
-    {
-      $group: {
-        _id: { $month: '$paidAt' },
-        total: { $sum: '$totalPrice' },
-      },
-    },
+  const monthlySales = await OrderModel.aggregate([
+    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
+    { $group: { _id: { $month: '$paidAt' }, total: { $sum: '$totalPrice' } } },
     { $sort: { _id: 1 } },
   ])
 
-  const topSalesProducts = await Order.aggregate([
+  const topSalesProducts = await OrderModel.aggregate([
     { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
     { $unwind: '$items' },
-    {
-      $group: {
-        _id: '$items.name',
-        total: { $sum: '$items.quantity' },
-      },
-    },
+    { $group: { _id: '$items.name', total: { $sum: '$items.quantity' } } },
     { $sort: { total: -1 } },
     { $limit: 5 },
   ])
 
-  const topSalesCategories = await Order.aggregate([
+  const topSalesCategories = await OrderModel.aggregate([
     { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
     { $unwind: '$items' },
-    {
-      $group: {
-        _id: '$items.category',
-        total: { $sum: '$items.quantity' },
-      },
-    },
+    { $group: { _id: '$items.category', total: { $sum: '$items.quantity' } } },
     { $sort: { total: -1 } },
     { $limit: 5 },
   ])
 
-  const salesChartData = await Order.aggregate([
-    {
-      $match: {
-        isPaid: true,
-        paidAt: { $gte: fromDate, $lte: toDate },
-      },
-    },
+  const salesChartData = await OrderModel.aggregate([
+    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
     {
       $group: {
-        _id: {
-          $dateToString: { format: '%Y-%m-%d', date: '$paidAt' },
-        },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$paidAt' } },
         total: { $sum: '$totalPrice' },
       },
     },
@@ -356,49 +311,42 @@ export async function getOrderSummary(dateRange: DateRange) {
     salesChartData,
   }
 }
-export async function markOrderAsCompleted(orderId: string) {
-  if (!Types.ObjectId.isValid(orderId)) throw new Error('Invalid order ID')
 
-  const updatedOrder = await OrderModel.findByIdAndUpdate(
-    orderId,
-    {
-      status: 'completed',
-      isDelivered: true,
-      deliveredAt: new Date(),
-    },
-    { new: true }
-  )
-
-  if (!updatedOrder) throw new Error('Order not found')
-  return updatedOrder
+export const markOrderAsCompleted = async (orderId: string) => {
+  try {
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error('Order not found');
+    order.status = 'completed';
+    await order.save();
+    return { success: true };
+  } catch (error) {
+    console.error('markOrderAsCompleted error:', error);
+    return { success: false };
+  }
 }
 
-export async function rejectOrder(orderId: string) {
-  if (!Types.ObjectId.isValid(orderId)) throw new Error('Invalid order ID')
-
-  const updatedOrder = await OrderModel.findByIdAndUpdate(
-    orderId,
-    {
-      status: 'rejected',
-    },
-    { new: true }
-  )
-
-  if (!updatedOrder) throw new Error('Order not found')
-  return updatedOrder
+export const markOrderAsPending = async (orderId: string) => {
+  try {
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error('Order not found');
+    order.status = 'pending';
+    await order.save();
+    return { success: true };
+  } catch (error) {
+    console.error('markOrderAsPending error:', error);
+    return { success: false };
+  }
 }
 
-export async function markOrderAsPending(orderId: string) {
-  if (!Types.ObjectId.isValid(orderId)) throw new Error('Invalid order ID')
-
-  const updatedOrder = await OrderModel.findByIdAndUpdate(
-    orderId,
-    {
-      status: 'pending',
-    },
-    { new: true }
-  )
-
-  if (!updatedOrder) throw new Error('Order not found')
-  return updatedOrder
+export const rejectOrder = async (orderId: string) => {
+  try {
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error('Order not found');
+    order.status = 'rejected';
+    await order.save();
+    return { success: true };
+  } catch (error) {
+    console.error('rejectOrder error:', error);
+    return { success: false };
+  }
 }

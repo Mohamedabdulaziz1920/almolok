@@ -34,11 +34,11 @@ export default async function AccountLayout({
   const user = session?.user
 
   return (
-    <div className='flex flex-col md:flex-row min-h-screen bg-gray-50'>
+    <div className='flex flex-col md:flex-row min-h-screen'>
       {/* سايدبار على الشاشات الكبيرة */}
-      <aside className='hidden md:flex sticky top-0 h-screen w-64 flex-shrink-0 bg-gray-900 border-l border-gray-800 flex-col p-4 overflow-y-auto z-30'>
+      <aside className='hidden md:flex sticky top-0 h-screen w-64 flex-shrink-0 bg-gray-900 border-l border-gray-900 flex-col p-4 overflow-y-auto z-30'>
         {/* صورة المستخدم */}
-        <div className='flex items-center gap-3 pb-6 border-b border-gray-800 mb-4'>
+        <div className='flex items-center gap-3 pb-6 border-b border-gray-900 mb-4'>
           <div className='relative w-10 h-10 rounded-full overflow-hidden'>
             <Image
               src={user?.image || '/images/default-avatar.png'}

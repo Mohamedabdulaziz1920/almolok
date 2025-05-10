@@ -167,7 +167,7 @@ export default async function ProductDetails({
         <h2 className='h2-bold mb-2' id='reviews'>
           {t('Product.Customer Reviews')}
         </h2>
-        <ReviewList product={product} userId={session?.user.id} />
+        <ReviewList product={product} userId={session?.user?._id} />
       </section>
 
       <section className='mt-10'>
