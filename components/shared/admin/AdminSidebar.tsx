@@ -54,44 +54,39 @@ export default function AdminSidebar() {
           key={link.href}
           href={link.href}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-md transition-all hover:bg-gray-100 dark:hover:bg-gray-800',
+            'flex items-center gap-2 px-4 py-2 rounded-md transition-all hover:bg-transparent hover:text-yellow-400',
             pathname.includes(link.href)
-              ? 'bg-primary/10 text-primary font-medium'
-              : 'text-muted-foreground'
+              ? 'text-yellow-400 font-semibold'
+              : 'text-white'
           )}
         >
-          {link.icon}
+          <span className='text-yellow-400'>{link.icon}</span>
           <span>{t(`links.${link.key}`)}</span>
         </Link>
       ))}
     </nav>
   )
 
-  const SidebarHeader = () => (
-    <div className='flex items-center gap-4 mb-6 px-4'>
-      <Link href='/'>
-        <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
-      </Link>
-      <h1 className='text-xl font-bold text-primary hidden md:inline'>
-        {t('Dashboard')}
-      </h1>
-    </div>
-  )
-
   const UserInfo = () =>
     user ? (
-      <div className='flex items-center gap-3 px-4 py-3 border dark:border-gray-700 rounded-lg'>
-        <div className='bg-primary text-white rounded-full h-9 w-9 flex items-center justify-center font-semibold uppercase'>
-          <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
+      <div className='flex flex-col gap-3 px-4 py-3 border border-gray-700 rounded-lg'>
+        <div className='flex items-center gap-3'>
+          <div className='bg-yellow-400 text-white rounded-full h-9 w-9 flex items-center justify-center font-semibold uppercase'>
+            <Image src='/icons/logo.svg' width={24} height={24} alt='Logo' />
+          </div>
+          <div className='text-sm'>
+            <p className='font-medium text-white'>مرحباً {user.name}</p>
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className='text-xs text-red-500 hover:underline flex items-center gap-1'
+            >
+              <LogOut size={14} /> {t('Logout')}
+            </button>
+          </div>
         </div>
-        <div className='text-sm'>
-          <p className='font-medium'>مرحباً {user.name}</p>
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className='text-xs text-red-500 hover:underline flex items-center gap-1'
-          >
-            <LogOut size={14} /> {t('Logout')}
-          </button>
+        <div className='space-y-2'>
+          <LanguageSwitcher className='text-white' />
+          <ThemeSwitcher className='text-white' />
         </div>
       </div>
     ) : null
@@ -101,44 +96,45 @@ export default function AdminSidebar() {
       {/* Sidebar Desktop */}
       <aside
         className={cn(
-          'w-64 lg:flex flex-col shadow-md p-4 overflow-y-auto hidden bg-white dark:bg-gray-900',
+          'w-64 lg:flex flex-col shadow-md p-4 overflow-y-auto hidden bg-gray-900 text-white',
           isRTL ? 'right-0' : 'left-0'
         )}
         style={{ direction: isRTL ? 'rtl' : 'ltr' }}
       >
-        <SidebarHeader />
+        <div className='flex items-center gap-4 mb-6 px-4'>
+          <Link href='/'>
+            <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
+          </Link>
+          <h1 className='text-xl font-bold text-yellow-400 hidden md:inline'>
+            {t('Dashboard')}
+          </h1>
+        </div>
         <UserInfo />
         <SidebarLinksContent />
-        <div className='mt-6 space-y-4 px-4'>
-          <LanguageSwitcher />
-          <ThemeSwitcher />
-        </div>
       </aside>
 
       {/* Sidebar Mobile */}
       <div className='lg:hidden px-4 py-2'>
         <Sheet>
-          <SheetTrigger className='flex items-center gap-2 text-primary'>
+          <SheetTrigger className='flex items-center gap-2 text-yellow-400'>
             <MenuIcon className='h-6 w-6' />
           </SheetTrigger>
           <SheetContent
             side={isRTL ? 'right' : 'left'}
-            className='p-4 w-64 max-w-full bg-white dark:bg-gray-900 flex flex-col'
+            className='p-4 w-64 max-w-full bg-gray-900 text-white flex flex-col'
             style={{ direction: isRTL ? 'rtl' : 'ltr' }}
           >
             <SheetHeader className='mb-4'>
               <div className='flex items-center justify-between'>
-                <SheetTitle>{t('Dashboard')}</SheetTitle>
+                <div className='flex items-center gap-3'>
+                  <Image src='/icons/logo.svg' width={28} height={28} alt='Logo' />
+                  <SheetTitle className='text-lg text-yellow-400'>{t('Dashboard')}</SheetTitle>
+                </div>
                 <X className='h-5 w-5 cursor-pointer' />
               </div>
             </SheetHeader>
-            <SidebarHeader />
             <UserInfo />
             <SidebarLinksContent />
-            <div className='mt-6 space-y-4'>
-              <LanguageSwitcher />
-              <ThemeSwitcher />
-            </div>
           </SheetContent>
         </Sheet>
       </div>

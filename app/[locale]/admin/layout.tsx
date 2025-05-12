@@ -1,5 +1,7 @@
+
 import React from 'react'
 import AdminSidebar from '@/components/shared/admin/AdminSidebar'
+import { Toaster } from '@/components/ui/toaster'
 
 export default function AdminLayout({
   children,
@@ -10,7 +12,10 @@ export default function AdminLayout({
     <div className='flex min-h-screen'>
       {/* Sidebar */}
       <AdminSidebar />
-      <main className='flex-1 p-4'>{children}</main>
+      <main className='flex-1 p-4'>
+        <Toaster />
+        {children}
+      </main>
     </div>
   )
 }

@@ -17,15 +17,21 @@ export const getNoCachedSetting = async (): Promise<ISettingInput> => {
 
 export const getSetting = async (): Promise<ISettingInput> => {
   if (!globalForSettings.cachedSettings) {
-    console.log('hit db')
+    console.log('hit db') // هذا سيساعد في تتبع أين يتم استدعاء الدالة
     await connectToDatabase()
     const setting = await Setting.findOne().lean()
-    globalForSettings.cachedSettings = setting
-      ? JSON.parse(JSON.stringify(setting))
-      : data.settings[0]
+    
+    // إذا كانت النتيجة موجودة، خزّنها في الذاكرة
+    if (setting) {
+      globalForSettings.cachedSettings = JSON.parse(JSON.stringify(setting))
+    } else {
+      globalForSettings.cachedSettings = data.settings[0] // استخدام القيمة الافتراضية إذا لم توجد قيمة
+    }
   }
+
   return globalForSettings.cachedSettings as ISettingInput
 }
+
 
 export const updateSetting = async (newSetting: ISettingInput) => {
   try {

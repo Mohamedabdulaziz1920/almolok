@@ -69,11 +69,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = (user as { role: string }).role
         token.balance = (user as { balance: number }).balance // ✅ أضف هذا
       }
-    
+
       if (session?.user?.name && trigger === 'update') {
         token.name = session.user.name
       }
-    
+
       return token
     },
     session: async ({ session, user, trigger, token }) => {
@@ -82,11 +82,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.role = token.role as string
       session.user.name = token.name
       session.user.balance = token.balance as number
-    
+
       if (trigger === 'update') {
         session.user.name = user.name
       }
-    
+
       return session
     },
   },

@@ -95,10 +95,10 @@
   "OrderStatus": "الحالة",
   "No": "لا",
   "Details": "التفاصيل",
-  "OrderDetails": "تفاصيل الطلب رقم #{{id}}",
-  "BreadcrumbAccount": "حسابك",
-  "BreadcrumbOrders": "طلباتك",
-  "BreadcrumbOrderDetails": "تفاصيل الطلب رقم #{{id}}",
+    "OrderDetails": "تفاصيل الطلب {id}",
+    "BreadcrumbAccount": "حسابك",
+    "BreadcrumbOrders": "طلباتك",
+    "BreadcrumbOrderDetails": "طلب {id}",
   "pending": "قيد الانتظار",
   "completed": "مكتمل",
   "rejected": "مرفوض",
@@ -393,6 +393,7 @@
   },
   "Cart": {
     "Shopping Cart": "عربة التسوق",
+    "Order placed successfully":"تمت عملية الدفع بنجاح !",
     "Price": "السعر",
     "Quantity": "الكمية",
     "items": "العناصر",
@@ -784,7 +785,8 @@
       "carousels": "السلايدر",
       "languages": "اللغات",
       "currencies": "العملات",
-      "paymentMethods": "طرق الدفع"
+      "paymentMethods": "طرق الدفع",
+      "Dashboard": "لوحة التحكم"
     }
   },
   "Admin": {

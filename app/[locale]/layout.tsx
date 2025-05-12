@@ -9,11 +9,8 @@ import { notFound } from 'next/navigation'
 import { getSetting } from '@/lib/actions/setting.actions'
 import { cookies } from 'next/headers'
 import { SessionProvider } from 'next-auth/react'
-
+import { auth } from '@/auth'
 import type { Locale } from '@/i18n/routing'
-import { Toaster } from 'sonner'
-
-;<Toaster position='top-center' richColors />
 // إعداد خط Cairo للعربية
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -54,6 +51,8 @@ export default async function RootLayout({
   const currencyCookie = cookieStore.get('currency')
   const currency = currencyCookie ? currencyCookie.value : 'USD'
 
+  const session = await auth()
+
   // التحقق من صحة اللغة
   if (!routing.locales.includes(locale)) {
     notFound()
@@ -71,7 +70,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <SessionProvider>
+          <SessionProvider session={session}>
             <ClientProviders setting={{ ...setting, currency }}>
               {children}
             </ClientProviders>

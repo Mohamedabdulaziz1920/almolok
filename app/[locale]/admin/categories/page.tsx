@@ -1,3 +1,4 @@
+// app/[locale]/admin/categories/page.tsx
 import Link from 'next/link'
 import { getCategories } from '@/lib/actions/category.actions'
 import { Button } from '@/components/ui/button'

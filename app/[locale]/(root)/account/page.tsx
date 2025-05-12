@@ -39,7 +39,8 @@ export default async function AccountPage() {
     <div className='container mx-auto px-1 py-8'>
       <div className='mb-8'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
-        {PAGE_TITLE}</h1>
+          {PAGE_TITLE}
+        </h1>
         <div className='grid md:grid-cols-3 gap-4 items-stretch'>
           {/* بطاقة المحفظة */}
           <Card className='border-sidebar-border'>

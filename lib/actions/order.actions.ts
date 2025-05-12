@@ -39,7 +39,10 @@ export const createOrder = async (clientSideCart: Cart) => {
   }
 }
 
-export const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
+export const createOrderFromCart = async (
+  clientSideCart: Cart,
+  userId: string
+) => {
   await connectToDatabase()
 
   const session = await mongoose.startSession()
@@ -47,7 +50,10 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
 
   try {
     const itemsPrice = round2(
-      clientSideCart.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+      clientSideCart.items.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      )
     )
     const taxPrice = round2(itemsPrice * 0.15)
     const totalPrice = round2(itemsPrice + taxPrice)
@@ -74,18 +80,23 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
       clientId: item.clientId,
     }))
 
-    const order = await OrderModel.create([{
-      user: userId,
-      items: orderItems,
-      paymentMethod: 'balance',
-      itemsPrice,
-      taxPrice,
-      totalPrice,
-      isPaid: true,
-      paidAt: new Date(),
-      balanceUsed: totalPrice,
-      balance: user.balance,
-    }], { session })
+    const order = await OrderModel.create(
+      [
+        {
+          user: userId,
+          items: orderItems,
+          paymentMethod: 'balance',
+          itemsPrice,
+          taxPrice,
+          totalPrice,
+          isPaid: true,
+          paidAt: new Date(),
+          balanceUsed: totalPrice,
+          balance: user.balance,
+        },
+      ],
+      { session }
+    )
 
     await session.commitTransaction()
     session.endSession()
@@ -101,7 +112,10 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
 export async function updateOrderToPaid(orderId: string) {
   try {
     await connectToDatabase()
-    const order = await OrderModel.findById(orderId).populate('user', 'name email')
+    const order = await OrderModel.findById(orderId).populate(
+      'user',
+      'name email'
+    )
     if (!order) throw new Error('Order not found')
     if (order.isPaid) throw new Error('Order is already paid')
 
@@ -247,7 +261,6 @@ export async function getOrderById(orderId: string) {
   return JSON.parse(JSON.stringify(order))
 }
 
-
 export async function getOrderSummary(dateRange: DateRange) {
   await connectToDatabase()
   const { from, to } = dateRange
@@ -314,39 +327,39 @@ export async function getOrderSummary(dateRange: DateRange) {
 
 export const markOrderAsCompleted = async (orderId: string) => {
   try {
-    const order = await OrderModel.findById(orderId);
-    if (!order) throw new Error('Order not found');
-    order.status = 'completed';
-    await order.save();
-    return { success: true };
+    const order = await OrderModel.findById(orderId)
+    if (!order) throw new Error('Order not found')
+    order.status = 'completed'
+    await order.save()
+    return { success: true }
   } catch (error) {
-    console.error('markOrderAsCompleted error:', error);
-    return { success: false };
+    console.error('markOrderAsCompleted error:', error)
+    return { success: false }
   }
 }
 
 export const markOrderAsPending = async (orderId: string) => {
   try {
-    const order = await OrderModel.findById(orderId);
-    if (!order) throw new Error('Order not found');
-    order.status = 'pending';
-    await order.save();
-    return { success: true };
+    const order = await OrderModel.findById(orderId)
+    if (!order) throw new Error('Order not found')
+    order.status = 'pending'
+    await order.save()
+    return { success: true }
   } catch (error) {
-    console.error('markOrderAsPending error:', error);
-    return { success: false };
+    console.error('markOrderAsPending error:', error)
+    return { success: false }
   }
 }
 
 export const rejectOrder = async (orderId: string) => {
   try {
-    const order = await OrderModel.findById(orderId);
-    if (!order) throw new Error('Order not found');
-    order.status = 'rejected';
-    await order.save();
-    return { success: true };
+    const order = await OrderModel.findById(orderId)
+    if (!order) throw new Error('Order not found')
+    order.status = 'rejected'
+    await order.save()
+    return { success: true }
   } catch (error) {
-    console.error('rejectOrder error:', error);
-    return { success: false };
+    console.error('rejectOrder error:', error)
+    return { success: false }
   }
 }
