@@ -42,7 +42,8 @@ body {
     --ring: 222.2 84% 4.9%; /* slate-950 */
 
     --radius: 0.5rem;
-
+    --font-arabic: 'Cairo', sans-serif;
+    --font-english: 'Roboto', sans-serif;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
