@@ -38,10 +38,10 @@ export default async function AdminUser({
   const users = await getAllUsers({ page })
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <h1 className="text-2xl font-bold">المستخدمون</h1>
+    <div className='space-y-6 p-4 sm:p-6 lg:p-8'>
+      <h1 className='text-2xl font-bold'>المستخدمون</h1>
 
-      <div className="overflow-x-auto border rounded-lg shadow-sm">
+      <div className='overflow-x-auto border rounded-lg shadow-sm'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -59,12 +59,17 @@ export default async function AdminUser({
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
-                <TableCell className="flex flex-wrap gap-2 py-4">
-                  <Button asChild variant="outline" size="sm">
+                <TableCell className='flex flex-wrap gap-2 py-4'>
+                  <Button asChild variant='outline' size='sm'>
                     <Link href={`/admin/users/${user._id}`}>تعديل</Link>
                   </Button>
 
-                  <Button asChild variant="secondary" size="sm">
+                  <Button
+                    asChild
+                    variant='secondary'
+                    size='sm'
+                    className='bg-yellow-400 text-black hover:bg-yellow-500'
+                  >
                     <Link href={`/admin/users/${user._id}/add-balance`}>
                       إضافة رصيد
                     </Link>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { IOrder, IOrderItem } from '@/lib/db/models/order.model'
@@ -19,23 +19,13 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const {
-    _id,
-    items,
-    itemsPrice,
-    taxPrice,
-    totalPrice,
-    paymentMethod,
-    user,
-    isPaid,
-  } = order
+  const { _id, items, itemsPrice, taxPrice, totalPrice, isPaid, user } = order
+  const orderId = _id.toString()
 
-  const orderId: string = _id.toString()
-  const clientId = user._id.toString()
-
+  // إعادة التوجيه إذا كان الطلب مدفوع
   useEffect(() => {
     if (isPaid) {
-      router.push(`/account/orders/${orderId}`)
+      router.replace(`/account/orders/${orderId}`)
     }
   }, [isPaid, orderId, router])
 
@@ -51,38 +41,26 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
     setIsSubmitting(true)
 
     try {
-      await createOrderFromCart(
-        {
-          items: items.map((item) => ({
-            image: item.image,
-            product: item.product.toString(),
-            name: item.name,
-            slug: item.slug,
-            category: item.category,
-            playerId: item.playerId,
-            quantity: item.quantity,
-            countInStock: item.countInStock,
-            price: item.price,
-            // 🚫 لا تضع clientId هنا
-          })),
-          itemsPrice,
-          taxPrice,
-          totalPrice,
-          paymentMethod,
-          balance: userBalance,
-          clientId: clientId, // ✅ فقط هنا
-        },
-        clientId // ✅ إذا كان مطلوبًا كوسيط ثانٍ في الدالة
-      )
+      await createOrderFromCart({
+        items,
+        itemsPrice,
+        taxPrice,
+        totalPrice,
+        isPaid,
+        userId: user._id,
+        balance: userBalance,
+      })
 
       toast({ description: 'تم الدفع بنجاح!' })
-      router.push(`/account/orders/${orderId}`)
+
+      // إعادة التوجيه بعد نجاح الدفع
+      router.replace(`/account/orders/${orderId}`)
     } catch (error) {
-      console.error('Payment Error:', error)
       toast({
-        description: 'حدث خطأ أثناء الدفع. حاول مرة أخرى.',
+        description: 'حدث خطأ أثناء معالجة الدفع',
         variant: 'destructive',
       })
+      console.error('Payment error:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -96,7 +74,7 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
 
           <ul className='space-y-1'>
             {items.map((item: IOrderItem) => (
-              <li key={item.product.toString()}>
+              <li key={item.product}>
                 {item.name} × {item.quantity} ={' '}
                 <ProductPrice price={item.price * item.quantity} plain />
               </li>
@@ -120,12 +98,12 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
 
           <div className='pt-4'>
             <p>
-              رصيدك الحالي: <b>{userBalance}</b>
+              رصيدك الحالي: <b>{userBalance} ريال</b>
             </p>
           </div>
 
           <Button
-            className='w-full mt-4'
+            className='w-full mt-4 bg-yellow-400 text-black hover:bg-yellow-500'
             onClick={handlePayment}
             disabled={isSubmitting || userBalance < totalPrice}
           >
