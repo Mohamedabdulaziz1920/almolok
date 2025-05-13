@@ -54,9 +54,8 @@
   "sidebar": {
     "title": "لوحة التحكم",
     "dashboard": "الرئيسية",
-    "products": "المنتجات",
+    "products": "الباقات",
     "categories": "الفئات",
-    "packages": "الباقات",
     "orders": "الطلبات",
     "settings": "الإعدادات"
   },
@@ -285,8 +284,6 @@
     "create_category_details": "ادخل تفاصيل الفئة"
   },
   "ProductForm": {
-    "Packages": "حدد الباقات الخاصة بالمنتج",
-    "Selected Packages": "الباقات المختارة",
     "Select category": "إختر نوع القسم",
     "Name": "الاسم",
     "Enter product name": "أدخل اسم المنتج",
@@ -769,13 +766,13 @@
     "updateButton": "تحديث الصفحة"
   },
   "AdminNav": {
+    "welcome": "مرحباً",
     "Logout": "تسجيل خروج",
     "Dashboard": "لوحة التحكم",
     "links": {
-      "overview": "نظرة عامة",
-      "products": "المنتجات",
-      "packages": "الباقات",
-      "categories": "التصنيفات",
+      "overview": "الرئيسية",
+      "products": "الباقات",
+      "categories": "الأقسام",
       "orders": "الطلبات",
       "users": "المستخدمين",
       "pages": "الصفحات",
@@ -788,6 +785,11 @@
       "paymentMethods": "طرق الدفع",
       "Dashboard": "لوحة التحكم"
     }
+  },
+   "AdminHeader": {
+    "searchPlaceholder": "ابحث...",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
   },
   "Admin": {
     "Create": "إضافة منتج جديد",
@@ -849,40 +851,7 @@
   "message": {
     "Seeded database successfully": "قاعدة البيانات المصنفة بنجاح"
   },
-  "Packages": {
-    "Package Management": "إدارة الباقات",
-    "+ New Package": "إضافة باقة",
-    "No packages found": "لا يوجد باقات حتى الان.",
-    "Image": "الصورة",
-    "Name": "الأسم",
-    "Price": "السعر",
-    "Currency": "العملة",
-    "Published": "حالة النشر",
-    "Actions": "الإجراءات",
-    "Edit": "تعديل",
-    "Delete": "حذف"
-  },
-  "PackageForm": {
-    "createTitle": "إنشاء باقة جديدة",
-    "editTitle": "تعديل الباقة",
-    "packageName": "اسم الباقة",
-    "packageNamePlaceholder": "مثال: ليكي 50 ماسة",
-    "slug": "الرابط المختصر",
-    "slugPlaceholder": "مثال: leki-50-diamonds",
-    "generate": "توليد",
-    "price": "السعر",
-    "currency": "العملة",
-    "usd": "دولار أمريكي",
-    "sar": "ريال سعودي",
-    "yer": "ريال يمني",
-    "description": "الوصف",
-    "image": "الصورة",
-    "publish": "نشر",
-    "save": "حفظ الباقة",
-    "Yes": "منشور",
-    "No": "غير منشور",
-    "update": "تحديث الباقة"
-  },
+
   "AdminCategories": {
     "title": "الفئات",
     "create": "إنشاء فئة جديدة",
