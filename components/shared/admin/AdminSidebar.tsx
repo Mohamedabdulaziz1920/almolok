@@ -25,7 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useSidebar } from '@/contexts/sidebar-context'
+import { useSidebar } from '@/context/sidebar-context'
 import LanguageSwitcher from '@/components/shared/header/language-switcher'
 import ThemeSwitcher from '@/components/shared/header/theme-switcher'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
