@@ -1,4 +1,4 @@
-import { SidebarProvider } from '@/contexts/sidebar-context'
+import { SidebarProvider } from '@/context/sidebar-context'
 import AdminHeader from '@/components/shared/admin/AdminHeader'
 import AdminSidebar from '@/components/shared/admin/AdminSidebar'
 import { cn } from '@/lib/utils'
