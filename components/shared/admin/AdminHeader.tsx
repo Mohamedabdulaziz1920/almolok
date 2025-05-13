@@ -16,7 +16,7 @@ import { useSidebar } from '@/context/sidebar-context'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import ThemeSwitcher from '@/components/shared/header/theme-switcher'
 import LanguageSwitcher from '@/components/shared/header/language-switcher'
-
+import Image from 'next/image'
 export default function AdminHeader() {
   const t = useTranslations('AdminHeader')
   const user = useCurrentUser()
