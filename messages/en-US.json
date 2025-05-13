@@ -33,6 +33,14 @@
     "Subtotal": "Subtotal",
     "Go to cart": "Go to cart"
   },
+    "sidebar": {
+    "title": "title",
+    "dashboard": "dashboard",
+    "products": "products",
+    "categories": "categories",
+    "orders": "orders",
+    "settings": "settings"
+  },
   "Home": {
     "Products Collection": "Products Collection",
     "Categories to explore": "Categories to explore",
@@ -692,6 +700,8 @@
     "updateButton": "Update Page"
   },
   "AdminNav": {
+    "welcome": "welcome",
+    "Dashboard": "Dashboard",
     "Logout": "Logout",
     "links": {
       "overview": "Overview",
@@ -699,8 +709,18 @@
       "orders": "Orders",
       "users": "Users",
       "pages": "Pages",
-      "settings": "Settings"
+      "settings": "Settings",
+      "categories": "categories",
+      "Dashboard": "Dashboard"
     }
+  },
+   "AdminHeader": {
+    "searchPlaceholder": "Search...",
+    "settings": "Settings",
+    "logout": "Log out",
+    "toggleMenu": "Toggle Menu",
+    "toggleNotifications": "Toggle Notifications",
+    "toggleUserMenu": "Toggle User Menu"
   },
   "Error": {
     "Error": "Error",
@@ -764,38 +784,7 @@
     "Delete": "Delete",
     "Cancel": "Cancel"
   },
-  "Packages": {
-    "Package Management": "Package Management",
-    "+ New Package": "New Package",
-    "No packages found": "No packages found",
-    "Image": "Image",
-    "Name": "Name",
-    "Price": "Price",
-    "Currency": "Currency",
-    "Published": "Published",
-    "Actions": "Actions",
-    "Edit": "Edit",
-    "Delete": "Delete"
-  },
-  "PackageForm": {
-    "createTitle": "Create New Package",
-    "editTitle": "Edit Package",
-    "packageName": "Package Name",
-    "packageNamePlaceholder": "e.g. Leki 50 Diamonds",
-    "slug": "Slug",
-    "slugPlaceholder": "e.g. leki-50-diamonds",
-    "generate": "Generate",
-    "price": "Price",
-    "currency": "Currency",
-    "usd": "US Dollar",
-    "sar": "Saudi Riyal",
-    "yer": "Yemeni Riyal",
-    "description": "Description",
-    "image": "Image",
-    "publish": "Publish",
-    "save": "Save Package",
-    "update": "Update Package"
-  },
+
   "AdminCategories": {
     "title": "Categories",
     "create": "Create New Category",
