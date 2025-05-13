@@ -14,7 +14,7 @@ import {
 
 import { getMyOrders } from '@/lib/actions/order.actions'
 import { IOrder } from '@/lib/db/models/order.model'
-import { formatDateTime, formatId } from '@/lib/utils'
+import { formatId } from '@/lib/utils'
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import ProductPrice from '@/components/shared/product/product-price'
 import { Badge } from '@/components/ui/badge'
@@ -49,11 +49,11 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             <TableHeader className='bg-gray-50 dark:bg-gray-800'>
               <TableRow>
                 <TableHead>{t('OrderId')}</TableHead>
-                <TableHead className='text-right'>{t('OrderDate')}</TableHead>
                 <TableHead className='text-right'>{t('OrderTotal')}</TableHead>
-                <TableHead className='text-right'>{t('OrderPaid')}</TableHead>
                 <TableHead className='text-right'>{t('OrderStatus')}</TableHead>
-                <TableHead className='text-right'>{t('OrderActions')}</TableHead>
+                <TableHead className='text-right'>
+                  {t('OrderActions')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -77,17 +77,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   </TableCell>
 
                   <TableCell className='text-right'>
-                    {formatDateTime(order.createdAt!).dateTime}
-                  </TableCell>
-
-                  <TableCell className='text-right'>
                     <ProductPrice price={order.totalPrice} plain />
-                  </TableCell>
-
-                  <TableCell className='text-right'>
-                    {order.isPaid && order.paidAt
-                      ? formatDateTime(order.paidAt).dateTime
-                      : t('No')}
                   </TableCell>
 
                   <TableCell className='text-right'>
@@ -96,8 +86,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         order.status === 'completed'
                           ? 'bg-green-600'
                           : order.status === 'rejected'
-                          ? 'bg-red-600'
-                          : 'bg-yellow-500'
+                            ? 'bg-red-600'
+                            : 'bg-yellow-500'
                       }`}
                     >
                       {t(order.status)}
