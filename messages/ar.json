@@ -789,7 +789,10 @@
    "AdminHeader": {
     "searchPlaceholder": "ابحث...",
     "settings": "الإعدادات",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "toggleMenu": "تبديل القائمة",
+    "toggleNotifications": "تبديل الإشعارات",
+    "toggleUserMenu": "تبديل قائمة المستخدم"
   },
   "Admin": {
     "Create": "إضافة منتج جديد",
