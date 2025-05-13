@@ -25,15 +25,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-
+import { useSidebar } from '@/contexts/sidebar-context'
 import LanguageSwitcher from '@/components/shared/header/language-switcher'
 import ThemeSwitcher from '@/components/shared/header/theme-switcher'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 const sidebarLinks = [
   { key: 'overview', href: '/admin/overview', icon: <Home size={18} /> },
-  { key: 'products', href: '/admin/products', icon: <Package size={18} /> },
   { key: 'categories', href: '/admin/categories', icon: <Boxes size={18} /> },
+  { key: 'products', href: '/admin/products', icon: <Package size={18} /> },
   { key: 'orders', href: '/admin/orders', icon: <ShoppingCart size={18} /> },
   { key: 'users', href: '/admin/users', icon: <Users size={18} /> },
   { key: 'pages', href: '/admin/web-pages', icon: <FileText size={18} /> },
@@ -46,98 +46,145 @@ export default function AdminSidebar() {
   const user = useCurrentUser()
   const locale = useLocale()
   const isRTL = locale === 'ar'
+  const { isOpen, toggle } = useSidebar()
 
   const SidebarLinksContent = () => (
-    <nav className='space-y-2'>
+    <nav className='space-y-1 mt-4'>
       {sidebarLinks.map((link) => (
         <Link
           key={link.href}
           href={link.href}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-md transition-all hover:bg-transparent hover:text-yellow-400',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+            'hover:bg-gray-800 hover:text-yellow-400',
             pathname.includes(link.href)
-              ? 'text-yellow-400 font-semibold'
-              : 'text-white'
+              ? 'bg-gray-800 text-yellow-400 font-medium'
+              : 'text-gray-300'
           )}
+          onClick={() => {
+            if (window.innerWidth < 1024) toggle()
+          }}
         >
           <span className='text-yellow-400'>{link.icon}</span>
-          <span>{t(`links.${link.key}`)}</span>
+          <span className='text-sm'>{t(`links.${link.key}`)}</span>
         </Link>
       ))}
     </nav>
   )
 
-  const UserInfo = () =>
-    user ? (
-      <div className='flex flex-col gap-3 px-4 py-3 border border-gray-700 rounded-lg'>
+  const UserInfo = () => (
+    user && (
+      <div className={cn(
+        'flex flex-col gap-3 p-3 border border-gray-700 rounded-lg mb-4',
+        'bg-gray-800'
+      )}>
         <div className='flex items-center gap-3'>
-          <div className='bg-yellow-400 text-white rounded-full h-9 w-9 flex items-center justify-center font-semibold uppercase'>
-            <Image src='/icons/logo.svg' width={24} height={24} alt='Logo' />
+          <div className='bg-yellow-400 text-white rounded-full h-9 w-9 flex items-center justify-center'>
+            {user.name?.charAt(0).toUpperCase() || 
+             <Image src='/icons/logo.svg' width={20} height={20} alt='User' />}
           </div>
-          <div className='text-sm'>
-            <p className='font-medium text-white'>مرحباً {user.name}</p>
+          <div className='flex-1 min-w-0'>
+            <p className='font-medium text-white truncate'>{t('welcome')} {user.name}</p>
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
-              className='text-xs text-red-500 hover:underline flex items-center gap-1'
+              className='text-xs text-red-400 hover:underline flex items-center gap-1 mt-1'
             >
               <LogOut size={14} /> {t('Logout')}
             </button>
           </div>
         </div>
-        <div className='space-y-2'>
-          <LanguageSwitcher className='text-white' />
-          <ThemeSwitcher className='text-white' />
+        <div className='flex gap-2'>
+          <LanguageSwitcher className='flex-1' />
+          <ThemeSwitcher className='flex-1' />
         </div>
       </div>
-    ) : null
+    )
+  )
 
   return (
     <>
-      {/* Sidebar Desktop */}
+      {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'w-64 lg:flex flex-col shadow-md p-4 overflow-y-auto hidden bg-gray-900 text-white',
-          isRTL ? 'right-0' : 'left-0'
+          'fixed top-0 h-screen z-30 hidden lg:flex flex-col',
+          'w-64 p-4 overflow-y-auto bg-gray-900 border-r border-gray-800',
+          isRTL ? 'right-0' : 'left-0',
+          'pt-20' // مساحة للهيدر
         )}
         style={{ direction: isRTL ? 'rtl' : 'ltr' }}
       >
-        <div className='flex items-center gap-4 mb-6 px-4'>
-          <Link href='/'>
-            <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
+        <div className='flex items-center gap-3 mb-6 px-2'>
+          <Link href='/' className='shrink-0'>
+            <Image 
+              src='/icons/logo.svg' 
+              width={32} 
+              height={32} 
+              alt='Logo'
+              className='w-8 h-8'
+            />
           </Link>
-          <h1 className='text-xl font-bold text-yellow-400 hidden md:inline'>
+          <h1 className='text-lg font-bold text-yellow-400 truncate'>
             {t('Dashboard')}
           </h1>
         </div>
+        
         <UserInfo />
         <SidebarLinksContent />
       </aside>
 
-      {/* Sidebar Mobile */}
-      <div className='lg:hidden px-4 py-2'>
-        <Sheet>
-          <SheetTrigger className='flex items-center gap-2 text-yellow-400'>
-            <MenuIcon className='h-6 w-6' />
-          </SheetTrigger>
-          <SheetContent
-            side={isRTL ? 'right' : 'left'}
-            className='p-4 w-64 max-w-full bg-gray-900 text-white flex flex-col'
-            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+      {/* Mobile Sidebar */}
+      <Sheet open={isOpen} onOpenChange={toggle}>
+        <SheetTrigger asChild>
+          <button
+            className={cn(
+              'lg:hidden fixed z-50 p-2 rounded-lg bg-gray-800 text-yellow-400',
+              'focus:outline-none focus:ring-2 focus:ring-yellow-400',
+              'top-4 right-4' // زر واحد فقط في الجانب الأيمن
+            )}
+            aria-label='Toggle sidebar'
           >
-            <SheetHeader className='mb-4'>
-              <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-3'>
-                  <Image src='/icons/logo.svg' width={28} height={28} alt='Logo' />
-                  <SheetTitle className='text-lg text-yellow-400'>{t('Dashboard')}</SheetTitle>
-                </div>
-                <X className='h-5 w-5 cursor-pointer' />
+            <MenuIcon className='h-6 w-6' />
+          </button>
+        </SheetTrigger>
+        
+        <SheetContent
+          side={isRTL ? 'right' : 'left'}
+          className={cn(
+            'w-72 max-w-full bg-gray-900 text-white flex flex-col p-0',
+            'border-l border-gray-800',
+            'mt-16' // مساحة للهيدر
+          )}
+          style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+        >
+          <SheetHeader className='px-4 py-3 border-b border-gray-800'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <Image
+                  src='/icons/logo.svg'
+                  width={28}
+                  height={28}
+                  alt='Logo'
+                  className='w-7 h-7'
+                />
+                <SheetTitle className='text-lg text-yellow-400'>
+                  {t('Dashboard')}
+                </SheetTitle>
               </div>
-            </SheetHeader>
+              <SheetTrigger className='p-1 rounded-full hover:bg-gray-800'>
+                <X className='h-5 w-5 text-gray-400' />
+              </SheetTrigger>
+            </div>
+          </SheetHeader>
+          
+          <div className='p-4 overflow-y-auto flex-1'>
             <UserInfo />
             <SidebarLinksContent />
-          </SheetContent>
-        </Sheet>
-      </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Spacer */}
+      <div className='hidden lg:block w-64 flex-shrink-0' />
     </>
   )
 }
