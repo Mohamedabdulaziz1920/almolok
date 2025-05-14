@@ -38,24 +38,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const t = await getTranslations('OrdersPage')
   const page = Number(searchParams?.page) || 1
   const session = await auth()
+
   if (session?.user.role !== 'Admin') {
     throw new Error(t('Admin permission required'))
   }
 
   const orders = await getAllOrders({ page })
-
-  // تعديل الدوال لتتوافق مع النوع المطلوب
-  const handleComplete = async (orderId: string) => {
-    await markOrderAsCompleted(orderId)
-  }
-
-  const handleReject = async (orderId: string) => {
-    await rejectOrder(orderId)
-  }
-
-  const handlePending = async (orderId: string) => {
-    await markOrderAsPending(orderId)
-  }
 
   return (
     <div className='mx-auto px-2 py-6 sm:px-4 sm:py-8 max-w-screen-2xl'>
@@ -71,79 +59,46 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
       {/* Responsive table container */}
       <div className='rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950 overflow-hidden'>
-        {/* Mobile responsive table */}
         <div className='overflow-x-auto'>
           <Table className='min-w-full'>
-            <TableHeader className='bg-gray-50 dark:bg-gray-800 hidden sm:table-header-group'>
+            {/* Table Header */}
+            <TableHeader className='bg-gray-50 dark:bg-gray-800'>
               <TableRow>
-                <TableHead className='text-right w-[100px] sm:w-[120px]'>
-                  {t('Id')}
-                </TableHead>
-                <TableHead className='text-right'>{t('Player ID')}</TableHead>
-                <TableHead className='text-right'>{t('Buyer')}</TableHead>
+                <TableHead>{t('Id')}</TableHead>
+                <TableHead>{t('Player ID')}</TableHead>
+                <TableHead>{t('Buyer')}</TableHead>
                 <TableHead className='text-right'>{t('Total')}</TableHead>
-                <TableHead className='text-right'>{t('Status')}</TableHead>
-                <TableHead className='text-right min-w-[120px] sm:min-w-[150px]'>
-                  {t('Date')}
-                </TableHead>
-                <TableHead className='text-right w-[200px] sm:w-[300px]'>
-                  {t('Actions')}
-                </TableHead>
+                <TableHead>{t('Status')}</TableHead>
+                <TableHead>{t('Date')}</TableHead>
+                <TableHead className='text-center'>{t('Actions')}</TableHead>
               </TableRow>
             </TableHeader>
+
+            {/* Table Body */}
             <TableBody>
               {orders.data.map((order: IOrderList) => (
                 <TableRow
                   key={order._id}
-                  className='hover:bg-gray-50 dark:hover:bg-gray-900 block sm:table-row border-b'
+                  className='hover:bg-gray-50 dark:hover:bg-gray-900'
                 >
-                  {/* Mobile view - stacked cells */}
-                  <TableCell className='block sm:table-cell p-2 sm:p-4'>
-                    <div className='sm:hidden font-semibold mb-1'>
-                      {t('Id')}:
-                    </div>
-                    <span className='font-medium text-gray-900 dark:text-white'>
-                      {formatId(order._id)}
-                    </span>
-                  </TableCell>
-
-                  <TableCell className='block sm:table-cell p-2 sm:p-4'>
-                    <div className='sm:hidden font-semibold mb-1'>
-                      {t('Player ID')}:
-                    </div>
+                  {/* Table Cells */}
+                  <TableCell>{formatId(order._id)}</TableCell>
+                  <TableCell>
                     {order.items[0]?.playerId || (
                       <span className='text-gray-500'>N/A</span>
                     )}
                   </TableCell>
-
-                  <TableCell className='block sm:table-cell p-2 sm:p-4'>
-                    <div className='sm:hidden font-semibold mb-1'>
-                      {t('Buyer')}:
-                    </div>
-                    {order.user ? (
-                      <span className='font-medium text-gray-900 dark:text-white'>
-                        {order.user.name}
-                      </span>
-                    ) : (
+                  <TableCell>
+                    {order.user?.name || (
                       <Badge variant='destructive' className='text-xs'>
                         {t('Deleted User')}
                       </Badge>
                     )}
                   </TableCell>
-
-                  <TableCell className='block sm:table-cell p-2 sm:p-4 text-right'>
-                    <div className='sm:hidden font-semibold mb-1'>
-                      {t('Total')}:
-                    </div>
-                    <span className='font-medium text-green-600 dark:text-green-400'>
-                      <ProductPrice price={order.totalPrice} plain />
-                    </span>
+                  <TableCell className='text-right font-medium text-green-600 dark:text-green-400'>
+                    <ProductPrice price={order.totalPrice} plain />
                   </TableCell>
-
-                  <TableCell className='block sm:table-cell p-2 sm:p-4'>
-                    <div className='sm:hidden font-semibold mb-1'>
-                      {t('Status')}:
-                    </div>
+                  <TableCell>
                     <Badge
                       className={`text-xs ${
                         order.status === 'completed'
@@ -156,84 +111,51 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       {t(order.status)}
                     </Badge>
                   </TableCell>
-
-                  <TableCell className='block sm:table-cell p-2 sm:p-4'>
-                    <div className='sm:hidden font-semibold mb-1'>
-                      {t('Date')}:
-                    </div>
-                    <span className='text-gray-600 dark:text-gray-400 whitespace-nowrap'>
-                      {formatDateTime(order.createdAt!).dateTime}
-                    </span>
+                  <TableCell className='text-gray-600 dark:text-gray-400'>
+                    {formatDateTime(order.createdAt!).dateTime}
                   </TableCell>
-
-                  <TableCell className='block sm:table-cell p-2 sm:p-4'>
-                    <div className='sm:hidden font-semibold mb-2'>
-                      {t('Actions')}:
-                    </div>
-                    <div className='flex flex-col gap-2'>
-                      <div className='flex gap-2'>
-                        <DeleteDialog
-                          id={order._id}
-                          action={deleteOrder}
-                          buttonProps={{
-                            variant: 'destructive',
-                            size: 'sm',
-                            className:
-                              'hover:bg-red-600 dark:hover:bg-red-700 text-xs sm:text-sm w-full sm:w-auto',
-                          }}
-                        />
-                      </div>
-                      <div className='grid grid-cols-2 sm:flex gap-2'>
-                        <form
-                          action={async () => {
-                            'use server'
-                            await handleComplete(order._id)
-                          }}
-                          className='col-span-1'
-                        >
-                          <Button
-                            size='sm'
-                            variant='default'
-                            className='w-full text-xs sm:text-sm'
-                            disabled={order.status === 'completed'}
-                          >
-                            {t('Complete')}
-                          </Button>
-                        </form>
-                        <form
-                          action={async () => {
-                            'use server'
-                            await handleReject(order._id)
-                          }}
-                          className='col-span-1'
-                        >
-                          <Button
-                            size='sm'
-                            variant='destructive'
-                            className='w-full text-xs sm:text-sm'
-                            disabled={order.status === 'rejected'}
-                          >
-                            {t('Reject')}
-                          </Button>
-                        </form>
-                        <form
-                          action={async () => {
-                            'use server'
-                            await handlePending(order._id)
-                          }}
-                          className='col-span-2 sm:col-span-1'
-                        >
-                          <Button
-                            size='sm'
-                            variant='outline'
-                            className='w-full text-xs sm:text-sm bg-orange-500 text-white hover:bg-orange-600'
-                            disabled={order.status === 'pending'}
-                          >
-                            {t('Pending')}
-                          </Button>
-                        </form>
-                      </div>
-                    </div>
+                  <TableCell className='flex justify-center gap-2'>
+                    <DeleteDialog
+                      id={order._id}
+                      action={deleteOrder}
+                      buttonProps={{
+                        variant: 'destructive',
+                        size: 'sm',
+                        className: 'hover:bg-red-600 dark:hover:bg-red-700',
+                      }}
+                    />
+                    <form action={markOrderAsCompleted}>
+                      <input type='hidden' name='orderId' value={order._id} />
+                      <Button
+                        type='submit'
+                        size='sm'
+                        disabled={order.status === 'completed'}
+                      >
+                        {t('Completed')}
+                      </Button>
+                    </form>
+                    <form action={rejectOrder}>
+                      <input type='hidden' name='orderId' value={order._id} />
+                      <Button
+                        type='submit'
+                        size='sm'
+                        variant='destructive'
+                        disabled={order.status === 'rejected'}
+                      >
+                        {t('Reject')}
+                      </Button>
+                    </form>
+                    <form action={markOrderAsPending}>
+                      <input type='hidden' name='orderId' value={order._id} />
+                      <Button
+                        type='submit'
+                        size='sm'
+                        variant='outline'
+                        disabled={order.status === 'pending'}
+                      >
+                        {t('Pending')}
+                      </Button>
+                    </form>
                   </TableCell>
                 </TableRow>
               ))}
