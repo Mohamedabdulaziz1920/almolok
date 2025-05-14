@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useSidebar } from '@/context/sidebar-context'
+import { useSidebar } from '@/contexts/sidebar-context'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import ThemeSwitcher from '@/components/shared/header/theme-switcher'
 import LanguageSwitcher from '@/components/shared/header/language-switcher'
@@ -33,9 +33,10 @@ export default function AdminHeader() {
   return (
     <header
       className={cn(
-        'fixed top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4',
-        'lg:right-64',
-        isRTL ? 'right-0' : 'left-0',
+        'fixed top-0 z-40 flex h-16 w-full items-center gap-4 border-b bg-background px-4',
+        'right-0',
+        'lg:right-64', // Default sidebar width
+        isRTL ? 'lg:left-0 lg:right-auto' : 'lg:left-64 lg:right-auto',
         'pt-5'
       )}
       dir={isRTL ? 'rtl' : 'ltr'}
