@@ -74,7 +74,7 @@ export default function AdminSidebar() {
       <div
         className={cn(
           'flex flex-col gap-3 p-3 border border-black rounded-lg mb-4',
-          'bg-gray-800'
+          'bg-gray-950'
         )}
       >
         <div className='flex items-center gap-3'>
@@ -98,7 +98,7 @@ export default function AdminSidebar() {
       <aside
         className={cn(
           'fixed top-0 h-screen z-30 hidden lg:flex flex-col',
-          'w-64 p-4 overflow-y-auto bg-gray-950 border-r border-gray-800',
+          'w-64 p-4 overflow-y-auto bg-gray-950 border-r border-gray-950',
           isRTL ? 'right-0' : 'left-0',
           'pt-5' // مساحة للهيدر
         )}
@@ -128,7 +128,7 @@ export default function AdminSidebar() {
         <SheetTrigger asChild>
           <button
             className={cn(
-              'lg:hidden fixed z-50 p-2 rounded-lg bg-gray-800 text-yellow-400',
+              'lg:hidden fixed z-50 p-2 rounded-lg bg-gray-950 text-yellow-400',
               'focus:outline-none focus:ring-2 focus:ring-yellow-400',
               'top-4 right-4' // زر واحد فقط في الجانب الأيمن
             )}
@@ -141,13 +141,13 @@ export default function AdminSidebar() {
         <SheetContent
           side={isRTL ? 'right' : 'left'}
           className={cn(
-            'w-72 max-w-full bg-gray-900 text-white flex flex-col p-0',
-            'border-l border-gray-800',
-            'mt-16' // مساحة للهيدر
+            'w-72 max-w-full bg-gray-950 text-yellow flex flex-col p-0',
+            'border-l border-gray-950',
+            'mt-0' // مساحة للهيدر
           )}
           style={{ direction: isRTL ? 'rtl' : 'ltr' }}
         >
-          <SheetHeader className='px-4 py-3 border-b border-gray-800'>
+          <SheetHeader className='px-4 py-3 border-b border-gray-950'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
                 <Image
@@ -162,7 +162,7 @@ export default function AdminSidebar() {
                 </SheetTitle>
               </div>
               <SheetTrigger className='p-1 rounded-full hover:bg-gray-400'>
-                <X className='h-5 w-5 text-gray-800' />
+                <X className='h-5 w-5 text-gray-950' />
               </SheetTrigger>
             </div>
           </SheetHeader>
