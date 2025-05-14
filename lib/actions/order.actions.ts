@@ -14,6 +14,7 @@ import { getSetting } from './setting.actions'
 
 type DateRange = { from?: string; to?: string }
 
+// الدوال الأساسية لإدارة الطلبات
 export const createOrder = async (clientSideCart: Cart) => {
   try {
     await connectToDatabase()
@@ -39,10 +40,7 @@ export const createOrder = async (clientSideCart: Cart) => {
   }
 }
 
-export const createOrderFromCart = async (
-  clientSideCart: Cart,
-  userId: string
-) => {
+const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
   await connectToDatabase()
 
   const session = await mongoose.startSession()
@@ -93,6 +91,7 @@ export const createOrderFromCart = async (
           paidAt: new Date(),
           balanceUsed: totalPrice,
           balance: user.balance,
+          status: 'pending', // الحالة الافتراضية
         },
       ],
       { session }
@@ -109,7 +108,104 @@ export const createOrderFromCart = async (
   }
 }
 
-export async function updateOrderToPaid(orderId: string) {
+// دوال حالة الطلب
+export const updateOrderStatus = async (
+  orderId: string,
+  status: 'pending' | 'completed' | 'rejected'
+) => {
+  try {
+    await connectToDatabase()
+    const order = await OrderModel.findById(orderId)
+    if (!order) throw new Error('Order not found')
+
+    order.status = status
+    await order.save()
+    revalidatePath('/admin/orders')
+    return { success: true }
+  } catch (error) {
+    console.error(`updateOrderStatus error (${status}):`, error)
+    return { success: false, message: formatError(error) }
+  }
+}
+
+export const markOrderAsCompleted = async (formData: FormData) => {
+  const orderId = formData.get('orderId') as string
+  return await updateOrderStatus(orderId, 'completed')
+}
+
+export const markOrderAsPending = async (formData: FormData) => {
+  const orderId = formData.get('orderId') as string
+  return await updateOrderStatus(orderId, 'pending')
+}
+
+export const rejectOrder = async (formData: FormData) => {
+  const orderId = formData.get('orderId') as string
+  return await updateOrderStatus(orderId, 'rejected')
+}
+
+// دوال الحصول على الطلبات
+export const getAllOrders = async ({
+  page = 1,
+  limit,
+}: {
+  page?: number
+  limit?: number
+}) => {
+  try {
+    await connectToDatabase()
+    const {
+      common: { pageSize },
+    } = await getSetting()
+    const actualLimit = limit || pageSize
+    const skip = (page - 1) * actualLimit
+
+    const [orders, count] = await Promise.all([
+      OrderModel.find()
+        .populate('user', 'name')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(actualLimit),
+      OrderModel.countDocuments(),
+    ])
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(orders)) as IOrderList[],
+      totalPages: Math.ceil(count / actualLimit),
+      totalProducts: count,
+      from: skip + 1,
+      to: Math.min(skip + actualLimit, count),
+    }
+  } catch (error) {
+    return { success: false, message: formatError(error) }
+  }
+}
+
+export const getOrderById = async (orderId: string) => {
+  try {
+    await connectToDatabase()
+    const order = await OrderModel.findById(orderId).populate('user')
+    if (!order) throw new Error('Order not found')
+    return { success: true, data: JSON.parse(JSON.stringify(order)) }
+  } catch (error) {
+    return { success: false, message: formatError(error) }
+  }
+}
+
+// دوال إدارة الطلبات
+export const deleteOrder = async (orderId: string) => {
+  try {
+    await connectToDatabase()
+    const order = await OrderModel.findByIdAndDelete(orderId)
+    if (!order) throw new Error('Order not found')
+    revalidatePath('/admin/orders')
+    return { success: true, message: 'Order deleted successfully' }
+  } catch (error) {
+    return { success: false, message: formatError(error) }
+  }
+}
+
+export const updateOrderToPaid = async (orderId: string) => {
   try {
     await connectToDatabase()
     const order = await OrderModel.findById(orderId).populate(
@@ -129,8 +225,8 @@ export async function updateOrderToPaid(orderId: string) {
     revalidatePath(`/account/orders/${orderId}`)
 
     return { success: true, message: 'Order paid successfully' }
-  } catch (err) {
-    return { success: false, message: formatError(err) }
+  } catch (error) {
+    return { success: false, message: formatError(error) }
   }
 }
 
@@ -157,209 +253,46 @@ const updateProductStock = async (orderId: string) => {
   }
 }
 
-export async function deleteOrder(id: string) {
+// دوال التقارير والإحصائيات
+export const getOrderSummary = async (dateRange: DateRange) => {
   try {
     await connectToDatabase()
-    const res = await OrderModel.findByIdAndDelete(id)
-    if (!res) throw new Error('Order not found')
-    revalidatePath('/admin/orders')
-    return { success: true, message: 'Order deleted successfully' }
+    const { from, to } = dateRange
+    const fromDate = from ? new Date(from) : new Date(0)
+    const toDate = to ? new Date(to) : new Date()
+
+    const paidOrders = await OrderModel.find({
+      isPaid: true,
+      paidAt: { $gte: fromDate, $lte: toDate },
+    }).populate('user', 'name')
+
+    const totalSales = paidOrders.reduce(
+      (acc, order) => acc + order.totalPrice,
+      0
+    )
+
+    const monthlySales = await OrderModel.aggregate([
+      { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
+      {
+        $group: { _id: { $month: '$paidAt' }, total: { $sum: '$totalPrice' } },
+      },
+      { $sort: { _id: 1 } },
+    ])
+
+    const [users, products] = await Promise.all([User.find(), Product.find()])
+
+    return {
+      success: true,
+      data: {
+        totalSales,
+        ordersCount: paidOrders.length,
+        usersCount: users.length,
+        productsCount: products.length,
+        monthlySales,
+        latestOrders: paidOrders.slice(0, 5),
+      },
+    }
   } catch (error) {
     return { success: false, message: formatError(error) }
-  }
-}
-
-export async function getAllOrders({
-  limit,
-  page,
-}: {
-  limit?: number
-  page: number
-}) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-  limit = limit || pageSize
-  await connectToDatabase()
-  const skip = (page - 1) * limit
-
-  const [orders, count] = await Promise.all([
-    OrderModel.find()
-      .populate('user', 'name')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    OrderModel.countDocuments(),
-  ])
-
-  return {
-    data: JSON.parse(JSON.stringify(orders)) as IOrderList[],
-    totalPages: Math.ceil(count / limit),
-  }
-}
-
-export async function getMyOrders({
-  limit,
-  page,
-}: {
-  limit?: number
-  page: number
-}) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-  limit = limit || pageSize
-  await connectToDatabase()
-  const session = await auth()
-  const userId = session?.user?._id
-  if (!userId) throw new Error('User not authenticated')
-
-  const skip = (page - 1) * limit
-  const [orders, count] = await Promise.all([
-    OrderModel.find({ user: userId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    OrderModel.countDocuments({ user: userId }),
-  ])
-
-  return {
-    data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(count / limit),
-  }
-}
-
-export async function getOrdersByPlayerId(
-  playerId: string,
-  { limit, page }: { limit?: number; page: number }
-) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-  limit = limit || pageSize
-  await connectToDatabase()
-  const skip = (page - 1) * limit
-
-  const [orders, count] = await Promise.all([
-    OrderModel.find({ 'items.playerId': playerId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    OrderModel.countDocuments({ 'items.playerId': playerId }),
-  ])
-
-  return {
-    data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(count / limit),
-  }
-}
-
-export async function getOrderById(orderId: string) {
-  await connectToDatabase()
-  const order = await OrderModel.findById(orderId).populate('user') // ✅ هذا السطر مهم
-  if (!order) throw new Error('Order not found')
-  return JSON.parse(JSON.stringify(order))
-}
-
-export async function getOrderSummary(dateRange: DateRange) {
-  await connectToDatabase()
-  const { from, to } = dateRange
-  const fromDate = from ? new Date(from) : new Date(0)
-  const toDate = to ? new Date(to) : new Date()
-
-  const paidOrders = await OrderModel.find({
-    isPaid: true,
-    paidAt: { $gte: fromDate, $lte: toDate },
-  }).populate('user', 'name')
-
-  const totalSales = paidOrders.reduce(
-    (acc, order) => acc + order.totalPrice,
-    0
-  )
-
-  const monthlySales = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    { $group: { _id: { $month: '$paidAt' }, total: { $sum: '$totalPrice' } } },
-    { $sort: { _id: 1 } },
-  ])
-
-  const topSalesProducts = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    { $unwind: '$items' },
-    { $group: { _id: '$items.name', total: { $sum: '$items.quantity' } } },
-    { $sort: { total: -1 } },
-    { $limit: 5 },
-  ])
-
-  const topSalesCategories = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    { $unwind: '$items' },
-    { $group: { _id: '$items.category', total: { $sum: '$items.quantity' } } },
-    { $sort: { total: -1 } },
-    { $limit: 5 },
-  ])
-
-  const salesChartData = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    {
-      $group: {
-        _id: { $dateToString: { format: '%Y-%m-%d', date: '$paidAt' } },
-        total: { $sum: '$totalPrice' },
-      },
-    },
-    { $sort: { _id: 1 } },
-  ])
-
-  const [users, products] = await Promise.all([User.find(), Product.find()])
-
-  return {
-    totalSales,
-    ordersCount: paidOrders.length,
-    usersCount: users.length,
-    productsCount: products.length,
-    monthlySales,
-    topSalesProducts,
-    topSalesCategories,
-    latestOrders: paidOrders.slice(0, 5),
-    salesChartData,
-  }
-}
-
-export const markOrderAsCompleted = async (orderId: string) => {
-  try {
-    const order = await OrderModel.findById(orderId)
-    if (!order) throw new Error('Order not found')
-    order.status = 'completed'
-    await order.save()
-    return { success: true }
-  } catch (error) {
-    console.error('markOrderAsCompleted error:', error)
-    return { success: false }
-  }
-}
-
-export const markOrderAsPending = async (orderId: string) => {
-  try {
-    const order = await OrderModel.findById(orderId)
-    if (!order) throw new Error('Order not found')
-    order.status = 'pending'
-    await order.save()
-    return { success: true }
-  } catch (error) {
-    console.error('markOrderAsPending error:', error)
-    return { success: false }
-  }
-}
-
-export const rejectOrder = async (orderId: string) => {
-  try {
-    const order = await OrderModel.findById(orderId)
-    if (!order) throw new Error('Order not found')
-    order.status = 'rejected'
-    await order.save()
-    return { success: true }
-  } catch (error) {
-    console.error('rejectOrder error:', error)
-    return { success: false }
   }
 }
