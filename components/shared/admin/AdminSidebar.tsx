@@ -23,8 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useSidebar } from '@/context/sidebar-context'
-
+import { useSidebar } from '@/contexts/sidebar-context'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 const sidebarLinks = [
@@ -51,6 +50,7 @@ export default function AdminSidebar() {
         <Link
           key={link.href}
           href={link.href}
+          aria-current={pathname.includes(link.href) ? 'page' : undefined}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
             'hover:bg-gray-800 hover:text-yellow-400',
@@ -71,12 +71,7 @@ export default function AdminSidebar() {
 
   const UserInfo = () =>
     user && (
-      <div
-        className={cn(
-          'flex flex-col gap-3 p-3 border border-black rounded-lg mb-4',
-          'bg-gray-950'
-        )}
-      >
+      <div className='flex flex-col gap-3 p-3 border border-black rounded-lg mb-4 bg-gray-950'>
         <div className='flex items-center gap-3'>
           <div className='bg-yellow-400 text-black rounded-full h-9 w-9 flex items-center justify-center'>
             {user.name?.charAt(0).toUpperCase() || (
@@ -96,13 +91,13 @@ export default function AdminSidebar() {
     <>
       {/* Desktop Sidebar */}
       <aside
+        dir={isRTL ? 'rtl' : 'ltr'}
         className={cn(
           'fixed top-0 h-screen z-30 hidden lg:flex flex-col',
           'w-64 p-4 overflow-y-auto bg-gray-950 border-r border-gray-950',
           isRTL ? 'right-0' : 'left-0',
-          'pt-5' // مساحة للهيدر
+          'pt-5'
         )}
-        style={{ direction: isRTL ? 'rtl' : 'ltr' }}
       >
         <div className='flex items-center gap-3 mb-6 px-2'>
           <Link href='/' className='shrink-0'>
@@ -130,7 +125,7 @@ export default function AdminSidebar() {
             className={cn(
               'lg:hidden fixed z-50 p-2 rounded-lg bg-gray-950 text-yellow-400',
               'focus:outline-none focus:ring-2 focus:ring-yellow-400',
-              'top-4 right-4' // زر واحد فقط في الجانب الأيمن
+              'top-4 right-4'
             )}
             aria-label='Toggle sidebar'
           >
@@ -139,13 +134,12 @@ export default function AdminSidebar() {
         </SheetTrigger>
 
         <SheetContent
+          dir={isRTL ? 'rtl' : 'ltr'}
           side={isRTL ? 'right' : 'left'}
           className={cn(
-            'w-72 max-w-full bg-gray-950 text-yellow flex flex-col p-0',
-            'border-l border-gray-950',
-            'mt-0' // مساحة للهيدر
+            'w-72 max-w-full bg-gray-950/90 backdrop-blur text-yellow flex flex-col p-0',
+            'border-l border-gray-950'
           )}
-          style={{ direction: isRTL ? 'rtl' : 'ltr' }}
         >
           <SheetHeader className='px-4 py-3 border-b border-gray-950'>
             <div className='flex items-center justify-between'>
