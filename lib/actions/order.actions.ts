@@ -296,3 +296,58 @@ export const getOrderSummary = async (dateRange: DateRange) => {
     return { success: false, message: formatError(error) }
   }
 }
+
+export async function getMyOrders({
+  limit,
+  page,
+}: {
+  limit?: number
+  page: number
+}) {
+  const {
+    common: { pageSize },
+  } = await getSetting()
+  limit = limit || pageSize
+  await connectToDatabase()
+  const session = await auth()
+  const userId = session?.user?._id
+  if (!userId) throw new Error('User not authenticated')
+
+  const skip = (page - 1) * limit
+  const [orders, count] = await Promise.all([
+    OrderModel.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    OrderModel.countDocuments({ user: userId }),
+  ])
+
+  return {
+    data: JSON.parse(JSON.stringify(orders)),
+    totalPages: Math.ceil(count / limit),
+  }
+}
+export async function getOrdersByPlayerId(
+  playerId: string,
+  { limit, page }: { limit?: number; page: number }
+) {
+  const {
+    common: { pageSize },
+  } = await getSetting()
+  limit = limit || pageSize
+  await connectToDatabase()
+  const skip = (page - 1) * limit
+
+  const [orders, count] = await Promise.all([
+    OrderModel.find({ 'items.playerId': playerId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    OrderModel.countDocuments({ 'items.playerId': playerId }),
+  ])
+
+  return {
+    data: JSON.parse(JSON.stringify(orders)),
+    totalPages: Math.ceil(count / limit),
+  }
+}
