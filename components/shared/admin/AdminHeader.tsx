@@ -34,7 +34,7 @@ export default function AdminHeader() {
     <header
       className={cn(
         'fixed top-0 z-40 flex h-16 items-center gap-4 border-b px-4',
-        'w-full bg-gray-900 border-gray-800',
+        'w-full bg-gray-950 border-gray-950',
         isRTL ? 'right-0' : 'left-0' // مساحة للسايدبار حسب الاتجاه
       )}
       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
@@ -43,7 +43,7 @@ export default function AdminHeader() {
       <Button
         variant='ghost'
         size='icon'
-        className='lg:hidden text-gray-300 hover:text-yellow-400 hover:bg-gray-800'
+        className='lg:hidden text-black hover:text-yellow-400 hover:bg-gray-950'
         onClick={toggle}
       >
         <Menu className='h-5 w-5' />
@@ -72,7 +72,7 @@ export default function AdminHeader() {
         <Button
           variant='ghost'
           size='icon'
-          className='text-gray-300 hover:text-yellow-400 hover:bg-gray-800'
+          className='text-gray-300 hover:text-yellow-400 hover:bg-gray-950'
         >
           <Bell className='h-5 w-5' />
           <span className='sr-only'>{t('toggleNotifications')}</span>
@@ -90,7 +90,7 @@ export default function AdminHeader() {
             <Button
               variant='ghost'
               size='icon'
-              className='rounded-full hover:bg-gray-800'
+              className='rounded-full hover:bg-gray-950'
             >
               {user?.image ? (
                 <Image
@@ -102,31 +102,31 @@ export default function AdminHeader() {
                   priority
                 />
               ) : (
-                <User className='h-5 w-5 text-gray-300' />
+                <User className='h-5 w-5 border-black text-gray-300' />
               )}
               <span className='sr-only'>{t('toggleUserMenu')}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align={isRTL ? 'start' : 'end'}
-            className='w-56 bg-gray-800 border-gray-700 text-gray-300'
+            className='w-56 bg-gray-950 border-gray-950 text-gray-300'
           >
-            <DropdownMenuItem className='flex flex-col items-start gap-1 p-3 bg-gray-800 hover:bg-gray-700'>
+            <DropdownMenuItem className='flex flex-col items-start gap-1 p-3 bg-gray-950 hover:bg-gray-950'>
               <div className='text-sm font-medium truncate max-w-[200px] text-white'>
                 {user?.name}
               </div>
-              <div className='text-xs text-gray-400 truncate max-w-[200px]'>
+              <div className='text-xs text-white truncate max-w-[200px]'>
                 {user?.email}
               </div>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild className='hover:bg-gray-700'>
+            <DropdownMenuItem asChild className='hover:bg-gray-950'>
               <Link href='/account' className='w-full p-2'>
                 {t('Your account')}
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className='p-0 hover:bg-gray-700'>
+            <DropdownMenuItem className='p-0 hover:bg-gray-950'>
               <form action={SignOut} className='w-full'>
                 <button
                   type='submit'
