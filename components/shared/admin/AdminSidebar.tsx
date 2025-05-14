@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { useTranslations, useLocale } from 'next-intl'
 import {
@@ -16,7 +15,6 @@ import {
   Boxes,
   X,
   Menu as MenuIcon,
-  LogOut,
 } from 'lucide-react'
 import {
   Sheet,
@@ -25,9 +23,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useSidebar } from '@/context/sidebar-context'
-import LanguageSwitcher from '@/components/shared/header/language-switcher'
-import ThemeSwitcher from '@/components/shared/header/theme-switcher'
+import { useSidebar } from '@/contexts/sidebar-context'
+
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 const sidebarLinks = [
@@ -56,7 +53,7 @@ export default function AdminSidebar() {
           href={link.href}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-            'hover:bg-gray-800 hover:text-yellow-400',
+            'hover:bg-gray-950 hover:text-yellow-400',
             pathname.includes(link.href)
               ? 'bg-gray-800 text-yellow-400 font-medium'
               : 'text-gray-300'
@@ -72,34 +69,28 @@ export default function AdminSidebar() {
     </nav>
   )
 
-  const UserInfo = () => (
+  const UserInfo = () =>
     user && (
-      <div className={cn(
-        'flex flex-col gap-3 p-3 border border-gray-700 rounded-lg mb-4',
-        'bg-gray-800'
-      )}>
+      <div
+        className={cn(
+          'flex flex-col gap-3 p-3 border border-gray-700 rounded-lg mb-4',
+          'bg-gray-800'
+        )}
+      >
         <div className='flex items-center gap-3'>
           <div className='bg-yellow-400 text-white rounded-full h-9 w-9 flex items-center justify-center'>
-            {user.name?.charAt(0).toUpperCase() || 
-             <Image src='/icons/logo.svg' width={20} height={20} alt='User' />}
+            {user.name?.charAt(0).toUpperCase() || (
+              <Image src='/icons/logo.svg' width={20} height={20} alt='User' />
+            )}
           </div>
           <div className='flex-1 min-w-0'>
-            <p className='font-medium text-white truncate'>{t('welcome')} {user.name}</p>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className='text-xs text-red-400 hover:underline flex items-center gap-1 mt-1'
-            >
-              <LogOut size={14} /> {t('Logout')}
-            </button>
+            <p className='font-medium text-white truncate'>
+              {t('welcome')} {user.name}
+            </p>
           </div>
-        </div>
-        <div className='flex gap-2'>
-          <LanguageSwitcher className='flex-1' />
-          <ThemeSwitcher className='flex-1' />
         </div>
       </div>
     )
-  )
 
   return (
     <>
@@ -109,16 +100,16 @@ export default function AdminSidebar() {
           'fixed top-0 h-screen z-30 hidden lg:flex flex-col',
           'w-64 p-4 overflow-y-auto bg-gray-900 border-r border-gray-800',
           isRTL ? 'right-0' : 'left-0',
-          'pt-20' // مساحة للهيدر
+          'pt-5' // مساحة للهيدر
         )}
         style={{ direction: isRTL ? 'rtl' : 'ltr' }}
       >
         <div className='flex items-center gap-3 mb-6 px-2'>
           <Link href='/' className='shrink-0'>
-            <Image 
-              src='/icons/logo.svg' 
-              width={32} 
-              height={32} 
+            <Image
+              src='/icons/logo.svg'
+              width={32}
+              height={32}
               alt='Logo'
               className='w-8 h-8'
             />
@@ -127,7 +118,7 @@ export default function AdminSidebar() {
             {t('Dashboard')}
           </h1>
         </div>
-        
+
         <UserInfo />
         <SidebarLinksContent />
       </aside>
@@ -146,7 +137,7 @@ export default function AdminSidebar() {
             <MenuIcon className='h-6 w-6' />
           </button>
         </SheetTrigger>
-        
+
         <SheetContent
           side={isRTL ? 'right' : 'left'}
           className={cn(
@@ -175,7 +166,7 @@ export default function AdminSidebar() {
               </SheetTrigger>
             </div>
           </SheetHeader>
-          
+
           <div className='p-4 overflow-y-auto flex-1'>
             <UserInfo />
             <SidebarLinksContent />
