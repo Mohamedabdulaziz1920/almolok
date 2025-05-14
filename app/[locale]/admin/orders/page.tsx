@@ -33,6 +33,7 @@ interface OrdersPageProps {
     page?: string
   }
 }
+type OrderAction = (formData: FormData) => Promise<{ success: boolean }>
 
 export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const t = await getTranslations('OrdersPage')
@@ -43,11 +44,26 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     throw new Error(t('Admin permission required'))
   }
 
-  const orders = await getAllOrders({ page })
+  const ordersResponse = await getAllOrders({ page })
+
+  if (!ordersResponse.success || !ordersResponse.data) {
+    throw new Error('Failed to fetch orders')
+  }
+
+  const orders = ordersResponse.data
+  const totalPages = ordersResponse.totalPages || 1
+
+  // دالة مساعدة لمعالجة Server Actions
+  const handleAction = async (
+    action: OrderAction,
+    formData: FormData
+  ): Promise<void> => {
+    'use server'
+    await action(formData)
+  }
 
   return (
-    <div className='mx-auto px-2 py-6 sm:px-4 sm:py-8 max-w-screen-2xl'>
-      {/* Header with spacing */}
+    <div className='container mx-auto px-2 py-6 sm:px-4 sm:py-8'>
       <div className='mb-6 sm:mb-10'>
         <h1 className='text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white'>
           {t('Orders')}
@@ -57,39 +73,44 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         </p>
       </div>
 
-      {/* Responsive table container */}
       <div className='rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950 overflow-hidden'>
         <div className='overflow-x-auto'>
           <Table className='min-w-full'>
-            {/* Table Header */}
             <TableHeader className='bg-gray-50 dark:bg-gray-800'>
               <TableRow>
-                <TableHead>{t('Id')}</TableHead>
+                <TableHead className='w-[100px] sm:w-[120px]'>
+                  {t('Id')}
+                </TableHead>
                 <TableHead>{t('Player ID')}</TableHead>
                 <TableHead>{t('Buyer')}</TableHead>
                 <TableHead className='text-right'>{t('Total')}</TableHead>
                 <TableHead>{t('Status')}</TableHead>
-                <TableHead>{t('Date')}</TableHead>
-                <TableHead className='text-center'>{t('Actions')}</TableHead>
+                <TableHead className='min-w-[120px] sm:min-w-[150px]'>
+                  {t('Date')}
+                </TableHead>
+                <TableHead className='w-[200px] sm:w-[300px]'>
+                  {t('Actions')}
+                </TableHead>
               </TableRow>
             </TableHeader>
-
-            {/* Table Body */}
             <TableBody>
-              {orders.data.map((order: IOrderList) => (
+              {orders.map((order: IOrderList) => (
                 <TableRow
                   key={order._id}
                   className='hover:bg-gray-50 dark:hover:bg-gray-900'
                 >
-                  {/* Table Cells */}
-                  <TableCell>{formatId(order._id)}</TableCell>
+                  <TableCell className='font-medium'>
+                    {formatId(order._id)}
+                  </TableCell>
                   <TableCell>
                     {order.items[0]?.playerId || (
                       <span className='text-gray-500'>N/A</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    {order.user?.name || (
+                    {order.user ? (
+                      <span className='font-medium'>{order.user.name}</span>
+                    ) : (
                       <Badge variant='destructive' className='text-xs'>
                         {t('Deleted User')}
                       </Badge>
@@ -111,51 +132,75 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       {t(order.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className='text-gray-600 dark:text-gray-400'>
+                  <TableCell className='whitespace-nowrap'>
                     {formatDateTime(order.createdAt!).dateTime}
                   </TableCell>
-                  <TableCell className='flex justify-center gap-2'>
-                    <DeleteDialog
-                      id={order._id}
-                      action={deleteOrder}
-                      buttonProps={{
-                        variant: 'destructive',
-                        size: 'sm',
-                        className: 'hover:bg-red-600 dark:hover:bg-red-700',
-                      }}
-                    />
-                    <form action={markOrderAsCompleted}>
-                      <input type='hidden' name='orderId' value={order._id} />
-                      <Button
-                        type='submit'
-                        size='sm'
-                        disabled={order.status === 'completed'}
-                      >
-                        {t('Completed')}
-                      </Button>
-                    </form>
-                    <form action={rejectOrder}>
-                      <input type='hidden' name='orderId' value={order._id} />
-                      <Button
-                        type='submit'
-                        size='sm'
-                        variant='destructive'
-                        disabled={order.status === 'rejected'}
-                      >
-                        {t('Reject')}
-                      </Button>
-                    </form>
-                    <form action={markOrderAsPending}>
-                      <input type='hidden' name='orderId' value={order._id} />
-                      <Button
-                        type='submit'
-                        size='sm'
-                        variant='outline'
-                        disabled={order.status === 'pending'}
-                      >
-                        {t('Pending')}
-                      </Button>
-                    </form>
+                  <TableCell>
+                    <div className='flex flex-col gap-2'>
+                      <div className='flex gap-2'>
+                        <DeleteDialog
+                          id={order._id}
+                          action={deleteOrder}
+                          buttonProps={{
+                            variant: 'destructive',
+                            size: 'sm',
+                            className: 'hover:bg-red-600 dark:hover:bg-red-700',
+                          }}
+                        />
+                      </div>
+                      <div className='grid grid-cols-2 sm:flex gap-2'>
+                        <form
+                          action={(fd) =>
+                            handleAction(markOrderAsCompleted, fd)
+                          }
+                        >
+                          <input
+                            type='hidden'
+                            name='orderId'
+                            value={order._id}
+                          />
+                          <Button
+                            type='submit'
+                            size='sm'
+                            disabled={order.status === 'completed'}
+                          >
+                            {t('Complete')}
+                          </Button>
+                        </form>
+                        <form action={(fd) => handleAction(rejectOrder, fd)}>
+                          <input
+                            type='hidden'
+                            name='orderId'
+                            value={order._id}
+                          />
+                          <Button
+                            type='submit'
+                            size='sm'
+                            variant='destructive'
+                            disabled={order.status === 'rejected'}
+                          >
+                            {t('Reject')}
+                          </Button>
+                        </form>
+                        <form
+                          action={(fd) => handleAction(markOrderAsPending, fd)}
+                        >
+                          <input
+                            type='hidden'
+                            name='orderId'
+                            value={order._id}
+                          />
+                          <Button
+                            type='submit'
+                            size='sm'
+                            variant='outline'
+                            disabled={order.status === 'pending'}
+                          >
+                            {t('Pending')}
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -163,9 +208,9 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
           </Table>
         </div>
 
-        {orders.totalPages > 1 && (
+        {totalPages > 1 && (
           <div className='border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-4 dark:border-gray-800'>
-            <Pagination page={page.toString()} totalPages={orders.totalPages} />
+            <Pagination page={page.toString()} totalPages={totalPages} />
           </div>
         )}
       </div>
