@@ -23,7 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useSidebar } from '@/contexts/sidebar-context'
+import { useSidebar } from '@/context/sidebar-context'
 
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
