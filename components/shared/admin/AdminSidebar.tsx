@@ -23,7 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useSidebar } from '@/context/sidebar-context'
+import { useSidebar } from '@/contexts/sidebar-context'
 
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
@@ -53,9 +53,9 @@ export default function AdminSidebar() {
           href={link.href}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-            'hover:bg-gray-950 hover:text-yellow-400',
+            'hover:bg-gray-800 hover:text-yellow-400',
             pathname.includes(link.href)
-              ? 'bg-gray-800 text-yellow-400 font-medium'
+              ? 'bg-gray-950 text-yellow-400 font-medium'
               : 'text-gray-300'
           )}
           onClick={() => {
@@ -73,12 +73,12 @@ export default function AdminSidebar() {
     user && (
       <div
         className={cn(
-          'flex flex-col gap-3 p-3 border border-gray-700 rounded-lg mb-4',
+          'flex flex-col gap-3 p-3 border border-black rounded-lg mb-4',
           'bg-gray-800'
         )}
       >
         <div className='flex items-center gap-3'>
-          <div className='bg-yellow-400 text-white rounded-full h-9 w-9 flex items-center justify-center'>
+          <div className='bg-yellow-400 text-black rounded-full h-9 w-9 flex items-center justify-center'>
             {user.name?.charAt(0).toUpperCase() || (
               <Image src='/icons/logo.svg' width={20} height={20} alt='User' />
             )}
@@ -98,7 +98,7 @@ export default function AdminSidebar() {
       <aside
         className={cn(
           'fixed top-0 h-screen z-30 hidden lg:flex flex-col',
-          'w-64 p-4 overflow-y-auto bg-gray-900 border-r border-gray-800',
+          'w-64 p-4 overflow-y-auto bg-gray-950 border-r border-gray-800',
           isRTL ? 'right-0' : 'left-0',
           'pt-5' // مساحة للهيدر
         )}
@@ -161,8 +161,8 @@ export default function AdminSidebar() {
                   {t('Dashboard')}
                 </SheetTitle>
               </div>
-              <SheetTrigger className='p-1 rounded-full hover:bg-gray-800'>
-                <X className='h-5 w-5 text-gray-400' />
+              <SheetTrigger className='p-1 rounded-full hover:bg-gray-400'>
+                <X className='h-5 w-5 text-gray-800' />
               </SheetTrigger>
             </div>
           </SheetHeader>
