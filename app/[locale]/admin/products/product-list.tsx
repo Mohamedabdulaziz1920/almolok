@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import Link from 'next/link'
-
 import DeleteDialog from '@/components/shared/delete-dialog'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,7 +15,6 @@ import {
   getAllProductsForAdmin,
 } from '@/lib/actions/product.actions'
 import { IProduct } from '@/lib/db/models/product.model'
-
 import React, { useEffect, useState, useTransition } from 'react'
 import { Input } from '@/components/ui/input'
 import { formatDateTime, formatId } from '@/lib/utils'
@@ -30,6 +27,13 @@ type ProductListDataProps = {
   totalProducts: number
   to: number
   from: number
+}
+
+// تعريف نوع للـ debounce في window
+declare global {
+  interface Window {
+    debounce: number | undefined
+  }
 }
 
 const ProductList = () => {
@@ -55,8 +59,11 @@ const ProductList = () => {
     const value = e.target.value
     setInputValue(value)
     if (value) {
-      clearTimeout((window as any).debounce)
-      ;(window as any).debounce = setTimeout(() => {
+      // إزالة استخدام any واستبدالها بالنوع الصحيح
+      if (window.debounce) {
+        clearTimeout(window.debounce)
+      }
+      window.debounce = window.setTimeout(() => {
         startTransition(async () => {
           const data = await getAllProductsForAdmin({ query: value, page: 1 })
           setData(data)
@@ -77,135 +84,222 @@ const ProductList = () => {
     })
   }, [])
 
+  // تنظيف الـ timeout عند unmount
+  useEffect(() => {
+    return () => {
+      if (window.debounce) {
+        clearTimeout(window.debounce)
+      }
+    }
+  }, [])
   return (
-    <div>
-      <div className='space-y-2'>
-        <div className='flex-between flex-wrap gap-2'>
-          <div className='flex flex-wrap items-center gap-2 '>
-            <h1 className='font-bold text-lg'>{t('products')}</h1>
-            <div className='flex flex-wrap items-center gap-2 '>
-              <Input
-                className='w-auto'
-                type='text'
-                value={inputValue}
-                onChange={handleInputChange}
-                placeholder={t('filterPlaceholder')}
-              />
+    <main className='max-w-6xl mx-auto p-4 pt-20'>
+      <div className='container mx-auto px-2 py-6 sm:px-4 sm:py-8 max-w-screen-2xl'>
+        {/* Header Section */}
+        <div className='mb-6 sm:mb-10'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4'>
+            <h1 className='text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white'>
+              {t('products')}
+            </h1>
+            <Button asChild variant='default' className='w-full sm:w-auto'>
+              <Link href='/admin/products/create'>{t('createProduct')}</Link>
+            </Button>
+          </div>
 
-              {isPending ? (
-                <p>{t('loading')}</p>
-              ) : (
-                <p>
-                  {data?.totalProducts === 0
-                    ? t('noResults')
-                    : t('paginationCount', {
-                        from: data?.from,
-                        to: data?.to,
-                        total: data?.totalProducts,
-                      })}
-                </p>
-              )}
-            </div>
+          {/* Search and Info Section */}
+          <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+            <Input
+              className='w-full sm:w-64'
+              type='text'
+              value={inputValue}
+              onChange={handleInputChange}
+              placeholder={t('filterPlaceholder')}
+            />
+            {isPending ? (
+              <p className='text-sm'>{t('loading')}</p>
+            ) : (
+              <p className='text-sm'>
+                {data?.totalProducts === 0
+                  ? t('noResults')
+                  : t('paginationCount', {
+                      from: data?.from,
+                      to: data?.to,
+                      total: data?.totalProducts,
+                    })}
+              </p>
+            )}
           </div>
         </div>
-        <div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('tableHeaders.id')}</TableHead>
-                <TableHead>{t('tableHeaders.name')}</TableHead>
-                <TableHead className='text-right'>
-                  {t('tableHeaders.price')}
-                </TableHead>
-                <TableHead>{t('tableHeaders.category')}</TableHead>
-                <TableHead>{t('tableHeaders.stock')}</TableHead>
-                <TableHead>{t('tableHeaders.rating')}</TableHead>
-                <TableHead>{t('tableHeaders.published')}</TableHead>
-                <TableHead>{t('tableHeaders.lastUpdate')}</TableHead>
-                <TableHead className='w-[100px]'>
-                  {t('tableHeaders.actions')}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data?.products.map((product: IProduct) => (
-                <TableRow key={product._id}>
-                  <TableCell>{formatId(product._id)}</TableCell>
-                  <TableCell>
-                    <Link href={`/admin/products/${product._id}`}>
-                      {product.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className='text-right'>${product.price}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.countInStock}</TableCell>
-                  <TableCell>{product.avgRating}</TableCell>
-                  <TableCell>
-                    {product.isPublished ? t('yes') : t('no')}
-                  </TableCell>
-                  <TableCell>
-                    {formatDateTime(product.updatedAt).dateTime}
-                  </TableCell>
-                  <TableCell className='flex gap-1'>
-                           <Button  asChild
+
+        {/* Table Section */}
+        <div className='rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950 overflow-hidden'>
+          <div className='overflow-x-auto'>
+            <Table className='min-w-full'>
+              <TableHeader className='bg-gray-50 dark:bg-gray-800 hidden sm:table-header-group'>
+                <TableRow>
+                  <TableHead>{t('tableHeaders.id')}</TableHead>
+                  <TableHead>{t('tableHeaders.name')}</TableHead>
+                  <TableHead className='text-right'>
+                    {t('tableHeaders.price')}
+                  </TableHead>
+                  <TableHead>{t('tableHeaders.category')}</TableHead>
+                  <TableHead>{t('tableHeaders.stock')}</TableHead>
+                  <TableHead>{t('tableHeaders.rating')}</TableHead>
+                  <TableHead>{t('tableHeaders.published')}</TableHead>
+                  <TableHead>{t('tableHeaders.lastUpdate')}</TableHead>
+                  <TableHead className='text-center'>
+                    {t('tableHeaders.actions')}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.products.map((product: IProduct) => (
+                  <TableRow
+                    key={product._id}
+                    className='hover:bg-gray-50 dark:hover:bg-gray-900 block sm:table-row border-b'
+                  >
+                    {/* Mobile view - stacked cells */}
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.id')}:
+                      </div>
+                      {formatId(product._id)}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.name')}:
+                      </div>
+                      <Link
+                        href={`/admin/products/${product._id}`}
+                        className='font-medium hover:underline'
+                      >
+                        {product.name}
+                      </Link>
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4 text-right'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.price')}:
+                      </div>
+                      ${product.price}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.category')}:
+                      </div>
+                      {product.category}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.stock')}:
+                      </div>
+                      {product.countInStock}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.rating')}:
+                      </div>
+                      {product.avgRating}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.published')}:
+                      </div>
+                      {product.isPublished ? t('yes') : t('no')}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-1'>
+                        {t('tableHeaders.lastUpdate')}:
+                      </div>
+                      {formatDateTime(product.updatedAt).dateTime}
+                    </TableCell>
+
+                    <TableCell className='block sm:table-cell p-2 sm:p-4'>
+                      <div className='sm:hidden font-semibold mb-2'>
+                        {t('tableHeaders.actions')}:
+                      </div>
+                      <div className='flex flex-wrap justify-center gap-2'>
+                        <Button
+                          asChild
                           variant='outline'
                           size='sm'
                           className='w-full sm:w-auto'
                         >
-              <Link href='/admin/products/create'>{t('createProduct')}</Link>
-            </Button>
-                    <Button asChild variant='outline' size='sm'>
-                      <Link href={`/admin/products/${product._id}`}>
-                        {t('edit')}
-                      </Link>
-                    </Button>
-                    <Button asChild variant='outline' size='sm'>
-                      <Link target='_blank' href={`/product/${product.slug}`}>
-                        {t('view')}
-                      </Link>
-                    </Button>
-                    <DeleteDialog
-                      id={product._id}
-                      action={deleteProduct}
-                      callbackAction={() => {
-                        startTransition(async () => {
-                          const data = await getAllProductsForAdmin({
-                            query: inputValue,
-                          })
-                          setData(data)
-                        })
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                          <Link href={`/admin/products/${product._id}`}>
+                            {t('edit')}
+                          </Link>
+                        </Button>
+                        <Button
+                          asChild
+                          variant='outline'
+                          size='sm'
+                          className='w-full sm:w-auto'
+                        >
+                          <Link
+                            target='_blank'
+                            href={`/product/${product.slug}`}
+                          >
+                            {t('view')}
+                          </Link>
+                        </Button>
+                        <DeleteDialog
+                          id={product._id}
+                          action={deleteProduct}
+                          callbackAction={() => {
+                            startTransition(async () => {
+                              const data = await getAllProductsForAdmin({
+                                query: inputValue,
+                              })
+                              setData(data)
+                            })
+                          }}
+                          buttonProps={{
+                            className: 'w-full sm:w-auto',
+                          }}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination Section */}
           {(data?.totalPages ?? 0) > 1 && (
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                onClick={() => handlePageChange('prev')}
-                disabled={Number(page) <= 1}
-                className='w-24'
-              >
-                <ChevronLeft /> {t('previous')}
-              </Button>
-              {t('pageInfo', { page, totalPages: data?.totalPages })}
-              <Button
-                variant='outline'
-                onClick={() => handlePageChange('next')}
-                disabled={Number(page) >= (data?.totalPages ?? 0)}
-                className='w-24'
-              >
-                {t('next')} <ChevronRight />
-              </Button>
+            <div className='border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-4 dark:border-gray-800'>
+              <div className='flex flex-col sm:flex-row items-center justify-center gap-3'>
+                <Button
+                  variant='outline'
+                  onClick={() => handlePageChange('prev')}
+                  disabled={page <= 1}
+                  className='w-full sm:w-auto min-w-[100px]'
+                >
+                  <ChevronLeft className='h-4 w-4' /> {t('previous')}
+                </Button>
+                <p className='text-sm'>
+                  {t('pageInfo', { page, totalPages: data?.totalPages })}
+                </p>
+                <Button
+                  variant='outline'
+                  onClick={() => handlePageChange('next')}
+                  disabled={page >= (data?.totalPages ?? 0)}
+                  className='w-full sm:w-auto min-w-[100px]'
+                >
+                  {t('next')} <ChevronRight className='h-4 w-4' />
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </div>
-    </div>
-      </>
+</main>
   )
 }
 
