@@ -68,6 +68,7 @@ export default function OverviewReport() {
   }, [date])
 
   const renderLoadingSkeleton = () => (
+     <main className='max-w-6xl mx-auto p-4 pt-20'>
     <div className='space-y-4'>
       <div>
         <h1 className='h1-bold'>{t('Dashboard')}</h1>
@@ -91,6 +92,7 @@ export default function OverviewReport() {
         ))}
       </div>
     </div>
+       </main>
   )
 
   const renderErrorState = () => (
