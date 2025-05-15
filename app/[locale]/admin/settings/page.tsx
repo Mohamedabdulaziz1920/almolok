@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 const SettingPage = async () => {
   return (
     <div>
-      <main className='col-span-4 '>
+        <main className='max-w-6xl mx-auto p-4 pt-20'>
         <div className='my-8'>
           <SettingForm setting={await getNoCachedSetting()} />
         </div>
