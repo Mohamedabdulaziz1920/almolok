@@ -78,7 +78,6 @@ const ProductList = () => {
   }, [])
 
   return (
-    <>
     <div>
       <div className='space-y-2'>
         <div className='flex-between flex-wrap gap-2'>
@@ -108,10 +107,6 @@ const ProductList = () => {
               )}
             </div>
           </div>
-
-          <Button asChild variant='default'>
-            <Link href='/admin/products/create'>{t('createProduct')}</Link>
-          </Button>
         </div>
         <div>
           <Table>
@@ -152,6 +147,13 @@ const ProductList = () => {
                     {formatDateTime(product.updatedAt).dateTime}
                   </TableCell>
                   <TableCell className='flex gap-1'>
+                           <Button  asChild
+                          variant='outline'
+                          size='sm'
+                          className='w-full sm:w-auto'
+                        >
+              <Link href='/admin/products/create'>{t('createProduct')}</Link>
+            </Button>
                     <Button asChild variant='outline' size='sm'>
                       <Link href={`/admin/products/${product._id}`}>
                         {t('edit')}
