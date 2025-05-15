@@ -78,6 +78,7 @@ const ProductList = () => {
   }, [])
 
   return (
+    <>
     <div>
       <div className='space-y-2'>
         <div className='flex-between flex-wrap gap-2'>
@@ -202,6 +203,7 @@ const ProductList = () => {
         </div>
       </div>
     </div>
+      </>
   )
 }
 
