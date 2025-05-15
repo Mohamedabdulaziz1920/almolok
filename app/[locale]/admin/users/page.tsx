@@ -38,6 +38,7 @@ export default async function AdminUser({
   const users = await getAllUsers({ page })
 
   return (
+        <main className='max-w-6xl mx-auto p-4 pt-20'>
     <div className='space-y-6 p-4 sm:p-6 lg:p-8'>
       <h1 className='text-2xl font-bold'>المستخدمون</h1>
 
@@ -87,5 +88,6 @@ export default async function AdminUser({
         <Pagination page={page} totalPages={users.totalPages} />
       )}
     </div>
+          </main>
   )
 }
