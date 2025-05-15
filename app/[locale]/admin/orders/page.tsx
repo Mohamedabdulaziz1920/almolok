@@ -63,6 +63,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   }
 
   return (
+        <main className='max-w-6xl mx-auto p-4 pt-20'>
     <div className='container mx-auto px-2 py-6 sm:px-4 sm:py-8'>
       <div className='mb-6 sm:mb-10'>
         <h1 className='text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white'>
@@ -215,5 +216,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         )}
       </div>
     </div>
+          </main>
   )
 }
