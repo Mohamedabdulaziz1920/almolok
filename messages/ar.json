@@ -170,7 +170,7 @@
     "No results": "لا توجد نتائج",
     "of": "من",
     "results": "نتائج",
-    "Create Product": "إنشاء منتج",
+    "Create Product": "إنشاء باقة",
     "Id": "المعرف",
     "Games": "قسم الألعاب",
     "Name": "الاسم",
@@ -259,7 +259,7 @@
     "loading": "جاري التحميل...",
     "noResults": "لا توجد نتائج",
     "paginationCount": "{from}-{to} من {total} نتيجة",
-    "createProduct": "إنشاء منتج",
+    "createProduct": "إنشاء باقة",
     "tableHeaders": {
       "id": "المعرف",
       "name": "الاسم",
@@ -280,10 +280,9 @@
     "pageInfo": "صفحة {page} من {totalPages}"
   },
   "CreateCategoryPage": {
-    "create_category": "إنشاء فئة جديدة",
-    "create": "انشاء",
-    "categories": "الفئات",
-    "create_category_details": "ادخل تفاصيل الفئة"
+  "create": "إضافة",
+  "create_category": "إضافة تصنيف جديد",
+  "create_category_details": "قم بملء التفاصيل لإضافة تصنيف جديد للمنتجات"
   },
   "ProductForm": {
     "Select category": "إختر نوع القسم",
@@ -308,14 +307,14 @@
     "Tell us a little bit about yourself": "أخبرنا القليل عن المنتج",
     "is_published": "منشور",
     "submitting": "جاري الإرسال...",
-    "create_product": "إنشاء منتج",
+    "create_product": "إنشاء باقة",
     "update_product": "تحديث المنتج"
   },
   "CreateProductPage": {
-    "create_product": "إنشاء منتج",
+    "create_product": "إنشاء باقة",
     "create_product_details": "اكتب تفاصيل المنتج الجديد",
     "products": "المنتجات",
-    "create": "إنشاء منتج جديد"
+    "create": "إنشاء باقة جديد"
   },
   "AdminOrderDetailsPage": {
     "orders": "الطلبات",
@@ -844,7 +843,7 @@
     "No results": "لا توجد نتائج",
     "results": "نتيجة",
     "of": "من",
-    "Create Product": "إنشاء منتج جديد",
+    "Create Product": "إنشاء باقة جديد",
     "Id": "المعرف",
     "Name": "الاسم",
     "Price": "السعر",
