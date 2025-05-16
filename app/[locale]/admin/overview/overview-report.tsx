@@ -59,7 +59,7 @@ export default function OverviewReport() {
   })
 
   const [data, setData] = useState<IOrderSummary | undefined>()
-  const [isPending, startTransition] = useTransition()
+  const [startTransition] = useTransition()
 
   useEffect(() => {
     if (date) {
