@@ -88,7 +88,12 @@ export async function getOrderSommary(date: DateRange) {
   const topSalesCategories = await getTopSalesCategories(date)
   const topSalesProducts = await getTopSalesProducts(date)
 
-  const latestOrders = await OrderModel.find()
+const latestOrders = await OrderModel.find({
+  createdAt: {
+    $gte: date.from,
+    $lte: date.to,
+  },
+})
     .populate('user', 'name')
     .sort({ createdAt: 'desc' })
    
