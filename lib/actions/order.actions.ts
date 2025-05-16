@@ -283,7 +283,6 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
     throw error
   }
 }
-
 // دوال حالة الطلب
 export const updateOrderStatus = async (
   orderId: string,
