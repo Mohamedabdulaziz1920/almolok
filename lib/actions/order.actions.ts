@@ -13,60 +13,48 @@ import { sendPurchaseReceipt } from '@/emails'
 import { getSetting } from './setting.actions'
 import type { DateRange } from 'react-day-picker'
 
-// GET ORDERS BY USER
-export async function getOrderSommary(date: DateRange) {
+type DateRange = {
+  from: Date
+  to: Date
+}
+
+export async function getOrderSummary(date: DateRange) {
   await connectToDatabase()
 
-  const ordersCount = await OrderModel.countDocuments({
-    createdAt: {
-      $gte: date.from,
-      $lte: date.to,
-    },
-  })
-  const productsCount = await Product.countDocuments({
-    createdAt: {
-      $gte: date.from,
-      $lte: date.to,
-    },
-  })
-  const usersCount = await User.countDocuments({
-    createdAt: {
-      $gte: date.from,
-      $lte: date.to,
-    },
-  })
+  const [ordersCount, productsCount, usersCount] = await Promise.all([
+    OrderModel.countDocuments({ createdAt: { $gte: date.from, $lte: date.to } }),
+    Product.countDocuments({ createdAt: { $gte: date.from, $lte: date.to } }),
+    User.countDocuments({ createdAt: { $gte: date.from, $lte: date.to } }),
+  ])
 
   const totalSalesResult = await OrderModel.aggregate([
     {
       $match: {
-        createdAt: {
-          $gte: date.from,
-          $lte: date.to,
-        },
+        createdAt: { $gte: date.from, $lte: date.to },
       },
     },
     {
       $group: {
         _id: null,
-        sales: { $sum: '$totalPrice' },
+        total: { $sum: '$totalPrice' },
       },
     },
-    { $project: { totalSales: { $ifNull: ['$sales', 0] } } },
+    {
+      $project: {
+        _id: 0,
+        totalSales: { $ifNull: ['$total', 0] },
+      },
+    },
   ])
-  const totalSales = totalSalesResult[0] ? totalSalesResult[0].totalSales : 0
+  const totalSales = totalSalesResult[0]?.totalSales || 0
 
   const today = new Date()
-  const sixMonthEarlierDate = new Date(
-    today.getFullYear(),
-    today.getMonth() - 5,
-    1
-  )
+  const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1)
+
   const monthlySales = await OrderModel.aggregate([
     {
       $match: {
-        createdAt: {
-          $gte: sixMonthEarlierDate,
-        },
+        createdAt: { $gte: sixMonthsAgo },
       },
     },
     {
@@ -82,42 +70,36 @@ export async function getOrderSommary(date: DateRange) {
         value: '$totalSales',
       },
     },
-
-    { $sort: { label: -1 } },
+    { $sort: { label: 1 } },
   ])
-  const topSalesCategories = await getTopSalesCategories(date)
-  const topSalesProducts = await getTopSalesProducts(date)
 
-const latestOrders = await OrderModel.find({
-  createdAt: {
-    $gte: date.from,
-    $lte: date.to,
-  },
-})
-    .populate('user', 'name')
-    .sort({ createdAt: 'desc' })
-   
+  const [topSalesCategories, topSalesProducts, salesChartData, latestOrdersRaw] = await Promise.all([
+    getTopSalesCategories(date),
+    getTopSalesProducts(date),
+    getSalesChartData(date),
+    OrderModel.find({ createdAt: { $gte: date.from, $lte: date.to } })
+      .populate('user', 'name')
+      .sort({ createdAt: -1 }),
+  ])
+
   return {
     ordersCount,
     productsCount,
     usersCount,
     totalSales,
-    monthlySales: JSON.parse(JSON.stringify(monthlySales)),
-    salesChartData: JSON.parse(JSON.stringify(await getSalesChartData(date))),
-    topSalesCategories: JSON.parse(JSON.stringify(topSalesCategories)),
-    topSalesProducts: JSON.parse(JSON.stringify(topSalesProducts)),
-    latestOrders: JSON.parse(JSON.stringify(latestOrders)) as IOrderList[],
+    monthlySales,
+    salesChartData,
+    topSalesCategories,
+    topSalesProducts,
+    latestOrders: JSON.parse(JSON.stringify(latestOrdersRaw)) as IOrderList[],
   }
 }
 
 async function getSalesChartData(date: DateRange) {
-  const result = await OrderModel.aggregate([
+  return OrderModel.aggregate([
     {
       $match: {
-        createdAt: {
-          $gte: date.from,
-          $lte: date.to,
-        },
+        createdAt: { $gte: date.from, $lte: date.to },
       },
     },
     {
@@ -135,10 +117,8 @@ async function getSalesChartData(date: DateRange) {
         _id: 0,
         date: {
           $concat: [
-            { $toString: '$_id.year' },
-            '/',
-            { $toString: '$_id.month' },
-            '/',
+            { $toString: '$_id.year' }, '/',
+            { $toString: '$_id.month' }, '/',
             { $toString: '$_id.day' },
           ],
         },
@@ -147,88 +127,69 @@ async function getSalesChartData(date: DateRange) {
     },
     { $sort: { date: 1 } },
   ])
-
-  return result
 }
 
 async function getTopSalesProducts(date: DateRange) {
-  const result = await OrderModel.aggregate([
+  return OrderModel.aggregate([
     {
       $match: {
-        createdAt: {
-          $gte: date.from,
-          $lte: date.to,
-        },
+        createdAt: { $gte: date.from, $lte: date.to },
       },
     },
-    // Step 1: Unwind orderItems array
     { $unwind: '$items' },
-
-    // Step 2: Group by productId to calculate total sales per product
     {
       $group: {
         _id: {
+          id: '$items.product',
           name: '$items.name',
           image: '$items.image',
-          _id: '$items.product',
         },
         totalSales: {
           $sum: { $multiply: ['$items.quantity', '$items.price'] },
-        }, // Assume quantity field in orderItems represents units sold
+        },
       },
     },
-    {
-      $sort: {
-        totalSales: -1,
-      },
-    },
+    { $sort: { totalSales: -1 } },
     { $limit: 6 },
-
-    // Step 3: Replace productInfo array with product name and format the output
     {
       $project: {
         _id: 0,
-        id: '$_id._id',
+        id: '$_id.id',
         label: '$_id.name',
         image: '$_id.image',
         value: '$totalSales',
       },
     },
-
-    // Step 4: Sort by totalSales in descending order
-    { $sort: { _id: 1 } },
   ])
-
-  return result
 }
 
 async function getTopSalesCategories(date: DateRange, limit = 5) {
-  const result = await OrderModel.aggregate([
+  return OrderModel.aggregate([
     {
       $match: {
-        createdAt: {
-          $gte: date.from,
-          $lte: date.to,
-        },
+        createdAt: { $gte: date.from, $lte: date.to },
       },
     },
-    // Step 1: Unwind orderItems array
     { $unwind: '$items' },
-    // Step 2: Group by productId to calculate total sales per product
     {
       $group: {
         _id: '$items.category',
-        totalSales: { $sum: '$items.quantity' }, // Assume quantity field in orderItems represents units sold
+        totalSales: { $sum: '$items.quantity' },
       },
     },
-    // Step 3: Sort by totalSales in descending order
     { $sort: { totalSales: -1 } },
-    // Step 4: Limit to top N products
     { $limit: limit },
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        value: '$totalSales',
+      },
+    },
   ])
-
-  return result
 }
+
+
 // الدوال الأساسية لإدارة الطلبات
 export const createOrder = async (clientSideCart: Cart) => {
   try {
