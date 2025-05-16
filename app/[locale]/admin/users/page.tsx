@@ -78,7 +78,7 @@ export default async function AdminUserPage({ searchParams }: AdminUserPageProps
                       <Button
                         asChild
                         size='sm'
-                        className='w-full sm:w-auto bg-yellow-400 text-black hover:bg-yellow-500'
+                        className='w-full sm:w-auto'
                       >
                         <Link href={`/admin/users/${user._id}/add-balance`}>
                           إضافة رصيد
