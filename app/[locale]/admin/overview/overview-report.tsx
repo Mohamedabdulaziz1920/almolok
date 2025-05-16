@@ -1,654 +1,262 @@
-'use server'
+'use client'
 
-import { Cart, IOrderList } from '@/types'
-import { formatError, round2 } from '../utils'
-import { connectToDatabase } from '@/lib/db'
-import { auth } from '@/auth'
-import OrderModel from '../db/models/order.model'
-import User from '../db/models/user.model'
-import Product from '../db/models/product.model'
-import mongoose from 'mongoose'
-import { revalidatePath } from 'next/cache'
-import { sendPurchaseReceipt } from '@/emails'
-import { getSetting } from './setting.actions'
-import type { DateRange } from 'react-day-picker'
+import {
+  BadgeDollarSign,
+  Barcode,
+  CreditCard,
+  Users,
+} from 'lucide-react'
+import Link from 'next/link'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  calculatePastDate,
+  formatDateTime,
+  formatNumber,
+} from '@/lib/utils'
 
-type DateRange = {
-  from: Date
-  to: Date
+import SalesCategoryPieChart from './sales-category-pie-chart'
+import React, { useEffect, useState, useTransition } from 'react'
+import { DateRange } from 'react-day-picker'
+import { getOrderSommary } from '@/lib/actions/order.actions'
+import SalesAreaChart from './sales-area-chart'
+import { CalendarDateRangePicker } from './date-range-picker'
+import { IOrderList } from '@/types'
+import ProductPrice from '@/components/shared/product/product-price'
+import TableChart from './table-chart'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// ✅ حدد نوع البيانات المرجعة
+interface IOrderSummary {
+  totalSales: number
+  ordersCount: number
+  usersCount: number
+  productsCount: number
+  salesChartData: { date: string; total: number }[]
+  monthlySales: { label: string; total: number }[]
+  topSalesProducts: { label: string; total: number }[]
+  topSalesCategories: { label: string; total: number }[]
+  latestOrders: IOrderList[]
 }
 
-export async function getOrderSommary(date: DateRange) {
-  await connectToDatabase()
+export default function OverviewReport() {
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: calculatePastDate(30),
+    to: new Date(),
+  })
 
-  const [ordersCount, productsCount, usersCount] = await Promise.all([
-    OrderModel.countDocuments({ createdAt: { $gte: date.from, $lte: date.to } }),
-    Product.countDocuments({ createdAt: { $gte: date.from, $lte: date.to } }),
-    User.countDocuments({ createdAt: { $gte: date.from, $lte: date.to } }),
-  ])
+  const [data, setData] = useState<IOrderSummary | undefined>()
+  const [, startTransition] = useTransition()
 
-  const totalSalesResult = await OrderModel.aggregate([
-    {
-      $match: {
-        createdAt: { $gte: date.from, $lte: date.to },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: '$totalPrice' },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        totalSales: { $ifNull: ['$total', 0] },
-      },
-    },
-  ])
-  const totalSales = totalSalesResult[0]?.totalSales || 0
-
-  const today = new Date()
-  const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1)
-
-  const monthlySales = await OrderModel.aggregate([
-    {
-      $match: {
-        createdAt: { $gte: sixMonthsAgo },
-      },
-    },
-    {
-      $group: {
-        _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
-        totalSales: { $sum: '$totalPrice' },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        label: '$_id',
-        value: '$totalSales',
-      },
-    },
-    { $sort: { label: 1 } },
-  ])
-
-  const [topSalesCategories, topSalesProducts, salesChartData, latestOrdersRaw] = await Promise.all([
-    getTopSalesCategories(date),
-    getTopSalesProducts(date),
-    getSalesChartData(date),
-    OrderModel.find({ createdAt: { $gte: date.from, $lte: date.to } })
-      .populate('user', 'name')
-      .sort({ createdAt: -1 }),
-  ])
-
-  return {
-    ordersCount,
-    productsCount,
-    usersCount,
-    totalSales,
-    monthlySales,
-    salesChartData,
-    topSalesCategories,
-    topSalesProducts,
-    latestOrders: JSON.parse(JSON.stringify(latestOrdersRaw)) as IOrderList[],
-  }
-}
-
-async function getSalesChartData(date: DateRange) {
-  return OrderModel.aggregate([
-    {
-      $match: {
-        createdAt: { $gte: date.from, $lte: date.to },
-      },
-    },
-    {
-      $group: {
-        _id: {
-          year: { $year: '$createdAt' },
-          month: { $month: '$createdAt' },
-          day: { $dayOfMonth: '$createdAt' },
-        },
-        totalSales: { $sum: '$totalPrice' },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        date: {
-          $concat: [
-            { $toString: '$_id.year' }, '/',
-            { $toString: '$_id.month' }, '/',
-            { $toString: '$_id.day' },
-          ],
-        },
-        totalSales: 1,
-      },
-    },
-    { $sort: { date: 1 } },
-  ])
-}
-
-async function getTopSalesProducts(date: DateRange) {
-  return OrderModel.aggregate([
-    {
-      $match: {
-        createdAt: { $gte: date.from, $lte: date.to },
-      },
-    },
-    { $unwind: '$items' },
-    {
-      $group: {
-        _id: {
-          id: '$items.product',
-          name: '$items.name',
-          image: '$items.image',
-        },
-        totalSales: {
-          $sum: { $multiply: ['$items.quantity', '$items.price'] },
-        },
-      },
-    },
-    { $sort: { totalSales: -1 } },
-    { $limit: 6 },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id.id',
-        label: '$_id.name',
-        image: '$_id.image',
-        value: '$totalSales',
-      },
-    },
-  ])
-}
-
-async function getTopSalesCategories(date: DateRange, limit = 5) {
-  return OrderModel.aggregate([
-    {
-      $match: {
-        createdAt: { $gte: date.from, $lte: date.to },
-      },
-    },
-    { $unwind: '$items' },
-    {
-      $group: {
-        _id: '$items.category',
-        totalSales: { $sum: '$items.quantity' },
-      },
-    },
-    { $sort: { totalSales: -1 } },
-    { $limit: limit },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        value: '$totalSales',
-      },
-    },
-  ])
-}
-
-
-// الدوال الأساسية لإدارة الطلبات
-export const createOrder = async (clientSideCart: Cart) => {
-  try {
-    await connectToDatabase()
-    const session = await auth()
-    const user = session?.user
-    if (!user?.id) throw new Error('User not authenticated')
-
-    const hasInvalidItems = clientSideCart.items.some(
-      (item) => !item.playerId || typeof item.playerId !== 'string'
-    )
-    if (hasInvalidItems) {
-      throw new Error('All items must have a valid Player ID')
-    }
-
-    const createdOrder = await createOrderFromCart(clientSideCart, user.id)
-    return {
-      success: true,
-      message: 'Order placed successfully',
-      data: { orderId: createdOrder._id.toString() },
-    }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
-
-export const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
-  await connectToDatabase()
-
-  const session = await mongoose.startSession()
-  session.startTransaction()
-
-  try {
-    const itemsPrice = round2(
-      clientSideCart.items.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0
-      )
-    )
-    const taxPrice = round2(itemsPrice * 0.15)
-    const totalPrice = round2(itemsPrice + taxPrice)
-
-    const user = await User.findById(userId).session(session)
-    if (!user) throw new Error('User not found')
-
-    const balance = round2(user.balance)
-    if (balance < totalPrice) throw new Error('Insufficient balance')
-
-    user.balance = round2(balance - totalPrice)
-    await user.save({ session })
-
-    const orderItems = clientSideCart.items.map((item) => ({
-      product: item.product,
-      name: item.name,
-      slug: item.slug,
-      category: item.category,
-      playerId: item.playerId,
-      quantity: item.quantity,
-      countInStock: item.countInStock,
-      image: item.image,
-      price: item.price,
-      clientId: item.clientId,
-    }))
-
-    const order = await OrderModel.create(
-      [
-        {
-          user: userId,
-          items: orderItems,
-          paymentMethod: 'balance',
-          itemsPrice,
-          taxPrice,
-          totalPrice,
-          isPaid: true,
-          paidAt: new Date(),
-          balanceUsed: totalPrice,
-          balance: user.balance,
-          status: 'pending', // الحالة الافتراضية
-        },
-      ],
-      { session }
-    )
-
-    await session.commitTransaction()
-    session.endSession()
-
-    return order[0]
-  } catch (error) {
-    await session.abortTransaction()
-    session.endSession()
-    throw error
-  }
-}
-
-// دوال حالة الطلب
-export const updateOrderStatus = async (
-  orderId: string,
-  status: 'pending' | 'completed' | 'rejected'
-) => {
-  try {
-    await connectToDatabase()
-    const order = await OrderModel.findById(orderId)
-    if (!order) throw new Error('Order not found')
-
-    order.status = status
-    await order.save()
-    revalidatePath('/admin/orders')
-    return { success: true }
-  } catch (error) {
-    console.error(`updateOrderStatus error (${status}):`, error)
-    return { success: false, message: formatError(error) }
-  }
-}
-
-export const markOrderAsCompleted = async (formData: FormData) => {
-  const orderId = formData.get('orderId') as string
-  return await updateOrderStatus(orderId, 'completed')
-}
-
-export const markOrderAsPending = async (formData: FormData) => {
-  const orderId = formData.get('orderId') as string
-  return await updateOrderStatus(orderId, 'pending')
-}
-
-export const rejectOrder = async (formData: FormData) => {
-  const orderId = formData.get('orderId') as string
-  return await updateOrderStatus(orderId, 'rejected')
-}
-
-// دوال الحصول على الطلبات
-export const getAllOrders = async ({
-  page = 1,
-  limit,
-}: {
-  page?: number
-  limit?: number
-}) => {
-  try {
-    await connectToDatabase()
-    const {
-      common: { pageSize },
-    } = await getSetting()
-    const actualLimit = limit || pageSize
-    const skip = (page - 1) * actualLimit
-
-    const [orders, count] = await Promise.all([
-      OrderModel.find()
-        .populate('user', 'name')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(actualLimit),
-      OrderModel.countDocuments(),
-    ])
-
-    return {
-      success: true,
-      data: JSON.parse(JSON.stringify(orders)) as IOrderList[],
-      totalPages: Math.ceil(count / actualLimit),
-      totalProducts: count,
-      from: skip + 1,
-      to: Math.min(skip + actualLimit, count),
-    }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
-
-export const getOrderById = async (orderId: string) => {
-  try {
-    await connectToDatabase()
-    const order = await OrderModel.findById(orderId).populate('user')
-    if (!order) throw new Error('Order not found')
-    return { success: true, data: JSON.parse(JSON.stringify(order)) }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
-
-// دوال إدارة الطلبات
-export const deleteOrder = async (orderId: string) => {
-  try {
-    await connectToDatabase()
-    const order = await OrderModel.findByIdAndDelete(orderId)
-    if (!order) throw new Error('Order not found')
-    revalidatePath('/admin/orders')
-    return { success: true, message: 'Order deleted successfully' }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
-
-export const updateOrderToPaid = async (orderId: string) => {
-  try {
-    await connectToDatabase()
-    const order = await OrderModel.findById(orderId).populate(
-      'user',
-      'name email'
-    )
-    if (!order) throw new Error('Order not found')
-    if (order.isPaid) throw new Error('Order is already paid')
-
-    order.isPaid = true
-    order.paidAt = new Date()
-    await order.save()
-
-    await updateProductStock(order._id)
-
-    if (order.user?.email) await sendPurchaseReceipt({ order })
-    revalidatePath(`/account/orders/${orderId}`)
-
-    return { success: true, message: 'Order paid successfully' }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
-
-const updateProductStock = async (orderId: string) => {
-  const session = await mongoose.connection.startSession()
-  try {
-    session.startTransaction()
-    const order = await OrderModel.findById(orderId).session(session)
-    if (!order) throw new Error('Order not found')
-
-    for (const item of order.items) {
-      const product = await Product.findById(item.product).session(session)
-      if (!product) throw new Error('Product not found')
-      product.countInStock -= item.quantity
-      await product.save({ session })
-    }
-
-    await session.commitTransaction()
-    session.endSession()
-  } catch (error) {
-    await session.abortTransaction()
-    session.endSession()
-    throw error
-  }
-}
-
-// دوال التقارير والإحصائيات
-export const getOrderSummary = async (dateRange: DateRange) => {
-  try {
-    await connectToDatabase()
-    const { from, to } = dateRange
-    const fromDate = from ? new Date(from) : new Date(0)
-    const toDate = to ? new Date(to) : new Date()
-
-    const paidOrders = await OrderModel.find({
-      isPaid: true,
-      paidAt: { $gte: fromDate, $lte: toDate },
-    })
-      .populate('user', 'name')
-      .populate({
-        path: 'orderItems.product',
-        populate: { path: 'category' },
+  useEffect(() => {
+    if (date) {
+      startTransition(async () => {
+        const result = await getOrderSommary(date)
+        setData(result)
       })
+    }
+  }, [date])
 
-    const totalSales = paidOrders.reduce(
-      (acc, order) => acc + order.totalPrice,
-      0
+  if (!data)
+    return (
+      <div className='space-y-4'>
+        <div>
+          <h1 className='h1-bold'>Dashboard</h1>
+        </div>
+        <div className='flex gap-4'>
+          {[...Array(4)].map((_, index) => (
+            <Skeleton key={index} className='h-36 w-full' />
+          ))}
+        </div>
+        <div>
+          <Skeleton className='h-[30rem] w-full' />
+        </div>
+        <div className='flex gap-4'>
+          {[...Array(2)].map((_, index) => (
+            <Skeleton key={index} className='h-60 w-full' />
+          ))}
+        </div>
+        <div className='flex gap-4'>
+          {[...Array(2)].map((_, index) => (
+            <Skeleton key={index} className='h-60 w-full' />
+          ))}
+        </div>
+      </div>
     )
 
-    const monthlySales = await OrderModel.aggregate([
-      { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-      {
-        $group: {
-          _id: { $month: '$paidAt' },
-          total: { $sum: '$totalPrice' },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ])
+  return (
+    <div>
+      <div className='flex items-center justify-between mb-2'>
+        <h1 className='h1-bold'>Dashboard</h1>
+        <CalendarDateRangePicker defaultDate={date} setDate={setDate} />
+      </div>
+      <div className='space-y-4'>
+        <div className='grid gap-4 grid-cols-2 lg:grid-cols-4'>
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Revenue
+              </CardTitle>
+              <BadgeDollarSign />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>
+                <ProductPrice price={data.totalSales} plain />
+              </div>
+              <div>
+                <Link className='text-xs' href='/admin/orders'>
+                  View revenue
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
-    const [users, products] = await Promise.all([User.find(), Product.find()])
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Sales</CardTitle>
+              <CreditCard />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>
+                {formatNumber(data.ordersCount)}
+              </div>
+              <div>
+                <Link className='text-xs' href='/admin/orders'>
+                  View orders
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
-    // 🔥 تجميع المنتجات حسب الكمية
-    const productSalesMap: Record<string, { name: string; count: number }> = {}
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Customers</CardTitle>
+              <Users />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>{data.usersCount}</div>
+              <div>
+                <Link className='text-xs' href='/admin/users'>
+                  View customers
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
-    paidOrders.forEach((order) => {
-      order.orderItems.forEach((item) => {
-        const product = item.product
-        if (product) {
-          if (!productSalesMap[product._id]) {
-            productSalesMap[product._id] = {
-              name: product.name,
-              count: item.quantity,
-            }
-          } else {
-            productSalesMap[product._id].count += item.quantity
-          }
-        }
-      })
-    })
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Products</CardTitle>
+              <Barcode />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>{data.productsCount}</div>
+              <div>
+                <Link className='text-xs' href='/admin/products'>
+                  products
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-    const topProducts = Object.entries(productSalesMap)
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 5)
-      .map(([, data]) => data)
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SalesAreaChart data={data.salesChartData} />
+            </CardContent>
+          </Card>
+        </div>
 
-    // 🔥 تجميع الفئات حسب مبيعات المنتجات المرتبطة بها
-    const categorySalesMap: Record<string, { name: string; total: number }> = {}
+        <div className='grid gap-4 md:grid-cols-2'>
+          <Card>
+            <CardHeader>
+              <CardTitle>How much you’re earning</CardTitle>
+              <CardDescription>Estimated · Last 6 months</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TableChart data={data.monthlySales} labelType='month' />
+            </CardContent>
+          </Card>
 
-    paidOrders.forEach((order) => {
-      order.orderItems.forEach((item) => {
-        const product = item.product
-        if (product?.category) {
-          const categoryId = product.category._id
-          const categoryName = product.category.name
-          const itemTotal = item.price * item.quantity
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Performance</CardTitle>
+              <CardDescription>
+                {formatDateTime(date!.from!).dateOnly} to{' '}
+                {formatDateTime(date!.to!).dateOnly}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TableChart data={data.topSalesProducts} labelType='product' />
+            </CardContent>
+          </Card>
+        </div>
 
-          if (!categorySalesMap[categoryId]) {
-            categorySalesMap[categoryId] = {
-              name: categoryName,
-              total: itemTotal,
-            }
-          } else {
-            categorySalesMap[categoryId].total += itemTotal
-          }
-        }
-      })
-    })
+        <div className='grid gap-4 md:grid-cols-2'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Best-Selling Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SalesCategoryPieChart data={data.topSalesCategories} />
+            </CardContent>
+          </Card>
 
-    const topCategories = Object.entries(categorySalesMap)
-      .sort((a, b) => b[1].total - a[1].total)
-      .slice(0, 5)
-      .map(([, data]) => data)
-
-    return {
-      success: true,
-      data: {
-        totalSales,
-        ordersCount: paidOrders.length,
-        usersCount: users.length,
-        productsCount: products.length,
-        monthlySales,
-        latestOrders: paidOrders.slice(0, 5),
-        topProducts,
-        topCategories,
-      },
-    }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
-
-export async function getMyOrders({
-  limit,
-  page,
-}: {
-  limit?: number
-  page: number
-}) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-  limit = limit || pageSize
-  await connectToDatabase()
-  const session = await auth()
-  const userId = session?.user?._id
-  if (!userId) throw new Error('User not authenticated')
-
-  const skip = (page - 1) * limit
-  const [orders, count] = await Promise.all([
-    OrderModel.find({ user: userId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    OrderModel.countDocuments({ user: userId }),
-  ])
-
-  return {
-    data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(count / limit),
-  }
-}
-export async function getOrdersByPlayerId(
-  playerId: string,
-  { limit, page }: { limit?: number; page: number }
-) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-  limit = limit || pageSize
-  await connectToDatabase()
-  const skip = (page - 1) * limit
-
-  const [orders, count] = await Promise.all([
-    OrderModel.find({ 'items.playerId': playerId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    OrderModel.countDocuments({ 'items.playerId': playerId }),
-  ])
-
-  return {
-    data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(count / limit),
-  }
-}
-export async function getOrderSumary(dateRange: DateRange) {
-  await connectToDatabase()
-  const { from, to } = dateRange
-  const fromDate = from ? new Date(from) : new Date(0)
-  const toDate = to ? new Date(to) : new Date()
-
-  const paidOrders = await OrderModel.find({
-    isPaid: true,
-    paidAt: { $gte: fromDate, $lte: toDate },
-  }).populate('user', 'name')
-
-  const totalSales = paidOrders.reduce(
-    (acc, order) => acc + order.totalPrice,
-    0
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Sales</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Buyer</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.latestOrders.map((order) => (
+                    <TableRow key={order._id}>
+                      <TableCell>
+                        {order.user ? order.user.name : 'Deleted User'}
+                      </TableCell>
+                      <TableCell>
+                        {formatDateTime(order.createdAt).dateOnly}
+                      </TableCell>
+                      <TableCell>
+                        <ProductPrice price={order.totalPrice} plain />
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/admin/orders/${order._id}`}>
+                          <span className='px-2'>Details</span>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   )
-
-  const monthlySales = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    { $group: { _id: { $month: '$paidAt' }, total: { $sum: '$totalPrice' } } },
-    { $sort: { _id: 1 } },
-  ])
-
-  const topSalesProducts = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    { $unwind: '$items' },
-    { $group: { _id: '$items.name', total: { $sum: '$items.quantity' } } },
-    { $sort: { total: -1 } },
-    { $limit: 5 },
-  ])
-
-  const topSalesCategories = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    { $unwind: '$items' },
-    { $group: { _id: '$items.category', total: { $sum: '$items.quantity' } } },
-    { $sort: { total: -1 } },
-    { $limit: 5 },
-  ])
-
-  const salesChartData = await OrderModel.aggregate([
-    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
-    {
-      $group: {
-        _id: { $dateToString: { format: '%Y-%m-%d', date: '$paidAt' } },
-        total: { $sum: '$totalPrice' },
-      },
-    },
-    { $sort: { _id: 1 } },
-  ])
-
-  const [users, products] = await Promise.all([User.find(), Product.find()])
-
-  return {
-    totalSales,
-    ordersCount: paidOrders.length,
-    usersCount: users.length,
-    productsCount: products.length,
-    monthlySales,
-    topSalesProducts,
-    topSalesCategories,
-    latestOrders: paidOrders.slice(0, 5),
-    salesChartData,
-  }
 }
