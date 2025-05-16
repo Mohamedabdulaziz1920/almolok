@@ -56,7 +56,7 @@ export default async function AdminUserPage({ searchParams }: AdminUserPageProps
           <TableHeader className='bg-gray-50 dark:bg-gray-800'>
             <TableRow>
               <TableHead className='w-[80px] sm:w-[100px] lg:w-[120px]'>المعرف</TableHead>
-              <TableHead className='min-w-[120px]' >الاسم</TableHead>
+              <TableHead className='min-w-[120px]'>الاسم</TableHead>
               <TableHead className='hidden sm:table-cell'>البريد الإلكتروني</TableHead>
               <TableHead className='w-[100px]'>الصلاحية</TableHead>
               <TableHead className='w-[150px] sm:w-[200px] lg:w-[300px]'>الإجراءات</TableHead>
@@ -74,11 +74,11 @@ export default async function AdminUserPage({ searchParams }: AdminUserPageProps
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
                   <div className='flex flex-col gap-1 sm:gap-2'>
-                    <div className='grid grid-cols-2 gap-1 sm:flex sm:gap-2'>
+                    <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
                       <Button
                         asChild
                         size='sm'
-                        className='w-full sm:w-auto'
+                        className='w-full'
                       >
                         <Link href={`/admin/users/${user._id}/add-balance`}>
                           إضافة رصيد
@@ -87,7 +87,7 @@ export default async function AdminUserPage({ searchParams }: AdminUserPageProps
                       <Button
                         asChild
                         size='sm'
-                        className='w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600'
+                        className='w-full bg-blue-500 text-white hover:bg-blue-600'
                       >
                         <Link href={`/admin/users/${user._id}`}>
                           تعديل
@@ -99,7 +99,7 @@ export default async function AdminUserPage({ searchParams }: AdminUserPageProps
                         buttonProps={{
                           size: 'sm',
                           className:
-                            'w-full sm:w-auto bg-red-500 text-white hover:bg-red-600',
+                            'w-full bg-red-500 text-white hover:bg-red-600',
                         }}
                       />
                     </div>
