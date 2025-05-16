@@ -18,7 +18,7 @@ type DateRange = {
   to: Date
 }
 
-export async function getOrderSummary(date: DateRange) {
+export async function getOrderSommary(date: DateRange) {
   await connectToDatabase()
 
   const [ordersCount, productsCount, usersCount] = await Promise.all([
