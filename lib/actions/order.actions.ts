@@ -11,9 +11,219 @@ import mongoose from 'mongoose'
 import { revalidatePath } from 'next/cache'
 import { sendPurchaseReceipt } from '@/emails'
 import { getSetting } from './setting.actions'
+import type { DateRange } from 'react-day-picker'
 
-type DateRange = { from?: string; to?: string }
+// GET ORDERS BY USER
+export async function getOrderSommary(date: DateRange) {
+  await connectToDatabase()
 
+  const ordersCount = await OrderModel.countDocuments({
+    createdAt: {
+      $gte: date.from,
+      $lte: date.to,
+    },
+  })
+  const productsCount = await Product.countDocuments({
+    createdAt: {
+      $gte: date.from,
+      $lte: date.to,
+    },
+  })
+  const usersCount = await User.countDocuments({
+    createdAt: {
+      $gte: date.from,
+      $lte: date.to,
+    },
+  })
+
+  const totalSalesResult = await OrderModel.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: date.from,
+          $lte: date.to,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        sales: { $sum: '$totalPrice' },
+      },
+    },
+    { $project: { totalSales: { $ifNull: ['$sales', 0] } } },
+  ])
+  const totalSales = totalSalesResult[0] ? totalSalesResult[0].totalSales : 0
+
+  const today = new Date()
+  const sixMonthEarlierDate = new Date(
+    today.getFullYear(),
+    today.getMonth() - 5,
+    1
+  )
+  const monthlySales = await OrderModel.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: sixMonthEarlierDate,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+        totalSales: { $sum: '$totalPrice' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        label: '$_id',
+        value: '$totalSales',
+      },
+    },
+
+    { $sort: { label: -1 } },
+  ])
+  const topSalesCategories = await getTopSalesCategories(date)
+  const topSalesProducts = await getTopSalesProducts(date)
+
+  const latestOrders = await OrderModel.find()
+    .populate('user', 'name')
+    .sort({ createdAt: 'desc' })
+   
+  return {
+    ordersCount,
+    productsCount,
+    usersCount,
+    totalSales,
+    monthlySales: JSON.parse(JSON.stringify(monthlySales)),
+    salesChartData: JSON.parse(JSON.stringify(await getSalesChartData(date))),
+    topSalesCategories: JSON.parse(JSON.stringify(topSalesCategories)),
+    topSalesProducts: JSON.parse(JSON.stringify(topSalesProducts)),
+    latestOrders: JSON.parse(JSON.stringify(latestOrders)) as IOrderList[],
+  }
+}
+
+async function getSalesChartData(date: DateRange) {
+  const result = await OrderModel.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: date.from,
+          $lte: date.to,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+          day: { $dayOfMonth: '$createdAt' },
+        },
+        totalSales: { $sum: '$totalPrice' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: {
+          $concat: [
+            { $toString: '$_id.year' },
+            '/',
+            { $toString: '$_id.month' },
+            '/',
+            { $toString: '$_id.day' },
+          ],
+        },
+        totalSales: 1,
+      },
+    },
+    { $sort: { date: 1 } },
+  ])
+
+  return result
+}
+
+async function getTopSalesProducts(date: DateRange) {
+  const result = await OrderModel.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: date.from,
+          $lte: date.to,
+        },
+      },
+    },
+    // Step 1: Unwind orderItems array
+    { $unwind: '$items' },
+
+    // Step 2: Group by productId to calculate total sales per product
+    {
+      $group: {
+        _id: {
+          name: '$items.name',
+          image: '$items.image',
+          _id: '$items.product',
+        },
+        totalSales: {
+          $sum: { $multiply: ['$items.quantity', '$items.price'] },
+        }, // Assume quantity field in orderItems represents units sold
+      },
+    },
+    {
+      $sort: {
+        totalSales: -1,
+      },
+    },
+    { $limit: 6 },
+
+    // Step 3: Replace productInfo array with product name and format the output
+    {
+      $project: {
+        _id: 0,
+        id: '$_id._id',
+        label: '$_id.name',
+        image: '$_id.image',
+        value: '$totalSales',
+      },
+    },
+
+    // Step 4: Sort by totalSales in descending order
+    { $sort: { _id: 1 } },
+  ])
+
+  return result
+}
+
+async function getTopSalesCategories(date: DateRange, limit = 5) {
+  const result = await OrderModel.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: date.from,
+          $lte: date.to,
+        },
+      },
+    },
+    // Step 1: Unwind orderItems array
+    { $unwind: '$items' },
+    // Step 2: Group by productId to calculate total sales per product
+    {
+      $group: {
+        _id: '$items.category',
+        totalSales: { $sum: '$items.quantity' }, // Assume quantity field in orderItems represents units sold
+      },
+    },
+    // Step 3: Sort by totalSales in descending order
+    { $sort: { totalSales: -1 } },
+    // Step 4: Limit to top N products
+    { $limit: limit },
+  ])
+
+  return result
+}
 // الدوال الأساسية لإدارة الطلبات
 export const createOrder = async (clientSideCart: Cart) => {
   try {
@@ -264,7 +474,12 @@ export const getOrderSummary = async (dateRange: DateRange) => {
     const paidOrders = await OrderModel.find({
       isPaid: true,
       paidAt: { $gte: fromDate, $lte: toDate },
-    }).populate('user', 'name')
+    })
+      .populate('user', 'name')
+      .populate({
+        path: 'orderItems.product',
+        populate: { path: 'category' },
+      })
 
     const totalSales = paidOrders.reduce(
       (acc, order) => acc + order.totalPrice,
@@ -274,12 +489,67 @@ export const getOrderSummary = async (dateRange: DateRange) => {
     const monthlySales = await OrderModel.aggregate([
       { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
       {
-        $group: { _id: { $month: '$paidAt' }, total: { $sum: '$totalPrice' } },
+        $group: {
+          _id: { $month: '$paidAt' },
+          total: { $sum: '$totalPrice' },
+        },
       },
       { $sort: { _id: 1 } },
     ])
 
     const [users, products] = await Promise.all([User.find(), Product.find()])
+
+    // 🔥 تجميع المنتجات حسب الكمية
+    const productSalesMap: Record<string, { name: string; count: number }> = {}
+
+    paidOrders.forEach((order) => {
+      order.orderItems.forEach((item) => {
+        const product = item.product
+        if (product) {
+          if (!productSalesMap[product._id]) {
+            productSalesMap[product._id] = {
+              name: product.name,
+              count: item.quantity,
+            }
+          } else {
+            productSalesMap[product._id].count += item.quantity
+          }
+        }
+      })
+    })
+
+    const topProducts = Object.entries(productSalesMap)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 5)
+      .map(([_, data]) => data)
+
+    // 🔥 تجميع الفئات حسب مبيعات المنتجات المرتبطة بها
+    const categorySalesMap: Record<string, { name: string; total: number }> = {}
+
+    paidOrders.forEach((order) => {
+      order.orderItems.forEach((item) => {
+        const product = item.product
+        if (product?.category) {
+          const categoryId = product.category._id
+          const categoryName = product.category.name
+          const itemTotal = item.price * item.quantity
+
+          if (!categorySalesMap[categoryId]) {
+            categorySalesMap[categoryId] = {
+              name: categoryName,
+              total: itemTotal,
+            }
+          } else {
+            categorySalesMap[categoryId].total += itemTotal
+          }
+        }
+      })
+    })
+
+    const topCategories = Object.entries(categorySalesMap)
+      .sort((a, b) => b[1].total - a[1].total)
+      .slice(0, 5)
+      .map(([_, data]) => data)
 
     return {
       success: true,
@@ -290,6 +560,8 @@ export const getOrderSummary = async (dateRange: DateRange) => {
         productsCount: products.length,
         monthlySales,
         latestOrders: paidOrders.slice(0, 5),
+        topProducts,
+        topCategories,
       },
     }
   } catch (error) {
@@ -349,5 +621,68 @@ export async function getOrdersByPlayerId(
   return {
     data: JSON.parse(JSON.stringify(orders)),
     totalPages: Math.ceil(count / limit),
+  }
+}
+export async function getOrderSumary(dateRange: DateRange) {
+  await connectToDatabase()
+  const { from, to } = dateRange
+  const fromDate = from ? new Date(from) : new Date(0)
+  const toDate = to ? new Date(to) : new Date()
+
+  const paidOrders = await OrderModel.find({
+    isPaid: true,
+    paidAt: { $gte: fromDate, $lte: toDate },
+  }).populate('user', 'name')
+
+  const totalSales = paidOrders.reduce(
+    (acc, order) => acc + order.totalPrice,
+    0
+  )
+
+  const monthlySales = await OrderModel.aggregate([
+    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
+    { $group: { _id: { $month: '$paidAt' }, total: { $sum: '$totalPrice' } } },
+    { $sort: { _id: 1 } },
+  ])
+
+  const topSalesProducts = await OrderModel.aggregate([
+    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
+    { $unwind: '$items' },
+    { $group: { _id: '$items.name', total: { $sum: '$items.quantity' } } },
+    { $sort: { total: -1 } },
+    { $limit: 5 },
+  ])
+
+  const topSalesCategories = await OrderModel.aggregate([
+    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
+    { $unwind: '$items' },
+    { $group: { _id: '$items.category', total: { $sum: '$items.quantity' } } },
+    { $sort: { total: -1 } },
+    { $limit: 5 },
+  ])
+
+  const salesChartData = await OrderModel.aggregate([
+    { $match: { isPaid: true, paidAt: { $gte: fromDate, $lte: toDate } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$paidAt' } },
+        total: { $sum: '$totalPrice' },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ])
+
+  const [users, products] = await Promise.all([User.find(), Product.find()])
+
+  return {
+    totalSales,
+    ordersCount: paidOrders.length,
+    usersCount: users.length,
+    productsCount: products.length,
+    monthlySales,
+    topSalesProducts,
+    topSalesCategories,
+    latestOrders: paidOrders.slice(0, 5),
+    salesChartData,
   }
 }
