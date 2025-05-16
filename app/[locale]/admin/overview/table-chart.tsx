@@ -1,10 +1,9 @@
-'use client' // This should be the very first line in the file
-
-import ProductPrice from '@/components/shared/product/product-price'
+'use client'
 import { getMonthName } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import React from 'react'
+import ProductPrice from '@/components/shared/product/product-price'
 
 type TableChartProps = {
   labelType: 'month' | 'product'
@@ -17,11 +16,12 @@ type TableChartProps = {
 }
 
 interface ProgressBarProps {
-  value: number
+  value: number // Accepts a number between 0 and 100
   className?: string
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ value }) => {
+  // Ensure value stays within 0-100 range
   const boundedValue = Math.min(100, Math.max(0, value))
 
   return (
@@ -30,7 +30,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ value }) => {
         className='bg-primary h-full transition-all duration-300 rounded-lg'
         style={{
           width: `${boundedValue}%`,
-          float: 'right',
+          float: 'right', // Aligns the bar to start from the right
         }}
       />
     </div>
@@ -41,28 +41,23 @@ export default function TableChart({
   labelType = 'month',
   data = [],
 }: TableChartProps) {
-  const t = useTranslations('TableChart')
   const max = Math.max(...data.map((item) => item.value))
   const dataWithPercentage = data.map((x) => ({
     ...x,
-    label:
-      labelType === 'month'
-        ? t(`months.${x.label}`, { defaultMessage: getMonthName(x.label) })
-        : x.label,
+    label: labelType === 'month' ? getMonthName(x.label) : x.label,
     percentage: Math.round((x.value / max) * 100),
   }))
-
   return (
     <div className='space-y-3'>
       {dataWithPercentage.map(({ label, id, value, image, percentage }) => (
         <div
           key={label}
-          className='grid grid-cols-[100px_1fr_80px] md:grid-cols-[250px_1fr_80px] gap-2 space-y-4'
+          className='grid grid-cols-[100px_1fr_80px] md:grid-cols-[250px_1fr_80px] gap-2 space-y-4  '
         >
           {image ? (
             <Link className='flex items-end' href={`/admin/products/${id}`}>
               <Image
-                className='rounded border aspect-square object-scale-down max-w-full h-auto mx-auto mr-1'
+                className='rounded border  aspect-square object-scale-down max-w-full h-auto mx-auto mr-1'
                 src={image!}
                 alt={label}
                 width={36}
