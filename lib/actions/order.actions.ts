@@ -250,7 +250,7 @@ export const createOrder = async (clientSideCart: Cart) => {
   }
 }
 
-const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
+export const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
   await connectToDatabase()
 
   const session = await mongoose.startSession()
