@@ -487,7 +487,7 @@ export const getOrderSummary = async (dateRange: DateRange) => {
     const topProducts = Object.entries(productSalesMap)
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 5)
-      .map(([_, data]) => data)
+      .map(([_unused, data]) => data)
 
     // 🔥 تجميع الفئات حسب مبيعات المنتجات المرتبطة بها
     const categorySalesMap: Record<string, { name: string; total: number }> = {}
@@ -515,7 +515,7 @@ export const getOrderSummary = async (dateRange: DateRange) => {
     const topCategories = Object.entries(categorySalesMap)
       .sort((a, b) => b[1].total - a[1].total)
       .slice(0, 5)
-      .map(([_, data]) => data)
+      .map(([_unused, data]) => data)
 
     return {
       success: true,
