@@ -1,6 +1,11 @@
 'use client'
-import { BadgeDollarSign, Barcode, CreditCard, Users } from 'lucide-react'
 
+import {
+  BadgeDollarSign,
+  Barcode,
+  CreditCard,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 import {
   Card,
@@ -17,10 +22,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { calculatePastDate, formatDateTime, formatNumber } from '@/lib/utils'
+import {
+  calculatePastDate,
+  formatDateTime,
+  formatNumber,
+} from '@/lib/utils'
 
 import SalesCategoryPieChart from './sales-category-pie-chart'
-
 import React, { useEffect, useState, useTransition } from 'react'
 import { DateRange } from 'react-day-picker'
 import { getOrderSommary } from '@/lib/actions/order.actions'
@@ -31,20 +39,33 @@ import ProductPrice from '@/components/shared/product/product-price'
 import TableChart from './table-chart'
 import { Skeleton } from '@/components/ui/skeleton'
 
+// ✅ حدد نوع البيانات المرجعة
+interface IOrderSummary {
+  totalSales: number
+  ordersCount: number
+  usersCount: number
+  productsCount: number
+  salesChartData: { date: string; total: number }[]
+  monthlySales: { label: string; total: number }[]
+  topSalesProducts: { label: string; total: number }[]
+  topSalesCategories: { label: string; total: number }[]
+  latestOrders: IOrderList[]
+}
+
 export default function OverviewReport() {
   const [date, setDate] = useState<DateRange | undefined>({
     from: calculatePastDate(30),
     to: new Date(),
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [data, setData] = useState<{ [key: string]: any }>()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [data, setData] = useState<IOrderSummary | undefined>()
   const [isPending, startTransition] = useTransition()
+
   useEffect(() => {
     if (date) {
       startTransition(async () => {
-        setData(await getOrderSommary(date))
+        const result = await getOrderSommary(date)
+        setData(result)
       })
     }
   }, [date])
@@ -55,26 +76,19 @@ export default function OverviewReport() {
         <div>
           <h1 className='h1-bold'>Dashboard</h1>
         </div>
-        {/* First Row */}
         <div className='flex gap-4'>
           {[...Array(4)].map((_, index) => (
             <Skeleton key={index} className='h-36 w-full' />
           ))}
         </div>
-
-        {/* Second Row */}
         <div>
           <Skeleton className='h-[30rem] w-full' />
         </div>
-
-        {/* Third Row */}
         <div className='flex gap-4'>
           {[...Array(2)].map((_, index) => (
             <Skeleton key={index} className='h-60 w-full' />
           ))}
         </div>
-
-        {/* Fourth Row */}
         <div className='flex gap-4'>
           {[...Array(2)].map((_, index) => (
             <Skeleton key={index} className='h-60 w-full' />
@@ -90,7 +104,7 @@ export default function OverviewReport() {
         <CalendarDateRangePicker defaultDate={date} setDate={setDate} />
       </div>
       <div className='space-y-4'>
-        <div className='grid gap-4  grid-cols-2 lg:grid-cols-4'>
+        <div className='grid gap-4 grid-cols-2 lg:grid-cols-4'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
@@ -109,6 +123,7 @@ export default function OverviewReport() {
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Sales</CardTitle>
@@ -125,6 +140,7 @@ export default function OverviewReport() {
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Customers</CardTitle>
@@ -139,6 +155,7 @@ export default function OverviewReport() {
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>Products</CardTitle>
@@ -154,6 +171,7 @@ export default function OverviewReport() {
             </CardContent>
           </Card>
         </div>
+
         <div>
           <Card>
             <CardHeader>
@@ -175,6 +193,7 @@ export default function OverviewReport() {
               <TableChart data={data.monthlySales} labelType='month' />
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Product Performance</CardTitle>
@@ -198,6 +217,7 @@ export default function OverviewReport() {
               <SalesCategoryPieChart data={data.topSalesCategories} />
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
@@ -213,19 +233,17 @@ export default function OverviewReport() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.latestOrders.map((order: IOrderList) => (
+                  {data.latestOrders.map((order) => (
                     <TableRow key={order._id}>
                       <TableCell>
                         {order.user ? order.user.name : 'Deleted User'}
                       </TableCell>
-
                       <TableCell>
                         {formatDateTime(order.createdAt).dateOnly}
                       </TableCell>
                       <TableCell>
                         <ProductPrice price={order.totalPrice} plain />
                       </TableCell>
-
                       <TableCell>
                         <Link href={`/admin/orders/${order._id}`}>
                           <span className='px-2'>Details</span>
