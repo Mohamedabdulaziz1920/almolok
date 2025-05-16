@@ -113,4 +113,4 @@ export default function OrderDetailsForm({ order, userBalance }: Props) {
       </Card>
     </main>
   )
-}
+    }
