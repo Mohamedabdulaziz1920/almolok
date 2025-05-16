@@ -33,7 +33,7 @@
     "Subtotal": "Subtotal",
     "Go to cart": "Go to cart"
   },
-    "sidebar": {
+  "sidebar": {
     "title": "title",
     "dashboard": "dashboard",
     "products": "products",
@@ -714,7 +714,9 @@
       "Dashboard": "Dashboard"
     }
   },
-   "AdminHeader": {
+  "AdminHeader": {
+    "Dashboard": "Dashboard",
+    "Your account": "Your account",
     "searchPlaceholder": "Search...",
     "settings": "Settings",
     "logout": "Log out",
@@ -726,6 +728,13 @@
     "Error": "Error",
     "Try again": "Try again",
     "Back To Home": "Back To Home"
+  },
+  "CategoriesListPage": {
+    "Categories": "Categories",
+    "Manage and track all Categories": "Manage and track all categories",
+    "Create New Category": "Create New Category",
+    "Edit": "Edit",
+    "No categories yet": "No categories yet"
   },
   "Admin": {
     "Create": "Create",
