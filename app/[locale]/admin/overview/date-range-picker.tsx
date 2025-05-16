@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { CalendarIcon } from 'lucide-react'
 import { DateRange } from 'react-day-picker'
-import { useTranslations } from 'next-intl'
+
 import { cn, formatDateTime } from '@/lib/utils'
 import {
   Popover,
@@ -23,7 +23,6 @@ export function CalendarDateRangePicker({
   setDate: React.Dispatch<React.SetStateAction<DateRange | undefined>>
   className?: string
 }) {
-  const t = useTranslations('CalendarDateRangePicker')
   const [calendarDate, setCalendarDate] = React.useState<DateRange | undefined>(
     defaultDate
   )
@@ -51,7 +50,7 @@ export function CalendarDateRangePicker({
                 formatDateTime(calendarDate.from).dateOnly
               )
             ) : (
-              <span>{t('pickDate')}</span>
+              <span>Pick a date</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -69,12 +68,10 @@ export function CalendarDateRangePicker({
           />
           <div className='flex gap-4 p-4 pt-0'>
             <PopoverClose asChild>
-              <Button onClick={() => setDate(calendarDate)}>
-                {t('apply')}
-              </Button>
+              <Button onClick={() => setDate(calendarDate)}>Apply</Button>
             </PopoverClose>
             <PopoverClose asChild>
-              <Button variant={'outline'}>{t('cancel')}</Button>
+              <Button variant={'outline'}>Cancel</Button>
             </PopoverClose>
           </div>
         </PopoverContent>
