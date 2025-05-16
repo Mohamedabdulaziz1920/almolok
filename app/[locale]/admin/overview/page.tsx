@@ -1,22 +1,14 @@
 import { Metadata } from 'next'
+
 import OverviewReport from './overview-report'
 import { auth } from '@/auth'
-import { getTranslations } from 'next-intl/server'
-
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('DashboardPage')
-  return {
-    title: t('metadata.title'),
-  }
+export const metadata: Metadata = {
+  title: 'Admin Dashboard',
 }
-
 const DashboardPage = async () => {
   const session = await auth()
-  const t = await getTranslations('DashboardPage')
-
-  if (session?.user.role !== 'Admin') {
-    throw new Error(t('errors.adminPermissionRequired'))
-  }
+  if (session?.user.role !== 'Admin')
+    throw new Error('Admin permission required')
 
   return <OverviewReport />
 }
