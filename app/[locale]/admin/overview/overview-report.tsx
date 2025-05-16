@@ -1,7 +1,6 @@
 'use client'
-
 import { BadgeDollarSign, Barcode, CreditCard, Users } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+
 import Link from 'next/link'
 import {
   Card,
@@ -19,208 +18,223 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { calculatePastDate, formatDateTime, formatNumber } from '@/lib/utils'
+
 import SalesCategoryPieChart from './sales-category-pie-chart'
+
 import React, { useEffect, useState, useTransition } from 'react'
 import { DateRange } from 'react-day-picker'
-import { getOrderSummary } from '@/lib/actions/order.actions'
+import { getOrderSommary } from '@/lib/actions/order.actions'
 import SalesAreaChart from './sales-area-chart'
 import { CalendarDateRangePicker } from './date-range-picker'
 import { IOrderList } from '@/types'
 import ProductPrice from '@/components/shared/product/product-price'
-import { Skeleton } from '@/components/ui/skeleton'
 import TableChart from './table-chart'
-
-interface DashboardData {
-  totalSales: number
-  ordersCount: number
-  usersCount: number
-  productsCount: number
-  monthlySales: Array<{ _id: number; total: number }>
-  topSalesProducts: Array<{ _id: string; total: number }>
-  topSalesCategories: Array<{ _id: string; total: number }>
-  latestOrders: IOrderList[]
-  salesChartData: Array<{ _id: string; total: number }>
-}
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function OverviewReport() {
-  const t = useTranslations('Admin')
   const [date, setDate] = useState<DateRange | undefined>({
     from: calculatePastDate(30),
     to: new Date(),
   })
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [data, setData] = useState<{ [key: string]: any }>()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isPending, startTransition] = useTransition()
   useEffect(() => {
     if (date) {
       startTransition(async () => {
-        try {
-          const result = await getOrderSummary(date)
-          setData(result)
-          setError(null)
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Failed to load data')
-          console.error('Error fetching order summary:', err)
-        }
+        setData(await getOrderSommary(date))
       })
     }
   }, [date])
 
-  const renderLoadingSkeleton = () => (
-     <main className='max-w-6xl mx-auto p-4 pt-20'>
-    <div className='space-y-4'>
-      <div>
-        <h1 className='h1-bold'>{t('Dashboard')}</h1>
-      </div>
-      <div className='flex gap-4'>
-        {[...Array(4)].map((_, index) => (
-          <Skeleton key={index} className='h-36 w-full' />
-        ))}
-      </div>
-      <div>
-        <Skeleton className='h-[30rem] w-full' />
-      </div>
-      <div className='flex gap-4'>
-        {[...Array(2)].map((_, index) => (
-          <Skeleton key={index} className='h-60 w-full' />
-        ))}
-      </div>
-      <div className='flex gap-4'>
-        {[...Array(2)].map((_, index) => (
-          <Skeleton key={index} className='h-60 w-full' />
-        ))}
-      </div>
-    </div>
-       </main>
-  )
+  if (!data)
+    return (
+      <div className='space-y-4'>
+        <div>
+          <h1 className='h1-bold'>Dashboard</h1>
+        </div>
+        {/* First Row */}
+        <div className='flex gap-4'>
+          {[...Array(4)].map((_, index) => (
+            <Skeleton key={index} className='h-36 w-full' />
+          ))}
+        </div>
 
-  const renderErrorState = () => (
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between mb-2'>
-        <h1 className='h1-bold'>{t('Dashboard')}</h1>
-        <CalendarDateRangePicker defaultDate={date} setDate={setDate} />
-      </div>
-      <div className='p-4 text-center text-destructive'>
-        <p>{error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className='mt-2 text-sm underline'
-        >
-          {t('Try again')}
-        </button>
-      </div>
-    </div>
-  )
+        {/* Second Row */}
+        <div>
+          <Skeleton className='h-[30rem] w-full' />
+        </div>
 
-  if (isPending || !data) return renderLoadingSkeleton()
-  if (error) return renderErrorState()
+        {/* Third Row */}
+        <div className='flex gap-4'>
+          {[...Array(2)].map((_, index) => (
+            <Skeleton key={index} className='h-60 w-full' />
+          ))}
+        </div>
+
+        {/* Fourth Row */}
+        <div className='flex gap-4'>
+          {[...Array(2)].map((_, index) => (
+            <Skeleton key={index} className='h-60 w-full' />
+          ))}
+        </div>
+      </div>
+    )
 
   return (
     <div>
       <div className='flex items-center justify-between mb-2'>
-        <h1 className='h1-bold'>{t('Dashboard')}</h1>
+        <h1 className='h1-bold'>Dashboard</h1>
         <CalendarDateRangePicker defaultDate={date} setDate={setDate} />
       </div>
-      
       <div className='space-y-4'>
-        {/* Summary Cards */}
-        <div className='grid gap-4 grid-cols-2 lg:grid-cols-4'>
-          <SummaryCard
-            title={t('Total Revenue')}
-            value={<ProductPrice price={data.totalSales} plain />}
-            icon={<BadgeDollarSign />}
-            link='/admin/orders'
-            linkText={t('View revenue')}
-          />
-          <SummaryCard
-            title={t('Sales')}
-            value={formatNumber(data.ordersCount)}
-            icon={<CreditCard />}
-            link='/admin/orders'
-            linkText={t('View orders')}
-          />
-          <SummaryCard
-            title={t('Customers')}
-            value={data.usersCount}
-            icon={<Users />}
-            link='/admin/users'
-            linkText={t('View customers')}
-          />
-          <SummaryCard
-            title={t('Products')}
-            value={data.productsCount}
-            icon={<Barcode />}
-            link='/admin/products'
-            linkText={t('View products')}
-          />
-        </div>
-
-        {/* Sales Overview Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('Sales Overview')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SalesAreaChart 
-              data={data.salesChartData || []} 
-              fromDate={date?.from} 
-              toDate={date?.to} 
-            />
-          </CardContent>
-        </Card>
-
-        {/* Earnings and Product Performance */}
-        <div className='grid gap-4 md:grid-cols-2'>
+        <div className='grid gap-4  grid-cols-2 lg:grid-cols-4'>
           <Card>
-            <CardHeader>
-              <CardTitle>{t('How much you’re earning')}</CardTitle>
-              <CardDescription>
-                {t('Estimated')} · {t('Last 6 months')}
-              </CardDescription>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Revenue
+              </CardTitle>
+              <BadgeDollarSign />
             </CardHeader>
-            <CardContent>
-              <TableChart 
-                data={data.monthlySales || []} 
-                labelType='month' 
-              />
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>
+                <ProductPrice price={data.totalSales} plain />
+              </div>
+              <div>
+                <Link className='text-xs' href='/admin/orders'>
+                  View revenue
+                </Link>
+              </div>
             </CardContent>
           </Card>
           <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Sales</CardTitle>
+              <CreditCard />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>
+                {formatNumber(data.ordersCount)}
+              </div>
+              <div>
+                <Link className='text-xs' href='/admin/orders'>
+                  View orders
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Customers</CardTitle>
+              <Users />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>{data.usersCount}</div>
+              <div>
+                <Link className='text-xs' href='/admin/users'>
+                  View customers
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>Products</CardTitle>
+              <Barcode />
+            </CardHeader>
+            <CardContent className='space-y-2'>
+              <div className='text-2xl font-bold'>{data.productsCount}</div>
+              <div>
+                <Link className='text-xs' href='/admin/products'>
+                  products
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div>
+          <Card>
             <CardHeader>
-              <CardTitle>{t('Product Performance')}</CardTitle>
-              <CardDescription>
-                {date?.from && formatDateTime(date.from).dateOnly} to{' '}
-                {date?.to && formatDateTime(date.to).dateOnly}
-              </CardDescription>
+              <CardTitle>Sales Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <TableChart 
-                data={data.topSalesProducts || []} 
-                labelType='product' 
-              />
+              <SalesAreaChart data={data.salesChartData} />
             </CardContent>
           </Card>
         </div>
 
-        {/* Categories and Recent Sales */}
         <div className='grid gap-4 md:grid-cols-2'>
           <Card>
             <CardHeader>
-              <CardTitle>{t('Best-Selling Categories')}</CardTitle>
+              <CardTitle>How much you’re earning</CardTitle>
+              <CardDescription>Estimated · Last 6 months</CardDescription>
             </CardHeader>
             <CardContent>
-              <SalesCategoryPieChart 
-                data={data.topSalesCategories || []} 
-              />
+              <TableChart data={data.monthlySales} labelType='month' />
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>{t('Recent Sales')}</CardTitle>
+              <CardTitle>Product Performance</CardTitle>
+              <CardDescription>
+                {formatDateTime(date!.from!).dateOnly} to{' '}
+                {formatDateTime(date!.to!).dateOnly}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <RecentSalesTable orders={data.latestOrders} t={t} />
+              <TableChart data={data.topSalesProducts} labelType='product' />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className='grid gap-4 md:grid-cols-2'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Best-Selling Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SalesCategoryPieChart data={data.topSalesCategories} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Sales</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Buyer</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.latestOrders.map((order: IOrderList) => (
+                    <TableRow key={order._id}>
+                      <TableCell>
+                        {order.user ? order.user.name : 'Deleted User'}
+                      </TableCell>
+
+                      <TableCell>
+                        {formatDateTime(order.createdAt).dateOnly}
+                      </TableCell>
+                      <TableCell>
+                        <ProductPrice price={order.totalPrice} plain />
+                      </TableCell>
+
+                      <TableCell>
+                        <Link href={`/admin/orders/${order._id}`}>
+                          <span className='px-2'>Details</span>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </div>
@@ -228,68 +242,3 @@ export default function OverviewReport() {
     </div>
   )
 }
-
-// مكونات مساعدة
-interface SummaryCardProps {
-  title: string
-  value: React.ReactNode
-  icon: React.ReactNode
-  link: string
-  linkText: string
-}
-
-const SummaryCard = ({ title, value, icon, link, linkText }: SummaryCardProps) => (
-  <Card>
-    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-      <CardTitle className='text-sm font-medium'>{title}</CardTitle>
-      {icon}
-    </CardHeader>
-    <CardContent className='space-y-2'>
-      <div className='text-2xl font-bold'>{value}</div>
-      <div>
-        <Link className='text-xs' href={link}>
-          {linkText}
-        </Link>
-      </div>
-    </CardContent>
-  </Card>
-)
-
-interface RecentSalesTableProps {
-  orders: IOrderList[]
-  t: (key: string) => string
-}
-
-
-const RecentSalesTable = ({ orders, t }: RecentSalesTableProps) => (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead>{t('Buyer')}</TableHead>
-        <TableHead>{t('Date')}</TableHead>
-        <TableHead>{t('Total')}</TableHead>
-        <TableHead>{t('Actions')}</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {orders?.map((order) => (
-        <TableRow key={order._id}>
-          <TableCell>
-            {order.user ? order.user.name : t('Deleted User')}
-          </TableCell>
-          <TableCell>
-            {formatDateTime(order.createdAt).dateOnly}
-          </TableCell>
-          <TableCell>
-            <ProductPrice price={order.totalPrice} plain />
-          </TableCell>
-          <TableCell>
-            <Link href={`/admin/orders/${order._id}`}>
-              <span className='px-2'>{t('Details')}</span>
-            </Link>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-)
