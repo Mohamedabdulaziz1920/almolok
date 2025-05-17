@@ -32,10 +32,10 @@ const CategoryCard = ({ category }: Props) => {
     startTransition(() => {
       deleteCategory(category._id).then((res) => {
         if (res.success) {
-          toast({ description: res.message })
+          useToast({ description: res.message })
           router.refresh()
         } else {
-          toast({ variant: 'destructive', description: res.message })
+          useToast({ variant: 'destructive', description: res.message })
         }
         setLoading(false)
       })
