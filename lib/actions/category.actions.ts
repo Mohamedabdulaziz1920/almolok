@@ -25,15 +25,26 @@ export async function createCategory(data: CategoryParams) {
 
     const existing = await Category.findOne({ slug: data.slug })
     if (existing) {
-      throw new Error('Category already exists with the same slug.')
+      return {
+        success: false,
+        message: 'تصنيف موجود بالفعل بنفس الـ slug.',
+      }
     }
 
     const newCategory = await Category.create(data)
-    return JSON.parse(JSON.stringify(newCategory))
+    return {
+      success: true,
+      message: 'تم إنشاء التصنيف بنجاح.',
+      data: JSON.parse(JSON.stringify(newCategory)),
+    }
   } catch (error) {
-    throw new Error(`Failed to create category: ${(error as Error).message}`)
+    return {
+      success: false,
+      message: `فشل في إنشاء التصنيف: ${(error as Error).message}`,
+    }
   }
 }
+
 
 // ====== تحديث تصنيف موجود ======
 export async function updateCategory(id: string, data: CategoryParams) {
@@ -42,14 +53,19 @@ export async function updateCategory(id: string, data: CategoryParams) {
 
     const category = await Category.findById(id)
     if (!category) {
-      throw new Error('Category not found.')
+      return {
+        success: false,
+        message: 'التصنيف غير موجود.',
+      }
     }
 
-    // التحقق من وجود slug مكرر في تصنيف آخر
     if (category.slug !== data.slug) {
       const existing = await Category.findOne({ slug: data.slug })
       if (existing) {
-        throw new Error('Another category with the same slug already exists.')
+        return {
+          success: false,
+          message: 'يوجد تصنيف آخر بنفس الـ slug.',
+        }
       }
     }
 
@@ -58,11 +74,19 @@ export async function updateCategory(id: string, data: CategoryParams) {
     category.image = data.image
 
     await category.save()
-    return JSON.parse(JSON.stringify(category))
+    return {
+      success: true,
+      message: 'تم تحديث التصنيف بنجاح.',
+      data: JSON.parse(JSON.stringify(category)),
+    }
   } catch (error) {
-    throw new Error(`Failed to update category: ${(error as Error).message}`)
+    return {
+      success: false,
+      message: `فشل في تحديث التصنيف: ${(error as Error).message}`,
+    }
   }
 }
+
 
 // ====== جلب تصنيف حسب الـ ID ======
 export async function getCategoryById(id: string) {
