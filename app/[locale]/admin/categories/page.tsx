@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getCategories } from '@/lib/actions/category.actions'
 import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
-import CategoryCard from './_components/CategoryCard'
+import CategoryCard from '@/components/shared/category/CategoryCard'
 
 const CategoriesListPage = async () => {
   const response = await getCategories()
