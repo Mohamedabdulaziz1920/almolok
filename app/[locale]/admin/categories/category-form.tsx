@@ -56,42 +56,44 @@ const CategoryForm = ({ type, initialData, categoryId }: Props) => {
 
   const image = form.watch('image')
 
-  async function onSubmit(values: Inputs) {
-    setIsPending(true)
-    try {
-      if (type === CategoryFormType.Create) {
-        const res = await createCategory(values)
-        if (!res.success) {
-          toast({
-            variant: 'destructive',
-            description: res.message,
-          })
-        } else {
-          toast({ description: res.message })
-          router.push(`/admin/categories`)
-        }
+ async function onSubmit(values: Inputs) {
+  setIsPending(true)
+  try {
+    if (type === CategoryFormType.Create) {
+      const res = await createCategory(values)
+      if (!res.success) {
+        toast({
+          variant: 'destructive',
+          description: res.message,
+        })
+      } else {
+        toast({ description: res.message })
+        router.push(`/admin/categories`)
       }
-
-      if (type === CategoryFormType.Update) {
-        if (!categoryId) {
-          router.push(`/admin/categories`)
-          return
-        }
-        const res = await updateCategory({ ...values, _id: categoryId })
-        if (!res.success) {
-          toast({
-            variant: 'destructive',
-            description: res.message,
-          })
-        } else {
-          toast({ description: res.message })
-          router.push(`/admin/categories`)
-        }
-      }
-    } finally {
-      setIsPending(false)
     }
+
+    if (type === CategoryFormType.Update) {
+      if (!categoryId) {
+        router.push(`/admin/categories`)
+        return
+      }
+      // هنا نمرر categoryId و values بشكل منفصل
+      const res = await updateCategory({ _id: categoryId, ...values })
+      if (!res.success) {
+        toast({
+          variant: 'destructive',
+          description: res.message,
+        })
+      } else {
+        toast({ description: res.message })
+        router.push(`/admin/categories`)
+      }
+    }
+  } finally {
+    setIsPending(false)
   }
+}
+
 
   return (
     <Form {...form}>
