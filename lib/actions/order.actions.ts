@@ -208,7 +208,7 @@ export const createOrder = async (clientSideCart: Cart) => {
     const createdOrder = await createOrderFromCart(clientSideCart, user._id)
     return {
       success: true,
-      message: 'Order placed successfully',
+      message: 'تمت عملية الدفع بنجاح',
       data: { orderId: createdOrder._id.toString() },
     }
   } catch (error) {
