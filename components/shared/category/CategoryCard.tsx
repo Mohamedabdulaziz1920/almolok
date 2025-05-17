@@ -1,4 +1,3 @@
-
 'use client'
 
 import Image from 'next/image'
@@ -22,6 +21,7 @@ const CategoryCard = ({ category }: Props) => {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [loading, setLoading] = useState(false)
+  const { toast } = useToast() // ✅ هنا نستخدم hook بشكل صحيح
 
   const handleDelete = () => {
     const confirmed = window.confirm('هل أنت متأكد أنك تريد حذف هذا التصنيف؟')
@@ -32,10 +32,10 @@ const CategoryCard = ({ category }: Props) => {
     startTransition(() => {
       deleteCategory(category._id).then((res) => {
         if (res.success) {
-          useToast({ description: res.message })
+          toast({ description: res.message }) // ✅ استخدام صحيح
           router.refresh()
         } else {
-          useToast({ variant: 'destructive', description: res.message })
+          toast({ variant: 'destructive', description: res.message }) // ✅
         }
         setLoading(false)
       })
