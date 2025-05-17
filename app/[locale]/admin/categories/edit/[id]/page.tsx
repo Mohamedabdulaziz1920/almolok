@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getCategoryById } from '@/lib/actions/category.actions'
-import CategoryForm, { CategoryFormType } from '../category-form'
+import CategoryForm, { CategoryFormType } from '../../category-form'
 
 type Props = {
   params: { id: string }
