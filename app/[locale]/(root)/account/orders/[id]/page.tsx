@@ -29,11 +29,12 @@ export default async function OrderDetailsPage(props: {
   const params = await props.params
   const { id } = params
 
-  const order = await getOrderById(id)
-  if (!order) notFound()
+  const result = await getOrderById(id)
+if (!result.success || !result.data) notFound()
 
+const order = result.data
   const session = await auth()
-  const formattedId = formatId(order._id)
+ const formattedId = formatId(order?._id?.toString?.() ?? '')
 
   // ✅ تعريف userBalance هنا
   const userBalance = order.user?.balance ?? 0
