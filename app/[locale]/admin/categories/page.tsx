@@ -53,7 +53,7 @@ const CategoriesListPage = async () => {
                     size='sm'
                     className='w-full sm:w-auto mt-2'
                   >
-                    <Link href={`/admin/categories/${category._id}`}>
+                    <Link href={`/admin/categories/edit/${category._id}`}>
                       {t('Edit')}
                     </Link>
                   </Button>
