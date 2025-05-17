@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatDateTime, formatId } from '@/lib/utils'
+import { formatId } from '@/lib/utils'
 import { IOrderList } from '@/types'
 import ProductPrice from '@/components/shared/product/product-price'
 import { getTranslations } from 'next-intl/server'
@@ -78,9 +78,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
               <TableHead className='hidden xs:table-cell'>
                 {t('Status')}
               </TableHead>
-              <TableHead className='hidden md:table-cell'>
-                {t('Date')}
-              </TableHead>
+              
               <TableHead className='w-[150px] sm:w-[200px] lg:w-[300px]'>
                 {t('Actions')}
               </TableHead>
