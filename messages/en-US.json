@@ -58,6 +58,20 @@
     "Best Sellers in T-Shirts": "Best Sellers in T-Shirts",
     "Best Deals on Wrist Watches": "Best Deals on Wrist Watches"
   },
+  "CreateCategoryPage": {
+  "Categories": "Categories",
+  "Create New Category": "Create New Category",
+  "Edit": "Edit",
+  "Delete": "Delete",
+  "Deleting...": "Deleting...",
+  "No categories yet": "No categories yet",
+  "Error": "Error",
+  "Manage and track all Categories": "Manage and track all Categories",
+  "Confirm Delete": "Are you sure you want to delete this category?",
+  "create": "Create",
+  "create_category": "Create New Category",
+  "create_category_details": "Fill in the details to add a new category for products"
+},
   "AccountPage": {
     "YourAccount": "Your Account",
     "YourOrders": "Your Orders",
