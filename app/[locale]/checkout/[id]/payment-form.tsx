@@ -99,7 +99,7 @@ useEffect(() => {
 
           <div className='pt-4'>
             <p>
-              رصيدك الحالي: <b>{userBalance} ريال</b>
+              رصيدك الحالي: <b>{userBalance} $</b>
             </p>
           </div>
 
