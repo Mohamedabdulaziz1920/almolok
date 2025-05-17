@@ -196,7 +196,7 @@ export const createOrder = async (clientSideCart: Cart) => {
     await connectToDatabase()
     const session = await auth()
     const user = session?.user
-    if (!user?.id) throw new Error('User not authenticated')
+    if (!user?._id) throw new Error('User not authenticated')
 
     const hasInvalidItems = clientSideCart.items.some(
       (item) => !item.playerId || typeof item.playerId !== 'string'
@@ -205,7 +205,7 @@ export const createOrder = async (clientSideCart: Cart) => {
       throw new Error('All items must have a valid Player ID')
     }
 
-    const createdOrder = await createOrderFromCart(clientSideCart, user.id)
+    const createdOrder = await createOrderFromCart(clientSideCart, user._id)
     return {
       success: true,
       message: 'Order placed successfully',
@@ -215,7 +215,11 @@ export const createOrder = async (clientSideCart: Cart) => {
     return { success: false, message: formatError(error) }
   }
 }
-export const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
+
+export const createOrderFromCart = async (
+  clientSideCart: Cart,
+  userId: string
+) => {
   await connectToDatabase()
 
   const session = await mongoose.startSession()
@@ -266,7 +270,6 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
           paidAt: new Date(),
           balanceUsed: totalPrice,
           balance: user.balance,
-          status: 'pending', // الحالة الافتراضية
         },
       ],
       { session }
@@ -282,6 +285,7 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
     throw error
   }
 }
+
 // دوال حالة الطلب
 export const updateOrderStatus = async (
   orderId: string,
