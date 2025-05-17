@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useTransition, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { toast } from '@/components/ui/toaster'
+import { toast } from '@/components/ui/toast'
 import { deleteCategory } from '@/lib/actions/category.actions'
 
 type Props = {
