@@ -8,11 +8,14 @@ type Props = {
 
 export default async function EditCategoryPage({ params }: Props) {
   const category = await getCategoryById(params.id)
-  if (!category) notFound()
+
+  if (!category) {
+    notFound()
+  }
 
   return (
-    <main className='container mx-auto px-4 py-6'>
-      <h1 className='text-xl font-bold mb-6'>تعديل القسم</h1>
+    <main className="container mx-auto px-4 py-6">
+      <h1 className="text-xl font-bold mb-6">تعديل القسم</h1>
       <CategoryForm
         type={CategoryFormType.Update}
         initialData={{
