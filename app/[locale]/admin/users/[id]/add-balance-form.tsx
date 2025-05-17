@@ -40,28 +40,31 @@ export default function AddBalanceForm({ user }: { user: IUser }) {
       reason: '',
     },
   })
-const onSubmit = async (values: AddBalanceValues) => {
-  try {
-    await addUserBalance(user._id, values.amount)
-    toast({ description: `تمت إضافة ${values.amount}$ للمستخدم ${user.name}` })
-    router.push('/admin/users')
-  } catch {
-  toast({
-    variant: 'destructive',
-    description: 'حدث خطأ أثناء إضافة الرصيد',
-    })
+
+  const onSubmit = async (values: AddBalanceValues) => {
+    try {
+      await addUserBalance(user._id, values.amount)
+      toast({ description: `تمت إضافة ${values.amount}$ للمستخدم ${user.name}` })
+      router.push('/admin/users')
+    } catch {
+      toast({
+        variant: 'destructive',
+        description: 'حدث خطأ أثناء إضافة الرصيد',
+      })
+    }
   }
-}
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8 max-w-2xl mx-auto bg-gray-800 p-8 rounded-xl shadow-2xl"
+        className="space-y-8 max-w-2xl mx-auto bg-yellow-100 mt-8 md:mt-16 p-6 sm:p-8 rounded-xl shadow-xl"
       >
         <div className="space-y-2 text-center">
-          <h5 className="text-2xl font-semibold text-white">إضافة رصيد للمستخدم: {user.name}</h5>
-          <div className="text-sm text-gray-400">{user.email}</div>
+          <h5 className="text-2xl font-semibold text-gray-800">
+            إضافة رصيد للمستخدم: {user.name}
+          </h5>
+          <div className="text-sm text-gray-600">{user.email}</div>
         </div>
 
         <div className="flex flex-col gap-6 md:flex-row">
@@ -70,13 +73,13 @@ const onSubmit = async (values: AddBalanceValues) => {
             name="amount"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel className="text-gray-100">المبلغ (بالدولار)</FormLabel>
+                <FormLabel className="text-gray-700">المبلغ (بالدولار)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     placeholder="أدخل المبلغ"
                     {...field}
-                    className="bg-white border-gray-700 text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-600 rounded-md"
+                    className="bg-white border border-gray-300 text-black placeholder-gray-500 focus:ring-2 focus:ring-blue-600 rounded-md"
                   />
                 </FormControl>
                 <FormMessage />
@@ -89,13 +92,13 @@ const onSubmit = async (values: AddBalanceValues) => {
             name="reason"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel className="text-gray-100">السبب (اختياري)</FormLabel>
+                <FormLabel className="text-gray-700">السبب (اختياري)</FormLabel>
                 <FormControl>
                   <Textarea
                     rows={3}
                     placeholder="أدخل السبب للتوثيق"
                     {...field}
-                    className="bg-white border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-600 rounded-md"
+                    className="bg-white border border-gray-300 text-black placeholder-gray-500 focus:ring-2 focus:ring-blue-600 rounded-md"
                   />
                 </FormControl>
                 <FormMessage />
@@ -104,11 +107,11 @@ const onSubmit = async (values: AddBalanceValues) => {
           />
         </div>
 
-        <div className="flex gap-4 justify-center md:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row justify-center sm:justify-between">
           <Button
             type="submit"
             disabled={form.formState.isSubmitting}
-           
+            className="w-full sm:w-auto"
           >
             {form.formState.isSubmitting ? 'جارٍ الحفظ...' : 'حفظ'}
           </Button>
@@ -116,7 +119,7 @@ const onSubmit = async (values: AddBalanceValues) => {
             variant="outline"
             type="button"
             onClick={() => router.push(`/admin/users`)}
-            className="bg-blue-600 w-full md:w-auto text-white border-gray-900 hover:border-gray-500 hover:bg-gray-800"
+            className="bg-blue-600 w-full sm:w-auto text-white border-gray-900 hover:border-gray-500 hover:bg-blue-700"
           >
             رجوع
           </Button>
