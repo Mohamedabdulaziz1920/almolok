@@ -873,6 +873,7 @@
     "empty": "لا توجد فئات حالياً"
   },
   "CategoryForm": {
+    "removeImage": "حذف الصورة",
     "name": "اسم الفئة",
     "namePlaceholder": "ادخل اسم الفئة",
     "slug": "الرابط (Slug)",
