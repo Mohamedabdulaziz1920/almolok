@@ -87,6 +87,14 @@ export async function updateCategory(id: string, data: CategoryParams) {
   }
 }
 
+export async function deleteCategory(id: string) {
+  try {
+    await CategoryModel.findByIdAndDelete(id)
+    return { success: true, message: 'تم حذف التصنيف بنجاح' }
+  } catch (error) {
+    return { success: false, message: 'حدث خطأ أثناء الحذف' }
+  }
+}
 
 // ====== جلب تصنيف حسب الـ ID ======
 export async function getCategoryById(id: string) {
