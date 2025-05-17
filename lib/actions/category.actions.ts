@@ -45,7 +45,6 @@ export async function createCategory(data: CategoryParams) {
   }
 }
 
-
 // ====== تحديث تصنيف موجود ======
 export async function updateCategory(id: string, data: CategoryParams) {
   try {
@@ -87,11 +86,12 @@ export async function updateCategory(id: string, data: CategoryParams) {
   }
 }
 
+// ====== حذف تصنيف ======
 export async function deleteCategory(id: string) {
   try {
-    await CategoryModel.findByIdAndDelete(id)
+    await Category.findByIdAndDelete(id)
     return { success: true, message: 'تم حذف التصنيف بنجاح' }
-  } catch (error) {
+  } catch {
     return { success: false, message: 'حدث خطأ أثناء الحذف' }
   }
 }
