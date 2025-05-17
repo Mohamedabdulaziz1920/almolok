@@ -12,7 +12,7 @@ import { toast } from '@/components/ui/use-toast'
 
 const CategoriesListPage = async () => {
   const response = await getCategories()
-  const t = await getTranslations('CategoriesListPage')
+  const t = await getTranslations('CreateCategoryPage')
 
   if (!response.success) {
     return (
