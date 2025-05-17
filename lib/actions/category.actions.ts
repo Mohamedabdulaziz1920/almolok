@@ -46,11 +46,11 @@ export async function createCategory(data: CategoryParams) {
 }
 
 // ====== تحديث تصنيف موجود ======
-export async function updateCategory(id: string, data: CategoryParams) {
+export async function updateCategory(data: { _id: string } & CategoryParams) {
   try {
     await connectToDatabase()
 
-    const category = await Category.findById(id)
+    const category = await Category.findById(data._id)
     if (!category) {
       return {
         success: false,
@@ -85,6 +85,7 @@ export async function updateCategory(id: string, data: CategoryParams) {
     }
   }
 }
+
 
 // ====== حذف تصنيف ======
 export async function deleteCategory(id: string) {
