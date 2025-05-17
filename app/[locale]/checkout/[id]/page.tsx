@@ -17,9 +17,10 @@ const CheckoutPaymentPage = async (props: {
 }) => {
   const { id } = props.params
 
-  const order = await getOrderById(id)
-  if (!order) notFound()
+const orderResponse = await getOrderById(id)
+if (!orderResponse.success || !orderResponse.data) notFound()
 
+const order = orderResponse.data
   const session = await auth()
 
   let client_secret = null
