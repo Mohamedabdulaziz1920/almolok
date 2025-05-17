@@ -206,7 +206,11 @@ export const createOrder = async (clientSideCart: Cart) => {
     }
 
     const createdOrder = await createOrderFromCart(clientSideCart, user._id)
-    return { success: true, message: 'تمت عملية الدفع بنجاح' }
+    return {
+      success: true,
+      message: 'Order placed successfully',
+      data: { orderId: createdOrder._id.toString() },
+    }
   } catch (error) {
     return { success: false, message: formatError(error) }
   }
@@ -398,7 +402,7 @@ export const updateOrderToPaid = async (orderId: string) => {
     if (order.user?.email) await sendPurchaseReceipt({ order })
     revalidatePath(`/account/orders/${orderId}`)
 
-    return { success: true, message: 'Order paid successfully' }
+    return { success: true, message: 'تمت عملية الدفع بنجاح' }
   } catch (error) {
     return { success: false, message: formatError(error) }
   }
