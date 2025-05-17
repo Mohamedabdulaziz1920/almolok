@@ -1,154 +1,214 @@
 'use client'
 
-import { useTransition } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { CategoryInputSchema } from '@/lib/validator'
 import { z } from 'zod'
-import { createCategory } from '@/lib/actions/category.actions'
-import { toast } from 'sonner'
+import { createCategory, updateCategory } from '@/lib/actions/category.actions'
 import { Input } from '@/components/ui/input'
 import { UploadButton } from '@/lib/uploadthing'
 import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { useToast } from '@/hooks/use-toast'
+import { toSlug } from '@/lib/utils'
+import { Card, CardContent } from '@/components/ui/card'
+import { useState } from 'react'
 
 type Inputs = z.infer<typeof CategoryInputSchema>
 
-type CreateCategoryResult = {
-  error?: string
-  category?: {
-    _id: string
-    name: string
-    slug: string
-    image: string
-  }
+export enum CategoryFormType {
+  Create = 'Create',
+  Update = 'Update',
+}
+
+const categoryDefaultValues: Inputs = {
+  name: '',
+  slug: '',
+  image: '',
 }
 
 type Props = {
-  type: 'Create' | 'Edit'
+  type: CategoryFormType
   initialData?: Inputs
-  onSubmit?: (data: Inputs) => void
+  categoryId?: string
 }
 
-// دالة لتحويل الاسم إلى رابط Slug
-const toSlug = (text: string) => {
-  return text.trim().toLowerCase().replace(/\s+/g, '-')
-}
-
-export function CategoryForm({ type, initialData, onSubmit }: Props) {
+const CategoryForm = ({ type, initialData, categoryId }: Props) => {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
   const t = useTranslations('CategoryForm')
+  const { toast } = useToast()
+  const [isPending, setIsPending] = useState(false)
 
   const form = useForm<Inputs>({
     resolver: zodResolver(CategoryInputSchema),
-    defaultValues: {
-      name: '',
-      slug: '',
-      image: '',
-      ...initialData,
-    },
+    defaultValues: initialData ?? categoryDefaultValues,
   })
 
-  const handleFormSubmit = (data: Inputs) => {
-    startTransition(async () => {
-      try {
-        if (type === 'Edit' && onSubmit) {
-          await onSubmit(data)
-          toast.success(t('editSuccess'))
+  const image = form.watch('image')
+
+  async function onSubmit(values: Inputs) {
+    setIsPending(true)
+    try {
+      if (type === CategoryFormType.Create) {
+        const res = await createCategory(values)
+        if (!res.success) {
+          toast({
+            variant: 'destructive',
+            description: res.message,
+          })
         } else {
-          const result: CreateCategoryResult = await createCategory(data)
-
-          if (result.error) {
-            toast.error(result.error)
-            return
-          }
-
-          toast.success(t('createSuccess'))
-          router.push('/admin/categories')
+          toast({ description: res.message })
+          router.push(`/admin/categories`)
         }
-      } catch {
-        toast.error(t('saveError'))
       }
-    })
+
+      if (type === CategoryFormType.Update) {
+        if (!categoryId) {
+          router.push(`/admin/categories`)
+          return
+        }
+        const res = await updateCategory({ ...values, _id: categoryId })
+        if (!res.success) {
+          toast({
+            variant: 'destructive',
+            description: res.message,
+          })
+        } else {
+          toast({ description: res.message })
+          router.push(`/admin/categories`)
+        }
+      }
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (
-    <main className='container mx-auto px-2 py-4 sm:px-4 sm:py-6 lg:py-8'>
+    <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleFormSubmit)}
-        className='space-y-4'
+        method='post'
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='space-y-8'
       >
-        {/* Name */}
-        <div className='space-y-2'>
-          <label className='block font-medium'>{t('name')}</label>
-          <Input
-            {...form.register('name')}
-            placeholder={t('namePlaceholder')}
-            className='input'
-          />
-          {form.formState.errors.name && (
-            <p className='text-sm text-red-500'>
-              {form.formState.errors.name.message}
-            </p>
+        {/* الاسم */}
+        <FormField
+          control={form.control}
+          name='name'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('name')}</FormLabel>
+              <FormControl>
+                <Input placeholder={t('namePlaceholder')} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
-        {/* Slug */}
-        <div className='space-y-2'>
-          <label className='block font-medium'>{t('slug')}</label>
-          <div className='relative'>
-            <Input
-              {...form.register('slug')}
-              placeholder={t('slugPlaceholder')}
-              className='pr-24 input'
-            />
-            <Button
-              type='button'
-              onClick={() => {
-                form.setValue('slug', toSlug(form.getValues('name')))
-              }}
-              className='absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 h-auto text-sm'
-            >
-              {t('generate')}
-            </Button>
-          </div>
-          {form.formState.errors.slug && (
-            <p className='text-sm text-red-500'>
-              {form.formState.errors.slug.message}
-            </p>
+        {/* السُّلَغ */}
+        <FormField
+          control={form.control}
+          name='slug'
+          render={() => (
+            <FormItem>
+              <FormLabel>{t('slug')}</FormLabel>
+              <FormControl>
+                <div className='space-y-2'>
+                  <div className='relative'>
+                    <Input
+                      {...form.register('slug')}
+                      placeholder={t('slugPlaceholder')}
+                      className='pr-24 input'
+                    />
+                    <Button
+                      type='button'
+                      onClick={() =>
+                        form.setValue('slug', toSlug(form.getValues('name')))
+                      }
+                      className='absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 h-auto text-sm'
+                    >
+                      {t('generate')}
+                    </Button>
+                  </div>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
-        {/* Image Upload */}
-        <div className='space-y-2'>
-          <label className='block font-medium'>{t('image')}</label>
-          <UploadButton
-            endpoint='imageUploader'
-            onClientUploadComplete={(res: { url: string }[]) => {
-              if (res[0]?.url) {
-                form.setValue('image', res[0].url, { shouldValidate: true })
-                toast.success(t('uploadSuccess'))
-              }
-            }}
-            onUploadError={(error: Error) => {
-              toast.error(String(t('uploadError', { message: error.message })))
-            }}
-          />
-          {form.formState.errors.image?.message && (
-            <p className='text-sm text-red-500'>
-              {form.formState.errors.image.message}
-            </p>
+        {/* الصورة */}
+        <FormField
+          control={form.control}
+          name='image'
+          render={() => (
+            <FormItem>
+              <FormLabel>{t('image')}</FormLabel>
+              <Card>
+                <CardContent className='space-y-2 mt-2 min-h-48'>
+                  {image && (
+                    <div className='flex items-center gap-4'>
+                      <Image
+                        src={image}
+                        alt={t('category image')}
+                        className='w-20 h-20 object-cover rounded-sm'
+                        width={100}
+                        height={100}
+                      />
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='sm'
+                        onClick={() => form.setValue('image', '')}
+                      >
+                        {t('removeImage')}
+                      </Button>
+                    </div>
+                  )}
+                  <FormControl>
+                    <UploadButton
+                      endpoint='imageUploader'
+                      onClientUploadComplete={(res: { url: string }[]) => {
+                        if (res && res[0]?.url) {
+                          form.setValue('image', res[0].url)
+                        }
+                      }}
+                      onUploadError={(error: Error) => {
+                        toast({
+                          variant: 'destructive',
+                          description: `ERROR! ${error.message}`,
+                        })
+                      }}
+                    />
+                  </FormControl>
+                </CardContent>
+              </Card>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
-        {/* Submit Button */}
+        {/* زر الحفظ */}
         <Button type='submit' disabled={isPending}>
-          {isPending ? t('saving') : type === 'Edit' ? t('edit') : t('create')}
+          {isPending
+            ? t('saving')
+            : type === CategoryFormType.Update
+            ? t('update')
+            : t('create')}
         </Button>
       </form>
-    </main>
+    </Form>
   )
 }
+
 export default CategoryForm
