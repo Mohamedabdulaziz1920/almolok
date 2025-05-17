@@ -11,13 +11,11 @@ export const metadata = {
 }
 
 const CheckoutPaymentPage = async (props: {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }) => {
-  const params = await props.params
-
-  const { id } = params
+  const { id } = props.params
 
   const order = await getOrderById(id)
   if (!order) notFound()
@@ -30,7 +28,7 @@ const CheckoutPaymentPage = async (props: {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(order.totalPrice * 100),
       currency: 'USD',
-      metadata: { orderId: order._id },
+      metadata: { orderId: order._id.toString() },
     })
     client_secret = paymentIntent.client_secret
   }
