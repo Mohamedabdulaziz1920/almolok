@@ -125,8 +125,18 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                     {t(order.status)}
                   </Badge>
                 </TableCell>
-                <TableCell className='hidden md:table-cell whitespace-nowrap'>
-                  {formatDateTime(order.createdAt!).dateTime}
+               <TableCell className='hidden xs:table-cell'>
+                  <Badge
+                    className={`text-xs ${
+                      order.status === 'completed'
+                        ? 'bg-green-600'
+                        : order.status === 'rejected'
+                          ? 'bg-red-600'
+                          : 'bg-yellow-400'
+                    }`}
+                  >
+                    {t(order.status)}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className='flex flex-col gap-1 sm:gap-2'>
