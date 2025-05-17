@@ -1,43 +1,28 @@
-import { Metadata } from 'next'
-import { updateCategory, getCategoryById } from '@/lib/actions/category.actions'
-import { CategoryForm } from '../../category-form'
+// app/[locale]/admin/categories/[id]/edit/page.tsx
 import { notFound } from 'next/navigation'
-import { z } from 'zod'
-import { CategoryInputSchema } from '@/lib/validator'
+import { getCategoryById } from '@/lib/actions/category.actions'
+import CategoryForm, { CategoryFormType } from '@/components/forms/category-form'
 
-export const metadata: Metadata = {
-  title: 'تعديل الفئة',
+type Props = {
+  params: { id: string }
 }
 
-type CategoryFormInputs = z.infer<typeof CategoryInputSchema>
-
-export default async function EditCategoryPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function EditCategoryPage({ params }: Props) {
   const category = await getCategoryById(params.id)
-
   if (!category) notFound()
 
   return (
-    <main className='max-w-6xl mx-auto p-4 md:p-6 lg:p-8'>
-      <div className='mb-8'>
-        <h1 className='text-2xl md:text-3xl font-bold'>تعديل الفئة</h1>
-        <p className='text-muted-foreground mt-2'>
-          قم بتعديل بيانات الفئة الحالية.
-        </p>
-      </div>
-
-      <div className='bg-background rounded-lg border shadow-sm p-4 md:p-6 lg:p-8'>
-        <CategoryForm
-          type='Edit'
-          initialData={category}
-          onSubmit={async (data: CategoryFormInputs) => {
-            await updateCategory(params.id, data)
-          }}
-        />
-      </div>
+    <main className='container mx-auto px-4 py-6'>
+      <h1 className='text-xl font-bold mb-6'>تعديل القسم</h1>
+      <CategoryForm
+        type={CategoryFormType.Update}
+        initialData={{
+          name: category.name,
+          slug: category.slug,
+          image: category.image,
+        }}
+        categoryId={category._id}
+      />
     </main>
   )
 }
