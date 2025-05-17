@@ -215,7 +215,6 @@ export const createOrder = async (clientSideCart: Cart) => {
     return { success: false, message: formatError(error) }
   }
 }
-
 export const createOrderFromCart = async (clientSideCart: Cart, userId: string) => {
   await connectToDatabase()
 
