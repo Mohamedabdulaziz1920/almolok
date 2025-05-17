@@ -1,7 +1,6 @@
-// app/[locale]/admin/categories/[id]/edit/page.tsx
 import { notFound } from 'next/navigation'
 import { getCategoryById } from '@/lib/actions/category.actions'
-import CategoryForm, { CategoryFormType } from '@/components/forms/category-form'
+import CategoryForm, { CategoryFormType } from '../category-form'
 
 type Props = {
   params: { id: string }
