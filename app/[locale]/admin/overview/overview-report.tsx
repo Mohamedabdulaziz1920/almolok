@@ -99,7 +99,7 @@ export default function OverviewReport() {
       </div>
     )
 
-  return (
+ return (
     <div>
       <main className="pt-16 px-4 md:px-6">
       <div className='flex items-center justify-between mb-2'>
@@ -182,9 +182,9 @@ export default function OverviewReport() {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>{t('Sales Overview')}</CardTitle>
+              <CardTitle className="text-yellow-400">{t('Sales Overview')}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent >
               <SalesAreaChart data={data.salesChartData} />
             </CardContent>
           </Card>
@@ -193,17 +193,18 @@ export default function OverviewReport() {
         <div className='grid gap-4 md:grid-cols-2'>
           <Card>
             <CardHeader>
-              <CardTitle>{t('How much you’re earning')}</CardTitle>
+              <CardTitle className="text-yellow-400">{t('How much you’re earning')}</CardTitle>
               <CardDescription>{t('Estimated')} · {t('Last 6 months')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <TableChart data={data.monthlySales} labelType='month' />
+              <TableChart 
+              data={data.monthlySales} labelType='month' />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('Product Performance')}</CardTitle>
+              <CardTitle className="text-yellow-400">{t('Product Performance')}</CardTitle>
               <CardDescription>
                 {formatDateTime(date!.from!).dateOnly} to{' '}
                 {formatDateTime(date!.to!).dateOnly}
@@ -218,7 +219,7 @@ export default function OverviewReport() {
         <div className='grid gap-4 md:grid-cols-2'>
           <Card>
             <CardHeader>
-              <CardTitle>{t('Best-Selling Categories')}</CardTitle>
+              <CardTitle className="text-yellow-400">{t('Best-Selling Categories')}</CardTitle>
             </CardHeader>
             <CardContent>
               <SalesCategoryPieChart data={data.topSalesCategories} />
@@ -227,7 +228,7 @@ export default function OverviewReport() {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('Recent Sales')}</CardTitle>
+              <CardTitle className="text-yellow-400">{t('Recent Sales')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -253,7 +254,7 @@ export default function OverviewReport() {
                       </TableCell>
                       <TableCell>
                         <Link href={`/admin/orders/${order._id}`}>
-                          <span className='px-2'>{t('Details')}</span>
+                          <span className='px-2 text-yellow-400'>{t('Details')}</span>
                         </Link>
                       </TableCell>
                     </TableRow>
