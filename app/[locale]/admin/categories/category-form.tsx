@@ -56,41 +56,27 @@ const CategoryForm = ({ type, initialData, categoryId }: Props) => {
 
   const image = form.watch('image')
 
-  async function onSubmit(values: Inputs) {
-    setIsPending(true)
-    try {
-      if (type === CategoryFormType.Create) {
-        const res = await createCategory(values)
-        if (!res.success) {
-          toast({
-            variant: 'destructive',
-            description: res.message,
-          })
+  const handleFormSubmit = (data: Inputs) => {
+    startTransition(async () => {
+      try {
+        if (type === 'Edit' && onSubmit) {
+          await onSubmit(data)
+          toast.success(t('editSuccess'))
         } else {
-          toast({ description: res.message })
-          router.push(`/admin/categories`)
-        }
-      }
+          const result: CreateCategoryResult = await createCategory(data)
 
-      if (type === CategoryFormType.Update) {
-        if (!categoryId) {
-          router.push(`/admin/categories`)
-          return
+          if (result.error) {
+            toast.error(result.error)
+            return
+          }
+
+          toast.success(t('createSuccess'))
+          router.push('/admin/categories')
         }
-        const res = await updateCategory({ ...values, _id: categoryId })
-        if (!res.success) {
-          toast({
-            variant: 'destructive',
-            description: res.message,
-          })
-        } else {
-          toast({ description: res.message })
-          router.push(`/admin/categories`)
-        }
+      } catch {
+        toast.error(t('saveError'))
       }
-    } finally {
-      setIsPending(false)
-    }
+    })
   }
 
   return (
