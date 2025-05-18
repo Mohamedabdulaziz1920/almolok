@@ -303,9 +303,15 @@ const ProductForm = ({
 
         <div>
          {/* Submit Button */}
-                <Button type='submit' disabled={isSubmitting}>
-          {isSubmitting ? t('saving') : type === 'Edit' ? t('Update') : t('Create')}
-        </Button>
+                   <Button
+              type='submit'
+              size='lg'
+              disabled={form.formState.isSubmitting}
+              className='w-full md:w-auto'
+            >
+              {form.formState.isSubmitting
+                ? t('saving') : type === 'Update' ? t('Update') : t('Create')}
+            </Button>
         </div>
       </form>
     </Form>
