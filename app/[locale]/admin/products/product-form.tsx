@@ -303,8 +303,8 @@ const ProductForm = ({
 
         <div>
          {/* Submit Button */}
-        <Button type='submit' disabled={isPending}>
-          {isPending ? t('saving') : type === 'Edit' ? t('Update') : t('Create')}
+                <Button type='submit' disabled={isSubmitting}>
+          {isSubmitting ? t('saving') : type === 'Edit' ? t('Update') : t('Create')}
         </Button>
         </div>
       </form>
