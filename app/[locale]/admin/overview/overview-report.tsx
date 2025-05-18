@@ -101,77 +101,82 @@ export default function OverviewReport() {
 
   return (
     <div>
+      <main className="pt-16 px-4 md:px-6">
       <div className='flex items-center justify-between mb-2'>
         <h1 className='h1-bold'>{t('Dashboard')}</h1>
         <CalendarDateRangePicker defaultDate={date} setDate={setDate} />
       </div>
       <div className='space-y-4'>
         <div className='grid gap-4 grid-cols-2 lg:grid-cols-4'>
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>
-                  {t('Total Revenue')}
-              </CardTitle>
-              <BadgeDollarSign />
-            </CardHeader>
-            <CardContent className='space-y-2'>
-              <div className='text-2xl font-bold'>
-                <ProductPrice price={data.totalSales} plain />
-              </div>
-              <div>
-                <Link className='text-xs' href='/admin/orders'>
-                   {t('View revenue')}
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+         <Card>
+  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+    <CardTitle className='text-sm font-medium'>
+      {t('Total Revenue')}
+    </CardTitle>
+    <BadgeDollarSign className="text-yellow-400" />
+  </CardHeader>
+  <CardContent className='space-y-2'>
+    <div className='text-2xl font-bold text-yellow-400'>
+      <ProductPrice price={data.totalSales} plain />
+    </div>
+    <div>
+      <Link className='text-xs' href='/admin/orders'>
+        {t('View revenue')}
+      </Link>
+    </div>
+  </CardContent>
+</Card>
 
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>{t('Sales')}</CardTitle>
-              <CreditCard />
-            </CardHeader>
-            <CardContent className='space-y-2'>
-              <div className='text-2xl font-bold'>
-                {formatNumber(data.ordersCount)}
-              </div>
-              <div>
-                <Link className='text-xs' href='/admin/orders'>
-                  {t('View orders')}
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+<Card>
+  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+    <CardTitle className='text-sm font-medium'>{t('Sales')}</CardTitle>
+    <CreditCard className="text-yellow-400" />
+  </CardHeader>
+  <CardContent className='space-y-2'>
+    <div className='text-2xl font-bold text-yellow-400'>
+      {formatNumber(data.ordersCount)}
+    </div>
+    <div>
+      <Link className='text-xs' href='/admin/orders'>
+        {t('View orders')}
+      </Link>
+    </div>
+  </CardContent>
+</Card>
 
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>{t('Customers')}</CardTitle>
-              <Users />
-            </CardHeader>
-            <CardContent className='space-y-2'>
-              <div className='text-2xl font-bold'>{data.usersCount}</div>
-              <div>
-                <Link className='text-xs' href='/admin/users'>
-                   {t('View customers')}
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+<Card>
+  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+    <CardTitle className='text-sm font-medium'>{t('Customers')}</CardTitle>
+    <Users className="text-yellow-400" />
+  </CardHeader>
+  <CardContent className='space-y-2'>
+    <div className='text-2xl font-bold text-yellow-400'>
+      {data.usersCount}
+    </div>
+    <div>
+      <Link className='text-xs' href='/admin/users'>
+        {t('View customers')}
+      </Link>
+    </div>
+  </CardContent>
+</Card>
 
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'> {t('Products')}</CardTitle>
-              <Barcode />
-            </CardHeader>
-            <CardContent className='space-y-2'>
-              <div className='text-2xl font-bold'>{data.productsCount}</div>
-              <div>
-                <Link className='text-xs' href='/admin/products'>
-                    {t('View products')}
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+<Card>
+  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+    <CardTitle className='text-sm font-medium'>{t('Products')}</CardTitle>
+    <Barcode className="text-yellow-400" />
+  </CardHeader>
+  <CardContent className='space-y-2'>
+    <div className='text-2xl font-bold text-yellow-400'>
+      {data.productsCount}
+    </div>
+    <div>
+      <Link className='text-xs' href='/admin/products'>
+        {t('View products')}
+      </Link>
+    </div>
+  </CardContent>
+</Card>
         </div>
 
         <div>
@@ -259,6 +264,7 @@ export default function OverviewReport() {
           </Card>
         </div>
       </div>
+      </main>
     </div>
   )
 }
