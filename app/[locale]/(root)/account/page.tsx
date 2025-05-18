@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { auth } from '@/auth'
 import { getUserById } from '@/lib/actions/user.actions' // المسار حسب تنظيم مشروعك
-const PAGE_TITLE = 'Your Account'
+const PAGE_TITLE = 'حسابك'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
