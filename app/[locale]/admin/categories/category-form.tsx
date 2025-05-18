@@ -77,7 +77,7 @@ const CategoryForm = ({ type, initialData, categoryId }: Props) => {
           router.push(`/admin/categories`)
           return
         }
-        const res = await updateCategory({ ...values, _id: categoryId })
+        const res = await updateCategory(categoryId, values)
         if (!res.success) {
           toast({
             variant: 'destructive',
