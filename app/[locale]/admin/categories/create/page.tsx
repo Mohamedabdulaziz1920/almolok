@@ -1,5 +1,5 @@
 // app/[locale]/admin/categories/create/page.tsx
-import CategoryForm, { CategoryFormType } from '../category-form'
+import CategoryForm from '../category-form'
 
 export default function CreateCategoryPage() {
   return (
