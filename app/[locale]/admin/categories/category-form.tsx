@@ -204,7 +204,7 @@ const CategoryForm = ({ type, initialData, categoryId }: Props) => {
             ? t('saving')
             : type === CategoryFormType.Update
             ? t('update')
-            : t('create')}
+            : t('Create')}
         </Button>
       </form>
     </Form>
