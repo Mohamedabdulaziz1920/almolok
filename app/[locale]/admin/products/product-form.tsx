@@ -302,16 +302,10 @@ const ProductForm = ({
         </div>
 
         <div>
-          <Button
-            type='submit'
-            size='lg'
-            disabled={form.formState.isSubmitting}
-            className='button col-span-2 w-full'
-          >
-            {form.formState.isSubmitting
-              ? t('submitting')
-              : t(`${type.toLowerCase()}_product`)}
-          </Button>
+         {/* Submit Button */}
+        <Button type='submit' disabled={isPending}>
+          {isPending ? t('saving') : type === 'Edit' ? t('Update') : t('Create')}
+        </Button>
         </div>
       </form>
     </Form>
