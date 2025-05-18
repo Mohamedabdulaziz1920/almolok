@@ -38,6 +38,7 @@ import { IOrderList } from '@/types'
 import ProductPrice from '@/components/shared/product/product-price'
 import TableChart from './table-chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 
 // ✅ حدد نوع البيانات المرجعة
 interface IOrderSummary {
