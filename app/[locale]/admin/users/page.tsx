@@ -41,7 +41,7 @@ export default async function AdminUserPage({ searchParams }: AdminUserPageProps
   const totalPages = usersResponse?.totalPages || 1
 
   return (
-    <main className='container mx-auto px-2 py-4 sm:px-4 sm:py-6 lg:py-8'>
+      <main className="pt-16 px-4 md:px-6">
       <div className='mb-4 sm:mb-6 lg:mb-8'>
         <h1 className='text-xl font-bold sm:text-2xl lg:text-3xl text-gray-900 dark:text-white'>
           المستخدمون
