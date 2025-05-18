@@ -45,7 +45,7 @@ export default async function RootLayout({
   params: { locale: Locale }
   children: React.ReactNode
 }) {
-  const { locale } = params // ✅
+  const { locale } = await params // ✅
   const setting = await getSetting()
   const cookieStore = await cookies()
   const currencyCookie = cookieStore.get('currency')
