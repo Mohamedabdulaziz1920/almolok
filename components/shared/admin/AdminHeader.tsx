@@ -69,12 +69,12 @@ export default function AdminHeader() {
         </Button>
 
         {/* تبديل السمة - تم التعديل هنا */}
-        <div className='bg-white p-1 rounded-full'>
+        <div className='border border-gray-300 p-1 rounded-full'>
           <ThemeSwitcher />
         </div>
 
         {/* تبديل اللغة - تم التعديل هنا */}
-        <div className='bg-white p-1 rounded-full'>
+        <div className='border border-gray-300 p-1 rounded-full'>
           <LanguageSwitcher />
         </div>
 
@@ -92,11 +92,11 @@ export default function AdminHeader() {
                   width={32}
                   height={32}
                   alt={user.name || 'User profile'}
-                  className='rounded-full object-cover'
+                  className='rounded-full object-cover border border-gray-300' // أضيف border هنا
                 />
               ) : (
-                <div className='bg-white p-2 rounded-full'>
-                  <User className='h-5 w-5 text-gray-800' />
+                <div className='border border-gray-300 p-2 rounded-full'>
+                  <User className='h-5 w-5 text-gray-300' />
                 </div>
               )}
               <span className='sr-only'>{t('toggleUserMenu')}</span>
@@ -104,7 +104,7 @@ export default function AdminHeader() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align={isRTL ? 'start' : 'end'}
-            className='w-56 bg-gray-950 border border-gray-800 text-gray-300'
+            className='w-56 bg-gray-950 border border-gray-300 text-gray-300' // تعديل لون border هنا
           >
             <DropdownMenuItem className='flex flex-col items-start gap-1 p-3'>
               <div className='text-sm font-medium truncate w-full text-white'>
@@ -116,12 +116,12 @@ export default function AdminHeader() {
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
-              <Link href='/account' className='w-full p-2'>
+              <Link href='/account' className='w-full p-2 hover:bg-gray-800'>
                 {t('Your account')}
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className='p-0'>
+            <DropdownMenuItem className='p-0 hover:bg-gray-800'>
               <form action={SignOut} className='w-full'>
                 <button
                   type='submit'
