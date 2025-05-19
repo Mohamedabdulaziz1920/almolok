@@ -43,7 +43,7 @@ export default function AdminHeader() {
         variant='ghost'
         size='icon'
         onClick={toggle}
-        className='lg:hidden text-gray-300 hover:text-yellow-400 hover:bg-gray-900 transition'
+        className='lg:hidden text-white hover:text-yellow-400 hover:bg-gray-900 transition'
       >
         <Menu className='h-5 w-5' />
         <span className='sr-only'>{t('toggleMenu')}</span>
@@ -62,19 +62,19 @@ export default function AdminHeader() {
         <Button
           variant='ghost'
           size='icon'
-          className='text-gray-300 hover:text-yellow-400 hover:bg-gray-900 transition'
+          className='text-white hover:text-yellow-400 hover:bg-gray-900 transition'
         >
           <Bell className='h-5 w-5' />
           <span className='sr-only'>{t('toggleNotifications')}</span>
         </Button>
 
         {/* تبديل السمة - تم التعديل هنا */}
-        <div className='border border-gray-300 p-1 rounded-full'>
+        <div className='text-white'>
           <ThemeSwitcher />
         </div>
 
         {/* تبديل اللغة - تم التعديل هنا */}
-        <div className='border border-gray-300 p-1 rounded-full'>
+        <div className='text-white'>
           <LanguageSwitcher />
         </div>
 
@@ -84,7 +84,7 @@ export default function AdminHeader() {
             <Button
               variant='ghost'
               size='icon'
-              className='rounded-full hover:bg-gray-900 transition'
+              className='rounded-full hover:bg-gray-900 transition text-white'
             >
               {user?.image ? (
                 <Image
@@ -92,25 +92,23 @@ export default function AdminHeader() {
                   width={32}
                   height={32}
                   alt={user.name || 'User profile'}
-                  className='rounded-full object-cover border border-gray-300' // أضيف border هنا
+                  className='rounded-full object-cover'
                 />
               ) : (
-                <div className='border border-gray-300 p-2 rounded-full'>
-                  <User className='h-5 w-5 text-gray-300' />
-                </div>
+                <User className='h-5 w-5' />
               )}
               <span className='sr-only'>{t('toggleUserMenu')}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align={isRTL ? 'start' : 'end'}
-            className='w-56 bg-gray-950 border border-gray-300 text-gray-300' // تعديل لون border هنا
+            className='w-56 bg-gray-950 text-white'
           >
             <DropdownMenuItem className='flex flex-col items-start gap-1 p-3'>
-              <div className='text-sm font-medium truncate w-full text-white'>
+              <div className='text-sm font-medium truncate w-full'>
                 {user?.name}
               </div>
-              <div className='text-xs truncate w-full text-white'>
+              <div className='text-xs truncate w-full'>
                 {user?.email}
               </div>
             </DropdownMenuItem>
