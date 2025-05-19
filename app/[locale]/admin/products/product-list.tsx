@@ -101,9 +101,14 @@ const ProductList = () => {
             <h1 className='text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white'>
               {t('products')}
             </h1>
-            <Button asChild variant='default' className='w-full sm:w-auto'>
-              <Link href='/admin/products/create'>{t('createProduct')}</Link>
-            </Button>
+            {/* زر إنشاء منتج جديد */}
+      <Button 
+        asChild 
+        className='w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white'
+      >
+        <Link href='/admin/products/create'>{t('createProduct')}</Link>
+      </Button>
+
           </div>
 
           {/* Search and Info Section */}
@@ -225,44 +230,47 @@ const ProductList = () => {
                         {t('tableHeaders.actions')}:
                       </div>
                       <div className='flex flex-wrap justify-center gap-2'>
-                        <Button
-                          asChild
-                          variant='outline'
-                          size='sm'
-                          className='w-full sm:w-auto'
-                        >
-                          <Link href={`/admin/products/${product._id}`}>
-                            {t('edit')}
-                          </Link>
-                        </Button>
-                        <Button
-                          asChild
-                          variant='outline'
-                          size='sm'
-                          className='w-full sm:w-auto'
-                        >
-                          <Link
-                            target='_blank'
-                            href={`/product/${product.slug}`}
-                          >
-                            {t('view')}
-                          </Link>
-                        </Button>
-                        <DeleteDialog
-                          id={product._id}
-                          action={deleteProduct}
-                          callbackAction={() => {
-                            startTransition(async () => {
-                              const data = await getAllProductsForAdmin({
-                                query: inputValue,
-                              })
-                              setData(data)
-                            })
-                          }}
-                          buttonProps={{
-                            className: 'w-full sm:w-auto',
-                          }}
-                        />
+                       {/* أزرار الإجراءات في الجدول */}
+      <div className='flex flex-wrap justify-center gap-2'>
+        {/* زر التعديل */}
+        <Button
+          asChild
+          size='sm'
+          className='w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white'
+        >
+          <Link href={`/admin/products/${product._id}`}>
+            {t('edit')}
+          </Link>
+        </Button>
+
+        {/* زر المعاينة */}
+        <Button
+          asChild
+          size='sm'
+          className='w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white'
+        >
+          <Link target='_blank' href={`/product/${product.slug}`}>
+            {t('view')}
+          </Link>
+        </Button>
+
+        {/* زر الحذف */}
+        <DeleteDialog
+          id={product._id}
+          action={deleteProduct}
+          callbackAction={() => {
+            startTransition(async () => {
+              const data = await getAllProductsForAdmin({
+                query: inputValue,
+              })
+              setData(data)
+            })
+          }}
+          buttonProps={{
+            className: 'w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white',
+          }}
+        />
+      </div>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -275,25 +283,25 @@ const ProductList = () => {
           {(data?.totalPages ?? 0) > 1 && (
             <div className='border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-4 dark:border-gray-800'>
               <div className='flex flex-col sm:flex-row items-center justify-center gap-3'>
-                <Button
-                  variant='outline'
-                  onClick={() => handlePageChange('prev')}
-                  disabled={page <= 1}
-                  className='w-full sm:w-auto min-w-[100px]'
-                >
-                  <ChevronLeft className='h-4 w-4' /> {t('previous')}
-                </Button>
-                <p className='text-sm'>
-                  {t('pageInfo', { page, totalPages: data?.totalPages })}
-                </p>
-                <Button
-                  variant='outline'
-                  onClick={() => handlePageChange('next')}
-                  disabled={page >= (data?.totalPages ?? 0)}
-                  className='w-full sm:w-auto min-w-[100px]'
-                >
-                  {t('next')} <ChevronRight className='h-4 w-4' />
-                </Button>
+              {/* أزرار التصفح */}
+      <Button
+        variant='outline'
+        onClick={() => handlePageChange('prev')}
+        disabled={page <= 1}
+        className='w-full sm:w-auto min-w-[100px] bg-gray-100 hover:bg-gray-200 text-gray-800'
+      >
+        <ChevronLeft className='h-4 w-4' /> {t('previous')}
+      </Button>
+
+      <Button
+        variant='outline'
+        onClick={() => handlePageChange('next')}
+        disabled={page >= (data?.totalPages ?? 0)}
+        className='w-full sm:w-auto min-w-[100px] bg-gray-100 hover:bg-gray-200 text-gray-800'
+      >
+        {t('next')} <ChevronRight className='h-4 w-4' />
+      </Button>
+
               </div>
             </div>
           )}
