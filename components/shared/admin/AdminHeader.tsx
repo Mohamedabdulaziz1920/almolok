@@ -68,11 +68,15 @@ export default function AdminHeader() {
           <span className='sr-only'>{t('toggleNotifications')}</span>
         </Button>
 
-        {/* تبديل السمة */}
-        <ThemeSwitcher />
+        {/* تبديل السمة - تم التعديل هنا */}
+        <div className='bg-white p-1 rounded-full'>
+          <ThemeSwitcher />
+        </div>
 
-        {/* تبديل اللغة */}
-        <LanguageSwitcher />
+        {/* تبديل اللغة - تم التعديل هنا */}
+        <div className='bg-white p-1 rounded-full'>
+          <LanguageSwitcher />
+        </div>
 
         {/* قائمة المستخدم */}
         <DropdownMenu>
@@ -91,7 +95,9 @@ export default function AdminHeader() {
                   className='rounded-full object-cover'
                 />
               ) : (
-                <User className='h-5 w-5 text-gray-300' />
+                <div className='bg-white p-2 rounded-full'>
+                  <User className='h-5 w-5 text-gray-800' />
+                </div>
               )}
               <span className='sr-only'>{t('toggleUserMenu')}</span>
             </Button>
