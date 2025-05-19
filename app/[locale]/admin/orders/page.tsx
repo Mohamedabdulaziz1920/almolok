@@ -53,7 +53,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const totalPages = ordersResponse.totalPages || 1
 
   return (
-    <main className="pt-16 px-4 md:px-6">
+    <main className='pt-16 px-4 md:px-6'>
       <div className='mb-4 sm:mb-6 lg:mb-8'>
         <h1 className='text-xl font-bold sm:text-2xl lg:text-3xl text-gray-900 dark:text-white'>
           {t('Orders')}
@@ -78,9 +78,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
               <TableHead className='hidden xs:table-cell'>
                 {t('Status')}
               </TableHead>
-              <TableHead className='hidden md:table-cell'>
-                {t('Date')}
-              </TableHead>
+
               <TableHead className='w-[150px] sm:w-[200px] lg:w-[300px]'>
                 {t('Actions')}
               </TableHead>
@@ -125,19 +123,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                     {t(order.status)}
                   </Badge>
                 </TableCell>
-                <TableCell className='text-right'>
-                    <Badge
-                      className={`text-xs ${
-                        order.status === 'completed'
-                          ? 'bg-green-600'
-                          : order.status === 'rejected'
-                            ? 'bg-red-600'
-                            : 'bg-yellow-400'
-                      }`}
-                    >
-                      {t(order.status)}
-                    </Badge>
-                  </TableCell>
+
                 <TableCell>
                   <div className='flex flex-col gap-1 sm:gap-2'>
                     <div className='flex justify-end sm:justify-start'>
