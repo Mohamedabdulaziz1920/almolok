@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,16 +26,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toSlug } from '@/lib/utils'
 import { IProductInput } from '@/types'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
 import { getCategories } from '@/lib/actions/category.actions'
-import { Loader2 } from 'lucide-react'
-
+import { useEffect, useState } from 'react'
 interface Category {
   _id: string
   slug: string
   name: string
 }
-
 const productDefaultValues: IProductInput = {
   name: '',
   slug: '',
@@ -66,8 +64,6 @@ const ProductForm = ({
   const [categories, setCategories] = useState<Category[]>([])
   const router = useRouter()
   const t = useTranslations('ProductForm')
-  const { toast } = useToast()
-
   const form = useForm<IProductInput>({
     resolver:
       type === 'Update'
@@ -77,6 +73,7 @@ const ProductForm = ({
       product && type === 'Update' ? product : productDefaultValues,
   })
 
+  const { toast } = useToast()
   useEffect(() => {
     async function fetchCategories() {
       const res = await getCategories()
@@ -87,51 +84,36 @@ const ProductForm = ({
 
     fetchCategories()
   }, [])
-
   async function onSubmit(values: IProductInput) {
-    try {
-      if (values.images.length === 0) {
+    if (type === 'Create') {
+      const res = await createProduct(values)
+      if (!res.success) {
         toast({
           variant: 'destructive',
-          description: 'يجب إضافة صورة واحدة على الأقل',
+          description: res.message,
         })
+      } else {
+        toast({
+          description: res.message,
+        })
+        router.push(`/admin/products`)
+      }
+    }
+
+    if (type === 'Update') {
+      if (!productId) {
+        router.push(`/admin/products`)
         return
       }
-
-      const processedValues = {
-        ...values,
-        price: Number(values.price),
-        listPrice: Number(values.listPrice),
-        countInStock: Number(values.countInStock),
-        slug: values.slug || toSlug(values.name),
-      }
-
-      if (type === 'Create') {
-        const res = await createProduct(processedValues)
-        if (!res.success) throw new Error(res.message)
-        
-        toast({ description: res.message })
-        router.push(`/admin/products`)
-      } else if (type === 'Update') {
-        if (!productId) {
-          router.push(`/admin/products`)
-          return
-        }
-        
-        const res = await updateProduct({ ...processedValues, _id: productId })
-        if (!res.success) throw new Error(res.message)
-        
-        toast({ description: res.message })
+      const res = await updateProduct({ ...values, _id: productId })
+      if (!res.success) {
+        toast({
+          variant: 'destructive',
+          description: res.message,
+        })
+      } else {
         router.push(`/admin/products`)
       }
-    } catch (error) {
-      console.error('Error submitting product:', error)
-      toast({
-        variant: 'destructive',
-        description: error instanceof Error 
-          ? (error.message || 'حدث خطأ أثناء حفظ المنتج') 
-          : 'حدث خطأ غير متوقع',
-      })
     }
   }
 
@@ -140,6 +122,7 @@ const ProductForm = ({
   return (
     <Form {...form}>
       <form
+        method='post'
         onSubmit={form.handleSubmit(onSubmit)}
         className='space-y-8'
       >
@@ -188,7 +171,7 @@ const ProductForm = ({
           />
         </div>
 
-        <div className='flex flex-col gap-5 md:flex-row'>
+ <div className='flex flex-col gap-5 md:flex-row'>
           <FormField
             control={form.control}
             name='category'
@@ -216,16 +199,12 @@ const ProductForm = ({
 
           <FormField
             control={form.control}
-            name='countInStock'
+            name='brand'
             render={({ field }) => (
               <FormItem className='w-full'>
-                <FormLabel>{t('Count In Stock')}</FormLabel>
+                <FormLabel>{t('Brand')}</FormLabel>
                 <FormControl>
-                  <Input
-                    type='number'
-                    placeholder={t('Enter product count in stock')}
-                    {...field}
-                  />
+                  <Input placeholder={t('Enter product brand')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -264,6 +243,24 @@ const ProductForm = ({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name='countInStock'
+            render={({ field }) => (
+              <FormItem className='w-full'>
+                <FormLabel>{t('Count In Stock')}</FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    placeholder={t('Enter product count in stock')}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className='flex flex-col gap-5 md:flex-row'>
@@ -290,9 +287,7 @@ const ProductForm = ({
                         <UploadButton
                           endpoint='imageUploader'
                           onClientUploadComplete={(res: { url: string }[]) => {
-                            if (res && res.length > 0) {
-                              form.setValue('images', [...form.getValues('images'), res[0].url])
-                            }
+                            form.setValue('images', [...images, res[0].url])
                           }}
                           onUploadError={(error: Error) => {
                             toast({
@@ -325,6 +320,10 @@ const ProductForm = ({
                     {...field}
                   />
                 </FormControl>
+                <FormDescription>
+                  You can <span>@mention</span> other users and organizations to
+                  link to them.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -356,14 +355,9 @@ const ProductForm = ({
             disabled={form.formState.isSubmitting}
             className='button col-span-2 w-full'
           >
-            {form.formState.isSubmitting ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t('submitting')}
-              </div>
-            ) : (
-              t(`${type.toLowerCase()}_product`)
-            )}
+            {form.formState.isSubmitting
+              ? t('submitting')
+              : t(`${type.toLowerCase()}_product`)}
           </Button>
         </div>
       </form>
