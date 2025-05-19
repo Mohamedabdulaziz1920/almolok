@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { formatDateTime, formatId } from '@/lib/utils'
 import { IOrderList } from '@/types'
 import ProductPrice from '@/components/shared/product/product-price'
 import { getTranslations } from 'next-intl/server'
@@ -115,31 +116,28 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   <Badge
                     className={`text-xs ${
                       order.status === 'completed'
-                        ? 'bg-green-600 text-white'
+                        ? 'bg-green-600'
                         : order.status === 'rejected'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-yellow-400 text-black'
+                          ? 'bg-red-600'
+                          : 'bg-yellow-400'
                     }`}
                   >
                     {t(order.status)}
                   </Badge>
                 </TableCell>
-                <TableCell className='text-right md:hidden'>
-                  <Badge
-                    className={`text-xs ${
-                      order.status === 'completed'
-                        ? 'bg-green-600 text-white'
-                        : order.status === 'rejected'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-yellow-400 text-black'
-                    }`}
-                  >
-                    {t(order.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell className='hidden md:table-cell text-gray-600 dark:text-gray-400'>
-                  {formatDateTime(order.createdAt!).dateTime}
-                </TableCell>
+                <TableCell className='text-right'>
+                    <Badge
+                      className={`text-xs ${
+                        order.status === 'completed'
+                          ? 'bg-green-600'
+                          : order.status === 'rejected'
+                            ? 'bg-red-600'
+                            : 'bg-yellow-400'
+                      }`}
+                    >
+                      {t(order.status)}
+                    </Badge>
+                  </TableCell>
                 <TableCell>
                   <div className='flex flex-col gap-1 sm:gap-2'>
                     <div className='flex justify-end sm:justify-start'>
@@ -154,7 +152,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         }}
                       />
                     </div>
-                    <div className='grid grid-cols-3 gap-1 sm:flex sm:gap-2'>
+                    <div className='grid grid-cols-2 gap-1 sm:flex sm:gap-2'>
                       <form
                         action={markOrderAsCompleted}
                         className='w-full sm:w-auto'
@@ -181,13 +179,15 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                           {t('Reject')}
                         </Button>
                       </form>
-                      <form action={markOrderAsPending} className='w-full sm:w-auto'>
+                      <form
+                        action={markOrderAsPending}
+                        className='hidden sm:block sm:w-auto'
+                      >
                         <input type='hidden' name='orderId' value={order._id} />
                         <Button
                           type='submit'
                           size='sm'
                           variant='outline'
-                          className='w-full bg-yellow-400 hover:bg-yellow-500 text-black'
                           disabled={order.status === 'pending'}
                         >
                           {t('pending')}
