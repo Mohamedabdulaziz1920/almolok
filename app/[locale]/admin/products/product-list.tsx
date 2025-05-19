@@ -248,7 +248,7 @@ const ProductList = () => {
                             {t('view')}
                           </Link>
                         </Button>
-                        <DeleteDialog variant='destructive' className='text-xs'
+                        <DeleteDialog
                           id={product._id}
                           action={deleteProduct}
                           callbackAction={() => {
