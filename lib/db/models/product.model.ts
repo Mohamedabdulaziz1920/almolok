@@ -23,10 +23,6 @@ const productSchema = new Schema<IProduct>(
       required: true,
     },
     images: [String],
-    brand: {
-      type: String,
-      required: true,
-    },
     description: {
       type: String,
       trim: true,
