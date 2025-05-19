@@ -119,6 +119,7 @@ const ProductForm = ({
   const images = form.watch('images')
 
   return (
+  <main className="pt-16 px-4 md:px-6">
     <Form {...form}>
       <form
         method='post'
@@ -346,6 +347,7 @@ const ProductForm = ({
         </div>
       </form>
     </Form>
+  </main>
   )
 }
 
