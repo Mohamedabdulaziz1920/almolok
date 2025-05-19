@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatDateTime, formatId } from '@/lib/utils'
+import { formatId } from '@/lib/utils'
 import { IOrderList } from '@/types'
 import ProductPrice from '@/components/shared/product/product-price'
 import { getTranslations } from 'next-intl/server'
