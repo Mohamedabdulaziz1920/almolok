@@ -247,7 +247,7 @@ const ProductList = () => {
         <Button
           asChild
           size='sm'
-          className='w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white'
+          className='w-full sm:w-auto bg-yellow-400 hover:bg-yellow-700 text-black'
         >
           <Link target='_blank' href={`/product/${product.slug}`}>
             {t('view')}
