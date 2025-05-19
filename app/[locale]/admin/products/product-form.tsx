@@ -27,13 +27,14 @@ import { IProductInput } from '@/types'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { getCategories } from '@/lib/actions/category.actions'
+import { Loader2 } from 'lucide-react'
 
 interface Category {
   _id: string
+  slug: string
   name: string
 }
 
-// نقلت تعريف default values قبل الاستخدام
 const productDefaultValues: IProductInput = {
   name: '',
   slug: '',
@@ -76,7 +77,6 @@ const ProductForm = ({
       product && type === 'Update' ? product : productDefaultValues,
   })
 
-  // جلب الفئات عند تحميل المكون
   useEffect(() => {
     async function fetchCategories() {
       const res = await getCategories()
@@ -89,35 +89,49 @@ const ProductForm = ({
   }, [])
 
   async function onSubmit(values: IProductInput) {
-    if (type === 'Create') {
-      const res = await createProduct(values)
-      if (!res.success) {
+    try {
+      if (values.images.length === 0) {
         toast({
           variant: 'destructive',
-          description: res.message,
+          description: 'يجب إضافة صورة واحدة على الأقل',
         })
-      } else {
-        toast({
-          description: res.message,
-        })
-        router.push(`/admin/products`)
-      }
-    }
-
-    if (type === 'Update') {
-      if (!productId) {
-        router.push(`/admin/products`)
         return
       }
-      const res = await updateProduct({ ...values, _id: productId })
-      if (!res.success) {
-        toast({
-          variant: 'destructive',
-          description: res.message,
-        })
-      } else {
+
+      const processedValues = {
+        ...values,
+        price: Number(values.price),
+        listPrice: Number(values.listPrice),
+        countInStock: Number(values.countInStock),
+        slug: values.slug || toSlug(values.name),
+      }
+
+      if (type === 'Create') {
+        const res = await createProduct(processedValues)
+        if (!res.success) throw new Error(res.message)
+        
+        toast({ description: res.message })
+        router.push(`/admin/products`)
+      } else if (type === 'Update') {
+        if (!productId) {
+          router.push(`/admin/products`)
+          return
+        }
+        
+        const res = await updateProduct({ ...processedValues, _id: productId })
+        if (!res.success) throw new Error(res.message)
+        
+        toast({ description: res.message })
         router.push(`/admin/products`)
       }
+    } catch (error) {
+      console.error('Error submitting product:', error)
+      toast({
+        variant: 'destructive',
+        description: error instanceof Error 
+          ? (error.message || 'حدث خطأ أثناء حفظ المنتج') 
+          : 'حدث خطأ غير متوقع',
+      })
     }
   }
 
@@ -126,7 +140,6 @@ const ProductForm = ({
   return (
     <Form {...form}>
       <form
-        method='post'
         onSubmit={form.handleSubmit(onSubmit)}
         className='space-y-8'
       >
@@ -190,7 +203,7 @@ const ProductForm = ({
                   >
                     <option value=''>{t('Select category')}</option>
                     {categories.map((cat) => (
-                      <option key={cat._id} value={cat._id}>
+                      <option key={cat.slug} value={cat.slug}>
                         {cat.name}
                       </option>
                     ))}
@@ -223,6 +236,39 @@ const ProductForm = ({
         <div className='flex flex-col gap-5 md:flex-row'>
           <FormField
             control={form.control}
+            name='listPrice'
+            render={({ field }) => (
+              <FormItem className='w-full'>
+                <FormLabel>{t('List Price')}</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={t('Enter product list price')}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='price'
+            render={({ field }) => (
+              <FormItem className='w-full'>
+                <FormLabel>{t('Net Price')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('Enter product price')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className='flex flex-col gap-5 md:flex-row'>
+          <FormField
+            control={form.control}
             name='images'
             render={() => (
               <FormItem className='w-full'>
@@ -244,7 +290,9 @@ const ProductForm = ({
                         <UploadButton
                           endpoint='imageUploader'
                           onClientUploadComplete={(res: { url: string }[]) => {
-                            form.setValue('images', [...images, res[0].url])
+                            if (res && res.length > 0) {
+                              form.setValue('images', [...form.getValues('images'), res[0].url])
+                            }
                           }}
                           onUploadError={(error: Error) => {
                             toast({
@@ -302,16 +350,21 @@ const ProductForm = ({
         </div>
 
         <div>
-         {/* Submit Button */}
-                   <Button
-              type='submit'
-              size='lg'
-              disabled={form.formState.isSubmitting}
-              className='w-full md:w-auto'
-            >
-              {form.formState.isSubmitting
-                ? t('saving') : type === 'Update' ? t('Update') : t('Create')}
-            </Button>
+          <Button
+            type='submit'
+            size='lg'
+            disabled={form.formState.isSubmitting}
+            className='button col-span-2 w-full'
+          >
+            {form.formState.isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t('submitting')}
+              </div>
+            ) : (
+              t(`${type.toLowerCase()}_product`)
+            )}
+          </Button>
         </div>
       </form>
     </Form>
