@@ -116,28 +116,31 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   <Badge
                     className={`text-xs ${
                       order.status === 'completed'
-                        ? 'bg-green-600'
+                        ? 'bg-green-600 text-white'
                         : order.status === 'rejected'
-                          ? 'bg-red-600'
-                          : 'bg-yellow-400'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-yellow-400 text-black'
                     }`}
                   >
                     {t(order.status)}
                   </Badge>
                 </TableCell>
-                <TableCell className='text-right'>
-                    <Badge
-                      className={`text-xs ${
-                        order.status === 'completed'
-                          ? 'bg-green-600'
-                          : order.status === 'rejected'
-                            ? 'bg-red-600'
-                            : 'bg-yellow-400'
-                      }`}
-                    >
-                      {t(order.status)}
-                    </Badge>
-                  </TableCell>
+                <TableCell className='text-right md:hidden'>
+                  <Badge
+                    className={`text-xs ${
+                      order.status === 'completed'
+                        ? 'bg-green-600 text-white'
+                        : order.status === 'rejected'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-yellow-400 text-black'
+                    }`}
+                  >
+                    {t(order.status)}
+                  </Badge>
+                </TableCell>
+                <TableCell className='hidden md:table-cell text-gray-600 dark:text-gray-400'>
+                  {formatDateTime(order.createdAt!).dateTime}
+                </TableCell>
                 <TableCell>
                   <div className='flex flex-col gap-1 sm:gap-2'>
                     <div className='flex justify-end sm:justify-start'>
