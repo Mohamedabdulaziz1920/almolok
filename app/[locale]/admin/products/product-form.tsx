@@ -38,7 +38,6 @@ const productDefaultValues: IProductInput = {
   slug: '',
   category: '',
   images: [],
-  brand: '',
   description: '',
   price: 0,
   listPrice: 0,
@@ -196,15 +195,18 @@ const ProductForm = ({
               </FormItem>
             )}
           />
-
-          <FormField
+           <FormField
             control={form.control}
-            name='brand'
+            name='countInStock'
             render={({ field }) => (
               <FormItem className='w-full'>
-                <FormLabel>{t('Brand')}</FormLabel>
+                <FormLabel>{t('Count In Stock')}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t('Enter product brand')} {...field} />
+                  <Input
+                    type='number'
+                    placeholder={t('Enter product count in stock')}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -238,24 +240,6 @@ const ProductForm = ({
                 <FormLabel>{t('Net Price')}</FormLabel>
                 <FormControl>
                   <Input placeholder={t('Enter product price')} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='countInStock'
-            render={({ field }) => (
-              <FormItem className='w-full'>
-                <FormLabel>{t('Count In Stock')}</FormLabel>
-                <FormControl>
-                  <Input
-                    type='number'
-                    placeholder={t('Enter product count in stock')}
-                    {...field}
-                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
