@@ -557,9 +557,10 @@ We also provide helpful resources such as order tracking, product guides, and FA
       name: 'Browsing History',
       href: '/#browsing-history',
     },
+
     {
-      name: 'Help',
-      href: '/page/help',
+      name: 'About Us',
+      href: '/page/about-us',
     },
   ],
   carousels: [
