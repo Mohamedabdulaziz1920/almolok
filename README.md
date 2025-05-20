@@ -1,13 +1,4 @@
-# ECommerce Website
-|                |                                  |
-| -------------- | -------------------------------- |
-| Frmework       | Next.js 15, React 19             |
-| UI             | Tailwind, Shadcn, Recharts       |
-| Database       | MongoDB, Mongoose                |
-| Payment        | PayPal, Stripe                   |
-| Deployment     | Github, Vercel                   |
-| Authentication | Auth.js, Google Auth, Magic Link |
-| Others         | uploadthing, resend, zod, etc    |
+# ECommerce Website - تصميم وبرمجة: محمد الملجمي 2025
 
 ## View Website
 
@@ -23,6 +14,3 @@ https://almolok.vercel.app
 
 WebSite: https://mohammed-almalgami.com
 Whatsapp: 00967778834074 - 00967735845762
-
-
-## جميع الحقوق محفوظة لـ: محمد الملجمي 
