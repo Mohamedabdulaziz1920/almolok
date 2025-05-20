@@ -558,10 +558,6 @@ We also provide helpful resources such as order tracking, product guides, and FA
       href: '/#browsing-history',
     },
     {
-      name: 'Customer Service',
-      href: '/page/customer-service',
-    },
-    {
       name: 'About Us',
       href: '/page/about-us',
     },
