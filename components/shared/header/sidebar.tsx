@@ -101,11 +101,6 @@ export default async function Sidebar({
                 {t('Header.Your account')}
               </Link>
             </DrawerClose>{' '}
-            <DrawerClose asChild>
-              <Link href='/page/customer-service' className='item-button'>
-                {t('Header.Customer Service')}
-              </Link>
-            </DrawerClose>
             {session ? (
               <form action={SignOut} className='w-full'>
                 <Button
