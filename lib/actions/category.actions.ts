@@ -87,13 +87,54 @@ export async function updateCategory(data: { _id: string } & CategoryParams) {
 }
 
 
-// ====== حذف تصنيف ======
 export async function deleteCategory(id: string) {
   try {
-    await Category.findByIdAndDelete(id)
-    return { success: true, message: 'تم حذف التصنيف بنجاح' }
-  } catch {
-    return { success: false, message: 'حدث خطأ أثناء الحذف' }
+    // التحقق الأساسي
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return { 
+        success: false, 
+        message: 'معرّف التصنيف غير صالح' 
+      };
+    }
+
+    await connectToDB();
+
+    // التحقق من وجود التصنيف
+    const category = await Category.findById(id);
+    if (!category) {
+      return { 
+        success: false, 
+        message: 'التصنيف غير موجود' 
+      };
+    }
+
+    // التحقق من التبعيات
+    const dependentProducts = await Product.countDocuments({ categoryId: id });
+    if (dependentProducts > 0) {
+      return {
+        success: false,
+        message: `لا يمكن الحذف - يوجد ${dependentProducts} منتجات مرتبطة`
+      };
+    }
+
+    // تنفيذ الحذف
+    await Category.findByIdAndDelete(id);
+    
+    return { 
+      success: true, 
+      message: 'تم حذف التصنيف بنجاح' 
+    };
+
+  } catch (error: any) {
+    console.error('Delete Error:', error);
+    
+    return {
+      success: false,
+      message: error.message.includes('timeout') 
+        ? 'مهلة الاتصال انتهت' 
+        : 'حدث خطأ فني',
+      errorCode: error.code
+    };
   }
 }
 
