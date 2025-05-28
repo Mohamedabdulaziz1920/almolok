@@ -2,94 +2,168 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-export default function RechargePage() {
-  const [amount, setAmount] = useState(0)
-  const [reason, setReason] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('')
-  const [isProcessing, setIsProcessing] = useState(false)
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
+import { useToast } from '@/hooks/use-toast'
+import { useSession } from 'next-auth/react'
 
-  const handleRecharge = async () => {
-    if (amount <= 0 || !paymentMethod) {
-      alert('يرجى إدخال مبلغ صالح واختيار وسيلة الدفع')
+export default function WalletRechargePage() {
+  const [amount, setAmount] = useState(0)
+  const [paymentMethod, setPaymentMethod] = useState('')
+  const [showPaypalButtons, setShowPaypalButtons] = useState(false)
+  const { data: session } = useSession()
+  const { toast } = useToast()
+
+  const handleRecharge = () => {
+    if (!session?.user?.id) {
+      toast({ description: 'يجب تسجيل الدخول أولاً', variant: 'destructive' })
       return
     }
 
-    setIsProcessing(true)
+    if (amount <= 0) {
+      toast({ description: 'الرجاء إدخال مبلغ صحيح', variant: 'destructive' })
+      return
+    }
 
-    try {
-      // إرسال طلب شحن الرصيد إلى السيرفر مع تفاصيل المبلغ والسبب ووسيلة الدفع
-      const res = await fetch('/api/recharge', {
-        method: 'POST',
-        body: JSON.stringify({ amount, reason, paymentMethod }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await res.json()
-
-      if (data.success) {
-        alert('تم تقديم طلب شحن الرصيد بنجاح!')
-        // توجيه المستخدم للانتقال إلى صفحة الشراء أو تأكيد الطلب
-        window.location.href = '/checkout'
-      } else {
-        alert('فشل في تقديم الطلب، حاول مرة أخرى')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('حدث خطأ أثناء تقديم الطلب')
-    } finally {
-      setIsProcessing(false)
+    if (paymentMethod === 'paypal') {
+      setShowPaypalButtons(true)
     }
   }
 
+  const createPayPalOrder = async (): Promise<string> => {
+    try {
+      const response = await fetch('/api/wallet/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          userId: session?.user?.id,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.error || result.message || 'فشل في إنشاء طلب الدفع'
+        )
+      }
+
+      return result.orderID // تم التعديل هنا لاستخدام orderID بدلاً من data.orderID
+    } catch (error) {
+      console.error('Error creating PayPal order:', error)
+      throw error
+    }
+  }
+  const onApprovePayPalOrder = async (data: { orderID: string }) => {
+    try {
+      const response = await fetch('/api/wallet/paypal/capture-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderID: data.orderID,
+          amount,
+          userId: session?.user?.id,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'فشل في عملية الدفع')
+      }
+
+      toast({
+        description: `تم الشحن بنجاح! الرصيد الجديد: ${result.newBalance}`,
+        variant: 'default',
+      })
+      window.location.href = '/account/wallet?success=true'
+    } catch (error) {
+      toast({
+        description:
+          error instanceof Error ? error.message : 'حدث خطأ في النظام',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) {
+    return <div className='text-center p-4'>نظام الدفع غير متاح حالياً</div>
+  }
+
   return (
-    <div className='p-4'>
-      <h1 className='text-2xl font-bold mb-4 text-black'>شحن رصيدك</h1>
+    <div className='max-w-md mx-auto p-4'>
+      <h1 className='text-2xl font-bold mb-6 text-right'>شحن الرصيد</h1>
 
-      {/* إدخال المبلغ */}
-      <div className='mb-4'>
-        <label className='block mb-2 text-black'>أدخل المبلغ الذي تريد شحنه:</label>
-        <input
-          type='number'
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-          className='border p-2 w-full'
-        />
-      </div>
+      <div className='space-y-4'>
+        <div>
+          <label className='block mb-2 font-medium text-right'>المبلغ</label>
+          <input
+            type='number'
+            min='1'
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+            className='w-full p-2 border rounded text-left'
+            placeholder='أدخل المبلغ'
+            dir='ltr'
+          />
+        </div>
 
-      {/* إدخال السبب */}
-      <div className='mb-4 text-black'>
-        <label className='block mb-2'>السبب (ملاحظة):</label>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className='border p-2 w-full'
-        />
-      </div>
+        <div>
+          <label className='block mb-2 font-medium text-right'>
+            طريقة الدفع
+          </label>
+          <select
+            value={paymentMethod}
+            onChange={(e) => {
+              setPaymentMethod(e.target.value)
+              setShowPaypalButtons(false)
+            }}
+            className='w-full p-2 border rounded text-right'
+          >
+            <option value=''>اختر طريقة الدفع</option>
+            <option value='paypal'>PayPal</option>
+          </select>
+        </div>
 
-      {/* اختيار وسيلة الدفع */}
-      <div className='mb-4'>
-        <label className='block mb-2 text-black'>اختر وسيلة الدفع:</label>
-        <select
-          value={paymentMethod}
-          onChange={(e) => setPaymentMethod(e.target.value)}
-          className='border p-2 w-full'
-        >
-          <option value=''>اختر وسيلة الدفع</option>
-          <option value='paypal'>PayPal</option>
-          <option value='credit_card'>بطاقة ائتمان</option>
-          {/* يمكنك إضافة المزيد من وسائل الدفع هنا */}
-        </select>
-      </div>
-      <div>
-        <Button
-          onClick={handleRecharge}
-          disabled={isProcessing}
-          className='bg-yellow-500 text-black px-4 py-2 rounded'
-        >
-          {isProcessing ? 'جاري تقديم الطلب...' : 'تقديم طلب شحن الرصيد'}
-        </Button>
+        {!showPaypalButtons && (
+          <Button
+            onClick={handleRecharge}
+            className='w-full bg-primary text-white py-2 rounded'
+          >
+            المتابعة إلى الدفع
+          </Button>
+        )}
+
+        {showPaypalButtons && (
+          <div className='mt-4'>
+            <PayPalScriptProvider
+              options={{
+                clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+                currency: 'USD',
+                intent: 'capture',
+              }}
+            >
+              <PayPalButtons
+                createOrder={createPayPalOrder}
+                onApprove={onApprovePayPalOrder}
+                onError={() =>
+                  toast({
+                    description: 'حدث خطأ في PayPal',
+                    variant: 'destructive',
+                  })
+                }
+              />
+            </PayPalScriptProvider>
+
+            <Button
+              onClick={() => setShowPaypalButtons(false)}
+              className='w-full mt-4 bg-gray-500 text-white py-2 rounded'
+              variant='outline'
+            >
+              إلغاء
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
