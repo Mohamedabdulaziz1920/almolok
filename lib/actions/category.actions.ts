@@ -2,8 +2,9 @@
 
 import { connectToDatabase } from '../db'
 import Category from '../db/models/category.model'
+import Product from '../db/models/product.model'
 import { CategoryType } from '@/types'
-
+import mongoose from 'mongoose'
 // واجهات بيانات
 interface CategoryParams {
   name: string
@@ -86,55 +87,49 @@ export async function updateCategory(data: { _id: string } & CategoryParams) {
   }
 }
 
-
 export async function deleteCategory(id: string) {
   try {
     // التحقق الأساسي
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-      return { 
-        success: false, 
-        message: 'معرّف التصنيف غير صالح' 
-      };
+      return {
+        success: false,
+        message: 'معرّف التصنيف غير صالح',
+      }
     }
 
-    await connectToDB();
+    await connectToDatabase()
 
     // التحقق من وجود التصنيف
-    const category = await Category.findById(id);
+    const category = await Category.findById(id)
     if (!category) {
-      return { 
-        success: false, 
-        message: 'التصنيف غير موجود' 
-      };
+      return {
+        success: false,
+        message: 'التصنيف غير موجود',
+      }
     }
 
     // التحقق من التبعيات
-    const dependentProducts = await Product.countDocuments({ categoryId: id });
+    const dependentProducts = await Product.countDocuments({ categoryId: id })
     if (dependentProducts > 0) {
       return {
         success: false,
-        message: `لا يمكن الحذف - يوجد ${dependentProducts} منتجات مرتبطة`
-      };
+        message: `لا يمكن الحذف - يوجد ${dependentProducts} منتجات مرتبطة`,
+      }
     }
 
     // تنفيذ الحذف
-    await Category.findByIdAndDelete(id);
-    
-    return { 
-      success: true, 
-      message: 'تم حذف التصنيف بنجاح' 
-    };
+    await Category.findByIdAndDelete(id)
 
-  } catch (error: any) {
-    console.error('Delete Error:', error);
-    
+    return {
+      success: true,
+      message: 'تم حذف التصنيف بنجاح',
+    }
+  } catch (error) {
+    console.error('Delete Error:', error)
     return {
       success: false,
-      message: error.message.includes('timeout') 
-        ? 'مهلة الاتصال انتهت' 
-        : 'حدث خطأ فني',
-      errorCode: error.code
-    };
+      message: `حدث خطأ فني': ${(error as Error).message}`,
+    }
   }
 }
 
