@@ -1,74 +1,33 @@
-// app/[locale]/categories/[slug]/page.tsx
-'use client'
+// app/[locale]/(root)/categories/[slug]/page.tsx
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { CategoryType, ProductType } from '@/types'
-import Image from 'next/image'
-import axios from 'axios'
+import { Metadata } from 'next'
+import { getCategoryWithProducts } from '@/lib/actions/category.actions'
+import CategoryDetailsClient from './CategoryDetailsClient'
 
-export default function CategoryProductsPage() {
-  const params = useParams()
-  const slug = params?.slug as string
+type PageProps = {
+  params: {
+    slug: string
+    locale: string
+  }
+}
 
-  const [products, setProducts] = useState<ProductType[]>([])
-  const [loading, setLoading] = useState(true)
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const decodedSlug = decodeURIComponent(params.slug)
+  const data = await getCategoryWithProducts(decodedSlug)
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // 1. جلب بيانات القسم للحصول على الـ ID من خلال الـ slug
-        const categoryRes = await axios.get(`/api/categories?slug=${slug}`)
-        const category: CategoryType = categoryRes.data[0]
+  return {
+    title: data?.category.name || 'Category',
+  }
+}
 
-        if (!category || !category._id) {
-          setProducts([])
-          setLoading(false)
-          return
-        }
+export default async function CategoryPage({ params }: PageProps) {
+  const decodedSlug = decodeURIComponent(params.slug)
+  const data = await getCategoryWithProducts(decodedSlug)
+  if (!data) {
+    return <div>Category not found</div>
+  }
 
-        // 2. جلب المنتجات المرتبطة بـ category._id
-        const productsRes = await axios.get(
-          `/api/categories/${category._id}/products`
-        )
-        setProducts(productsRes.data)
-      } catch (error) {
-        console.error('Failed to fetch category products', error)
-        setProducts([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (slug) {
-      fetchProducts()
-    }
-  }, [slug])
-
-  if (loading) return <div className='p-4 text-center'>جاري التحميل...</div>
-
-  return (
-    <div className='p-4'>
-      <h1 className='text-2xl font-bold mb-4'>منتجات هذا القسم</h1>
-      {products.length === 0 ? (
-        <p>لا توجد منتجات في هذا القسم.</p>
-      ) : (
-        <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-          {products.map((product) => (
-            <div key={product._id} className='border p-2 rounded shadow'>
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={300}
-                height={200}
-                className='rounded'
-              />
-              <h2 className='mt-2 font-medium'>{product.name}</h2>
-              <p className='text-green-600'>{product.price} $</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+  return <CategoryDetailsClient initialData={data} locale={params.locale} />
 }
