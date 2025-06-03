@@ -59,19 +59,19 @@
     "Best Deals on Wrist Watches": "Best Deals on Wrist Watches"
   },
   "CreateCategoryPage": {
-  "Categories": "Categories",
-  "Create New Category": "Create New Category",
-  "Edit": "Edit",
-  "Delete": "Delete",
-  "Deleting...": "Deleting...",
-  "No categories yet": "No categories yet",
-  "Error": "Error",
-  "Manage and track all Categories": "Manage and track all Categories",
-  "Confirm Delete": "Are you sure you want to delete this category?",
-  "create": "Create",
-  "create_category": "Create New Category",
-  "create_category_details": "Fill in the details to add a new category for products"
-},
+    "Categories": "Categories",
+    "Create New Category": "Create New Category",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Deleting": "Deleting...",
+    "No categories yet": "No categories yet",
+    "Error": "Error",
+    "Manage and track all Categories": "Manage and track all Categories",
+    "Confirm Delete": "Are you sure you want to delete this category?",
+    "create": "Create",
+    "create_category": "Create New Category",
+    "create_category_details": "Fill in the details to add a new category for products"
+  },
   "AccountPage": {
     "YourAccount": "Your Account",
     "YourOrders": "Your Orders",
@@ -728,6 +728,21 @@
       "Dashboard": "Dashboard"
     }
   },
+  "Categories": {
+    "RelatedProducts": "Related Products",
+    "ChooseProduct": "Choose a product",
+    "UnitPrice": "Unit Price",
+    "Quantity": "Quantity",
+    "Total": "Total",
+    "InStock": "In Stock",
+    "OutOfStock": "Out of Stock",
+    "LowStock": "Only {count} left in stock",
+    "CustomerReviews": "Customer Reviews",
+    "NoReviewsYet": "No reviews yet",
+    "ShareThoughts": "Share your thoughts with other customers",
+    "WriteReview": "Write a customer review",
+    "RelatedItems": "Related to items that you've viewed"
+  },
   "AdminHeader": {
     "Dashboard": "Dashboard",
     "Your account": "Your account",
@@ -815,12 +830,14 @@
     "empty": "No categories available"
   },
   "CategoryForm": {
+    "description": "description",
     "name": "Category Name",
     "namePlaceholder": "Enter category name",
     "slug": "Slug",
     "slugPlaceholder": "Enter slug",
     "generate": "Generate",
     "image": "Category Image",
+    "category image": "Category Image",
     "saving": "Saving...",
     "create": "Create Category",
     "update": "Update Category",
