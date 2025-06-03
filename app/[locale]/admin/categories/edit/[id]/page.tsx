@@ -14,7 +14,7 @@ export default async function EditCategoryPage({ params }: Props) {
   }
 
   return (
-    <main className="container mx-auto px-4 py-6">
+    <main className='max-w-6xl mx-auto p-4 pt-20'>
       <h1 className="text-xl font-bold mb-6">تعديل القسم</h1>
       <CategoryForm
         type={CategoryFormType.Update}
