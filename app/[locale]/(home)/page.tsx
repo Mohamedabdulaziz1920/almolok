@@ -18,7 +18,7 @@ export default async function HomePage() {
         {categories.map((category: CategoryType) => (
           <Link
             key={category.slug}
-            href={`/search?category=${category.slug}`}
+            href={`/categories/${category.slug}`}
             className='block'
           >
             <Card className='hover:shadow-lg transition-shadow duration-300'>
