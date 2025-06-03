@@ -280,18 +280,18 @@
     "pageInfo": "صفحة {page} من {totalPages}"
   },
   "CreateCategoryPage": {
-  "Categories": "التصنيفات",
-  "Create New Category": "إضافة تصنيف جديد",
-  "Edit": "تعديل",
-  "Delete": "حذف",
-  "Deleting...": "جارٍ الحذف...",
-  "No categories yet": "لا توجد تصنيفات بعد",
-  "Error": "خطأ",
-  "Manage and track all Categories": "إدارة وتتبع جميع التصنيفات",
-  "Confirm Delete": "هل أنت متأكد أنك تريد حذف هذا التصنيف؟",
-  "create": "إضافة",
-  "create_category": "إضافة تصنيف جديد",
-  "create_category_details": "قم بملء التفاصيل لإضافة تصنيف جديد للمنتجات"
+    "Categories": "التصنيفات",
+    "Create New Category": "إضافة تصنيف جديد",
+    "Edit": "تعديل",
+    "Delete": "حذف",
+    "Deleting": "جارٍ الحذف...",
+    "No categories yet": "لا توجد تصنيفات بعد",
+    "Error": "خطأ",
+    "Manage and track all Categories": "إدارة وتتبع جميع التصنيفات",
+    "Confirm Delete": "هل أنت متأكد أنك تريد حذف هذا التصنيف؟",
+    "create": "إضافة",
+    "create_category": "إضافة تصنيف جديد",
+    "create_category_details": "قم بملء التفاصيل لإضافة تصنيف جديد للمنتجات"
   },
   "ProductForm": {
     "Select category": "إختر نوع القسم",
@@ -690,8 +690,8 @@
   },
   "CheckoutFooter": {
     "needHelp": "تحتاج مساعدة؟ قم بزيارة <helpLink>مركز المساعدة</helpLink> أو <contactLink>اتصل بنا</contactLink>",
-    "orderConfirmation": "للعناصر المطلوبة من {siteName}: عند النقر على زر 'تقديم الطلب'، سنرسل لك بريدًا إلكترونيًا يؤكد استلام طلبك. لن يكتمل عقد الشراء حتى نرسل لك بريدًا إلكترونيًا يخطرك بشحن العنصر إليك. بمجرد تقديم طلبك، فإنك توافق على <privacyLink>سياسة الخصوصية</privacyLink> و <conditionsLink>شروط الاستخدام</conditionsLink> لـ {siteName}.",
-    "returnPolicy": "خلال 30 يومًا من الاستلام، يمكنك إرجاع المنتجات الجديدة غير المفتوحة وبحالتها الأصلية. تنطبق بعض الاستثناءات والقيود. <returnsLink>اطلع على سياسة الإرجاع لـ {siteName}.</returnsLink>"
+    "orderConfirmation": "للعناصر المطلوبة من {siteName}: عند النقر على زر 'تقديم الطلب'، سنرسل لك بريدًا إلكترونيًا يؤكد استلام طلبك. لن يكتمل عقد الشراء حتى نرسل لك بريدًا إلكترونيًا يخطرك بشحن رصيد حسابك إليك. بمجرد تقديم طلبك، فإنك توافق على <privacyLink>سياسة الخصوصية</privacyLink> و <conditionsLink>شروط الاستخدام</conditionsLink> لـ {siteName}.",
+    "returnPolicy": "خلال 24 ساعة من الاستلام، يمكنك إرجاع اموالك. تنطبق بعض الاستثناءات والقيود. <returnsLink>اطلع على سياسة الإرجاع لـ {siteName}.</returnsLink>"
   },
   "OrderDetails": {
     "orderSummary": "ملخص الطلب",
@@ -881,7 +881,24 @@
     "edit": "تعديل",
     "empty": "لا توجد فئات حالياً"
   },
+  "Categories": {
+    "RelatedProducts": "منتجات ذات صلة",
+    "ChooseProduct": "اختر الكمية التي تريد شحنها:",
+    "UnitPrice": "سعر الوحدة",
+    "Quantity": "الكمية",
+    "Total": "الإجمالي",
+    "InStock": "متوفر",
+    "OutOfStock": "غير متوفر",
+    "LowStock": "تبقى فقط {count} في المخزون",
+    "CustomerReviews": "تقييمات العملاء",
+    "NoReviewsYet": "لا توجد تقييمات حتى الآن",
+    "ShareThoughts": "شارك رأيك مع العملاء الآخرين",
+    "WriteReview": "اكتب تقييمًا للمنتج",
+    "RelatedItems": "سجل التصفح"
+  },
   "CategoryForm": {
+    "RelatedProducts": "منتجات ذات صلة",
+    "description": "وصف الفئة",
     "removeImage": "حذف الصورة",
     "name": "اسم الفئة",
     "namePlaceholder": "ادخل اسم الفئة",
@@ -889,6 +906,7 @@
     "slugPlaceholder": "ادخل الرابط",
     "generate": "توليد",
     "image": "صورة الفئة",
+    "category image": "صورة الفئة",
     "saving": "جاري الحفظ...",
     "create": "إنشاء الفئة",
     "Create": "إنشاء القسم",
