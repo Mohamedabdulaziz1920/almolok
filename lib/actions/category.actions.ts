@@ -3,8 +3,14 @@
 import { connectToDatabase } from '../db'
 import Category from '../db/models/category.model'
 import Product from '../db/models/product.model'
-import { CategoryType } from '@/types'
+import { CategoryType, ProductType } from '@/types'
+import { CategoryInputSchema } from '@/lib/validator'
+import { z } from 'zod'
 import mongoose from 'mongoose'
+
+export type CreateCategoryInput = z.infer<typeof CategoryInputSchema>
+
+// واجهات بيانات
 // واجهات بيانات
 interface CategoryParams {
   name: string
@@ -45,7 +51,61 @@ export async function createCategory(data: CategoryParams) {
     }
   }
 }
+export const getCategoryWithProducts = async (
+  slug: string
+): Promise<{
+  category: CategoryType
+  products: ProductType[]
+} | null> => {
+  try {
+    await connectToDatabase()
 
+    // جلب بيانات التصنيف
+    const category = await Category.findOne({ slug }).lean<CategoryType>()
+    if (!category) return null
+
+    // جلب المنتجات التي تملك نفس slug في حقل category (كنص)
+    const products = await Product.find({ category: slug }) // هنا نبحث بالنص وليس ObjectId
+      .select(
+        '_id name slug category images brand price listPrice countInStock tags avgRating numReviews createdAt updatedAt'
+      )
+      .lean()
+      .sort({ createdAt: -1 })
+
+    return {
+      category: {
+        _id: String(category._id),
+        name: category.name,
+        slug: category.slug,
+        image: category.image,
+      },
+      products: products.map(
+        (product): ProductType => ({
+          _id: String(product._id),
+          name: product.name,
+          slug: product.slug,
+          category: product.category, // هنا ما زال نصًا
+          images: product.images || [],
+          brand: product.brand || 'غير محدد',
+          description: product.description || '',
+          price: product.price,
+          listPrice: product.listPrice || product.price,
+          countInStock: product.countInStock || 0,
+          tags: product.tags || [],
+          avgRating: product.avgRating || 0,
+          numReviews: product.numReviews || 0,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+        })
+      ),
+    }
+  } catch (error) {
+    console.error('Failed to fetch category with products:', error)
+    throw new Error(
+      `Failed to fetch category with products: ${(error as Error).message}`
+    )
+  }
+}
 // ====== تحديث تصنيف موجود ======
 export async function updateCategory(data: { _id: string } & CategoryParams) {
   try {
