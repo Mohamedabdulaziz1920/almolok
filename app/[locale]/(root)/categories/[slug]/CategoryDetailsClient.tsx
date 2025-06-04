@@ -107,7 +107,7 @@ export default function CategoryDetailsClient({ initialData }: Props) {
                     <div className='flex justify-between items-center'>
                       <span className='font-medium'>{t('UnitPrice')}:</span>
                       <span className='font-bold'>
-                       $ {selectedProduct.price} 
+                       ${selectedProduct.price} 
                       </span>
                     </div>
                     <div className='flex justify-between items-center mt-2'>
@@ -116,7 +116,7 @@ export default function CategoryDetailsClient({ initialData }: Props) {
                     </div>
                     <div className='flex justify-between items-center mt-2 border-t pt-2'>
                       <span className='font-medium'>{t('Total')}:</span>
-                      <span className='font-bold text-lg'>$ {totalPrice} </span>
+                      <span className='font-bold text-lg'>${totalPrice} </span>
                     </div>
                   </div>
                 )}
@@ -132,7 +132,7 @@ export default function CategoryDetailsClient({ initialData }: Props) {
               <CardContent className='p-4 flex flex-col gap-4'>
                 {selectedProduct && (
                   <>
-                    <div className='text-xl font-bold'>$ {totalPrice} </div>
+                    <div className='text-xl font-bold'>${totalPrice} </div>
 
                     {selectedProduct.countInStock > 0 &&
                       selectedProduct.countInStock <= 3 && (
