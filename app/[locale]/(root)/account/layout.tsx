@@ -72,24 +72,11 @@ export default async function AccountLayout({
         </nav>
       </aside>
 
+      
       {/* المحتوى الرئيسي */}
       <main className='flex-1 w-full p-4'>
-        <div className='max-w-5xl mx-auto space-y-6 pb-16'>{children}</div>
+        <div className='max-w-5xl mx-auto space-y-6 pb-8'>{children}</div>
       </main>
-
-      {/* شريط سفلي للجوال */}
-      <nav className='md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around py-2 shadow-lg z-50'>
-        {links.slice(0, 4).map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className='flex flex-col items-center text-gray-300 hover:text-yellow-400 transition-colors'
-          >
-            <Icon className='w-5 h-5 text-yellow-400' />
-            <span className='text-xs mt-1'>{label}</span>
-          </Link>
-        ))}
-      </nav>
     </div>
   )
 }
