@@ -53,29 +53,7 @@ export type Data = {
     isPublished: boolean
   }[]
 }
-export type ProductType = {
-  _id: string
-  name: string
-  slug: string
-  category: string
-  images: string[] // ← استخدم images بدلاً من image
-  brand: string
-  description?: string
-  price: number
-  listPrice: number
-  countInStock: number
-  tags: string[]
-  avgRating: number
-  numReviews: number
-  createdAt?: Date
-  updatedAt?: Date
-}
-export type CategoryType = {
-  _id: string
-  name: string
-  slug: string
-  image: string
-}
+
 // Order
 export type IOrderInput = z.infer<typeof OrderInputSchema>
 export type IOrderList = IOrderInput & {
@@ -112,6 +90,12 @@ export type SiteCurrency = z.infer<typeof SiteCurrencySchema>
 export type PaymentMethod = z.infer<typeof PaymentMethodSchema>
 
 // Category
+export type CategoryType = {
+  _id: string
+  name: string
+  slug: string
+  image: string
+}
 // types.ts (أو ملف أنواع مشترك)
 type OrderItemInput = {
   product: string
