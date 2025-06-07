@@ -53,9 +53,7 @@ export default async function RootLayout({
   const setting = await getSetting()
   const cookieStore = await cookies()
   const currencyCookie = cookieStore.get('currency')
-
   const currency = currencyCookie ? currencyCookie.value : 'USD'
-
   const session = await auth()
 
   if (!routing.locales.includes(locale)) {
@@ -63,15 +61,18 @@ export default async function RootLayout({
   }
 
   const messages = await getMessages({ locale })
+  const direction = getDirection(locale)
+  const fontVariable = locale === 'ar' ? cairo.variable : roboto.variable
+  const fontClass = locale === 'ar' ? 'font-sans-ar' : 'font-sans-en'
 
   return (
-    <html lang={locale} dir={getDirection(locale)}>
-      <body
-        className={`${locale === 'ar' ? cairo.variable : roboto.variable} ${
-          locale === 'ar' ? 'font-sans-ar' : 'font-sans-en'
-        }`}
-        dir={getDirection(locale)}
-      >
+    <html
+      lang={locale}
+      dir={direction}
+      className='dark'
+      style={{ colorScheme: 'dark' }}
+    >
+      <body className={`${fontVariable} ${fontClass}`} dir={direction}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <SessionProvider session={session}>
             <ClientProviders setting={{ ...setting, currency }}>
