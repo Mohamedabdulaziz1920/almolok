@@ -138,7 +138,8 @@ export default function AdminSidebar() {
           side={isRTL ? 'right' : 'left'}
           className={cn(
             'w-72 max-w-full bg-gray-950/90 backdrop-blur text-yellow flex flex-col p-0',
-            'border-l border-gray-950'
+            'border-l border-gray-950',
+            !isOpen && 'pointer-events-none invisible'
           )}
         >
           <SheetHeader className='px-4 py-3 border-b border-gray-950'>
