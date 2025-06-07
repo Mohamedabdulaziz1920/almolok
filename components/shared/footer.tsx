@@ -68,7 +68,7 @@ export default function Footer() {
             {t('Footer.Download our app')}
           </h3>
           <div className='flex justify-center gap-4'>
-            <a href='/apk/almolok-app-release.apk' title='Google Play'>
+            <a href='/apk/app-release.apk' title='Google Play'>
               <Image
                 src='https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'
                 alt='Google Play'
