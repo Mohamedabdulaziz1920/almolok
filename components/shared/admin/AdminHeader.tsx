@@ -52,7 +52,14 @@ export default function AdminHeader() {
       {/* شعار وعنوان - يظهر بالشاشات الكبيرة */}
       <div className='hidden lg:flex items-center gap-3'>
         <Link href='/'>
-          <Image src='/icons/logo.svg' width={32} height={32} alt='Logo' />
+          <Image 
+            src='/icons/logo.svg' 
+            width={32} 
+            height={32} 
+            alt='Logo'
+            priority // إضافة الأولوية للشعار الرئيسي
+            loading="eager" // تعطيل التحميل الكسول
+          />
         </Link>
         <h1 className='text-lg font-bold text-yellow-400 truncate'>{t('Dashboard')}</h1>
       </div>
@@ -68,12 +75,12 @@ export default function AdminHeader() {
           <span className='sr-only'>{t('toggleNotifications')}</span>
         </Button>
 
-        {/* تبديل السمة - تم التعديل هنا */}
+        {/* تبديل السمة */}
         <div className='text-white'>
           <ThemeSwitcher />
         </div>
 
-        {/* تبديل اللغة - تم التعديل هنا */}
+        {/* تبديل اللغة */}
         <div className='text-white'>
           <LanguageSwitcher />
         </div>
@@ -93,6 +100,8 @@ export default function AdminHeader() {
                   height={32}
                   alt={user.name || 'User profile'}
                   className='rounded-full object-cover'
+                  priority // إضافة الأولوية لصورة المستخدم
+                  loading="eager" // تعطيل التحميل الكسول
                 />
               ) : (
                 <User className='h-5 w-5' />
