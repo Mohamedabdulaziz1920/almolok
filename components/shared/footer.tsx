@@ -93,7 +93,7 @@ export default function Footer() {
   className='hover:opacity-80 transition'
 >
   <Image
-    src='/icons/payment/download-apk-badge.png'
+    src='/icons/macosdownload.png'
     alt='Download APK'
     width={150}
     height={50}
