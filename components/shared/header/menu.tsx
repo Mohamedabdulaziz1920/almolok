@@ -8,7 +8,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import CartButton from './cart-button'
-import UserButton from '../admin/UserButton'
+import UserButton from './user-button'
 import ThemeSwitcher from './theme-switcher'
 import LanguageSwitcher from './language-switcher'
 import { useTranslations } from 'next-intl'
