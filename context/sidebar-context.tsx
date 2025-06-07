@@ -4,7 +4,7 @@ import { createContext, useContext, useState } from 'react'
 
 type SidebarContextType = {
   isOpen: boolean
-  toggle: () => void
+  toggle: (e?: React.TouchEvent) => void
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
@@ -12,7 +12,10 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const toggle = () => setIsOpen(!isOpen)
+  const toggle = (e?: React.TouchEvent) => {
+    e?.stopPropagation?.()
+    setIsOpen((prev) => !prev)
+  }
 
   return (
     <SidebarContext.Provider value={{ isOpen, toggle }}>
