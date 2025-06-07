@@ -68,7 +68,7 @@ export default function Footer() {
             {t('Footer.Download our app')}
           </h3>
           <div className='flex justify-center gap-4'>
-            <a href='/apk/app-release.apk' title='Google Play'>
+            <a href='#' title='Google Play'>
               <Image
                 src='https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg'
                 alt='Google Play'
@@ -86,6 +86,20 @@ export default function Footer() {
                 className='object-contain'
               />
             </a>
+            <a
+  href='/apk/app-release.apk'
+  download
+  title='Download APK'
+  className='hover:opacity-80 transition'
+>
+  <Image
+    src='/icons/download-apk-badge.png'
+    alt='Download APK'
+    width={150}
+    height={50}
+    className='object-contain'
+  />
+</a>
           </div>
         </div>
 
