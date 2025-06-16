@@ -9,6 +9,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
+     <>
     <SidebarProvider>
       <div className="flex min-h-screen">
         <AdminSidebar />
@@ -18,5 +19,6 @@ export default function AdminLayout({
         </div>
       </div>
       </SidebarProvider>
+        </>
   )
 }
