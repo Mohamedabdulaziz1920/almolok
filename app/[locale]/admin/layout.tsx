@@ -2,7 +2,7 @@
 import { SidebarProvider } from '@/context/sidebar-context'
 import AdminSidebar from '@/components/shared/admin/AdminSidebar'
 import AdminHeader from '@/components/shared/admin/AdminHeader'
-
+import Footer from '@/components/shared/footer'
 export default function AdminLayout({
   children,
 }: {
@@ -19,6 +19,7 @@ export default function AdminLayout({
         </div>
       </div>
       </SidebarProvider>
+     </Footer>
         </>
   )
 }
