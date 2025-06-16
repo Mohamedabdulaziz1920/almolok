@@ -12,8 +12,7 @@ import {
   Users,
   Settings,
   FileText,
-  Boxes,
-  X
+  Boxes
 } from 'lucide-react'
 import {
   Sheet,
