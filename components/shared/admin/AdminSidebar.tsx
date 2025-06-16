@@ -111,22 +111,6 @@ export default function AdminSidebar() {
 
       {/* ===== Mobile ===== */}
       <Sheet open={isOpen} onOpenChange={toggle}>
-        {/* زر الفتح – على طبقة أعلى من الهيدر */}
-        <SheetTrigger asChild>
-          <button
-            aria-label="Toggle sidebar"
-            className={cn(
-              'fixed top-4',
-              isRTL ? 'left-4' : 'right-4',
-              'rounded-lg bg-gray-950 p-2 text-yellow-400 shadow',
-              'focus:outline-none focus:ring-2 focus:ring-yellow-400',
-              'z-[60]' // أعلى من الهيدر (الذي z-50)
-            )}
-          >
-            <MenuIcon className="h-6 w-6" />
-          </button>
-        </SheetTrigger>
-
         {/* محتوى السايدبار في الجوال */}
         <SheetContent
           side={isRTL ? 'right' : 'left'}
