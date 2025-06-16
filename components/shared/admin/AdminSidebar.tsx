@@ -119,13 +119,14 @@ export default function AdminSidebar() {
       </aside>
 
       {/* Mobile Sidebar */}
-      <Sheet open={isOpen} onOpenChange={toggle}>
+<Sheet open={isOpen} onOpenChange={toggle}>
         <SheetTrigger asChild>
           <button
-         className={cn(
-    'w-72 … border-gray-950',
-    !isOpen && 'pointer-events-none invisible'  // ⬅️ يزيل التفاعل ويُخفي الطبقة
-  )}
+            className={cn(
+              'lg:hidden fixed z-50 p-2 rounded-lg bg-gray-950 text-yellow-400',
+              'focus:outline-none focus:ring-2 focus:ring-yellow-400',
+              'top-4 right-4'
+            )}
             aria-label='Toggle sidebar'
           >
             <MenuIcon className='h-6 w-6' />
