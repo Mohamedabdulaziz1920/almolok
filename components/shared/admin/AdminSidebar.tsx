@@ -88,7 +88,7 @@ export default function AdminSidebar() {
       <aside
         dir={isRTL ? 'rtl' : 'ltr'}
         className={cn(
-          'fixed top-10 hidden h-screen w-64 flex-col overflow-y-auto border-r bg-gray-950 p-4 pt-5 lg:flex',
+          'fixed top-0 hidden h-screen w-64 flex-col overflow-y-auto border-r bg-gray-950 p-4 pt-5 lg:flex',
           isRTL ? 'right-0' : 'left-0',
           'z-30'
         )}
