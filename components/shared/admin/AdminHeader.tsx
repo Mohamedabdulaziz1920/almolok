@@ -39,16 +39,18 @@ export default function AdminHeader() {
       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
     >
       {/* زر القائمة الجانبية للموبايل */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggle}
-        className="lg:hidden text-white hover:bg-gray-900 hover:text-yellow-400 transition"
-      >
-        <Menu className="h-5 w-5" />
-        <span className="sr-only">{t('toggleMenu')}</span>
-      </Button>
-
+    <Button
+  variant="ghost"
+  size="icon"
+  onClick={toggle}
+  className={cn(
+    'lg:hidden text-white hover:bg-gray-900 hover:text-yellow-400 transition',
+    'z-[60]'          // ❸ أعلى من الهيدر نفسه وأعلى أي طبقة أخرى
+  )}
+>
+  <Menu className="h-5 w-5" />
+  <span className="sr-only">{t('toggleMenu')}</span>
+</Button>
       {/* الشعار (يظهر على الديسكتوب) */}
       <div className="hidden items-center gap-3 lg:flex">
         <Link href="/">
