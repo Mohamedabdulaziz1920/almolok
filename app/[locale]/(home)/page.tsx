@@ -14,7 +14,7 @@ export default async function HomePage() {
       <HomeCarousel items={carousels} />
 
       {/* عرض الأقسام فقط */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4'>
+       <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4'>
         {categories.map((category: CategoryType) => (
           <Link
             key={category.slug}
