@@ -13,8 +13,6 @@ import {
   Settings,
   FileText,
   Boxes,
-  X,
-  Menu as MenuIcon,
 } from 'lucide-react'
 import {
   Sheet,
@@ -110,7 +108,6 @@ export default function AdminSidebar() {
 
       {/* ======= Mobile ======= */}
       <Sheet open={isOpen} onOpenChange={toggle}>
-        {/* ❷ لا SheetTrigger هنا؛ الهيدر هو من يستدعي toggle() */}
 
         <SheetContent
           side={isRTL ? 'right' : 'left'}
@@ -129,9 +126,6 @@ export default function AdminSidebar() {
                   {t('Dashboard')}
                 </SheetTitle>
               </div>
-              <SheetTrigger className="rounded-full p-1 hover:bg-gray-400">
-                <X className="h-5 w-5 text-gray-950" />
-              </SheetTrigger>
             </div>
           </SheetHeader>
 
