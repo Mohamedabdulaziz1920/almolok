@@ -1,146 +1,164 @@
 'use client'
 
-import { Bell, User, Menu } from 'lucide-react'
-import { useTranslations, useLocale } from 'next-intl'
-import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { useTranslations, useLocale } from 'next-intl'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  Home,
+  Package,
+  ShoppingCart,
+  Users,
+  Settings,
+  FileText,
+  Boxes,
+  X,
+  Menu as MenuIcon,
+} from 'lucide-react'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { useSidebar } from '@/context/sidebar-context'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import ThemeSwitcher from '@/components/shared/header/theme-switcher'
-import LanguageSwitcher from '@/components/shared/header/language-switcher'
-import Image from 'next/image'
-import { SignOut } from '@/lib/actions/user.actions'
 
-export default function AdminHeader() {
-  const t = useTranslations('AdminHeader')
-  const user = useCurrentUser()
-  const pathname = usePathname()
-  const { toggle } = useSidebar()
-  const locale = useLocale()
-  const isRTL = locale === 'ar'
+const sidebarLinks = [
+  { key: 'overview',   href: '/admin/overview',   icon: <Home size={18} /> },
+  { key: 'categories', href: '/admin/categories', icon: <Boxes size={18} /> },
+  { key: 'products',   href: '/admin/products',   icon: <Package size={18} /> },
+  { key: 'orders',     href: '/admin/orders',     icon: <ShoppingCart size={18} /> },
+  { key: 'users',      href: '/admin/users',      icon: <Users size={18} /> },
+  { key: 'pages',      href: '/admin/web-pages',  icon: <FileText size={18} /> },
+  { key: 'settings',   href: '/admin/settings',   icon: <Settings size={18} /> },
+]
 
-  if (!pathname.startsWith('/admin')) return null
+export default function AdminSidebar() {
+  const pathname  = usePathname()
+  const t         = useTranslations('AdminNav')
+  const user      = useCurrentUser()
+  const locale    = useLocale()
+  const isRTL     = locale === 'ar'
+  const { isOpen, toggle } = useSidebar()
 
-  return (
-    <header
-      className={cn(
-        'fixed top-0 z-50 flex h-16 items-center border-b bg-gray-950 shadow-sm',
-        'w-full px-4 md:px-6',
-        isRTL ? 'right-0' : 'left-0',
-      )}
-      style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-    >
-      {/* زر القائمة الجانبية - يظهر في الشاشات الصغيرة فقط */}
-      <Button
-        variant='ghost'
-        size='icon'
-        onClick={toggle}
-        className='lg:hidden text-white hover:text-yellow-400 hover:bg-gray-900 transition'
-      >
-        <Menu className='h-5 w-5' />
-        <span className='sr-only'>{t('toggleMenu')}</span>
-      </Button>
-
-      {/* شعار وعنوان - يظهر بالشاشات الكبيرة */}
-      <div className='hidden lg:flex items-center gap-3'>
-        <Link href='/'>
-          <Image 
-            src='/icons/logo.svg' 
-            width={32} 
-            height={32} 
-            alt='Logo'
-            priority // إضافة الأولوية للشعار الرئيسي
-            loading="eager" // تعطيل التحميل الكسول
-          />
-        </Link>
-        <h1 className='text-lg font-bold text-yellow-400 truncate'>{t('Dashboard')}</h1>
-      </div>
-
-      <div className='flex flex-1 justify-end items-center gap-2 sm:gap-4'>
-        {/* زر الإشعارات */}
-        <Button
-          variant='ghost'
-          size='icon'
-          className='text-white hover:text-yellow-400 hover:bg-gray-900 transition'
+  /* ----------------------- عناصر مساعدة ----------------------- */
+  const SidebarLinks = () => (
+    <nav className="mt-4 space-y-1">
+      {sidebarLinks.map(({ key, href, icon }) => (
+        <Link
+          key={href}
+          href={href}
+          aria-current={pathname.startsWith(href) ? 'page' : undefined}
+          className={cn(
+            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+            pathname.startsWith(href)
+              ? 'bg-gray-950 font-medium text-yellow-400'
+              : 'text-gray-300',
+            'hover:bg-gray-800 hover:text-yellow-400'
+          )}
+          onClick={() => window.innerWidth < 1024 && toggle()}
         >
-          <Bell className='h-5 w-5' />
-          <span className='sr-only'>{t('toggleNotifications')}</span>
-        </Button>
+          <span className="text-yellow-400">{icon}</span>
+          <span>{t(`links.${key}`)}</span>
+        </Link>
+      ))}
+    </nav>
+  )
 
-        {/* تبديل السمة */}
-        <div className='text-white'>
-          <ThemeSwitcher />
+  const UserInfo = () =>
+    user ? (
+      <div className="mb-4 flex flex-col gap-3 rounded-lg border border-black bg-gray-950 p-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-400 text-black">
+            {user.name?.charAt(0).toUpperCase() ?? (
+              <Image src="/icons/logo.svg" alt="User" width={20} height={20} />
+            )}
+          </div>
+          <p className="truncate font-medium text-white">
+            {t('welcome')} {user.name}
+          </p>
         </div>
-
-        {/* تبديل اللغة */}
-        <div className='text-white'>
-          <LanguageSwitcher />
-        </div>
-
-        {/* قائمة المستخدم */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='rounded-full hover:bg-gray-900 transition text-white'
-            >
-              {user?.image ? (
-                <Image
-                  src={user.image}
-                  width={32}
-                  height={32}
-                  alt={user.name || 'User profile'}
-                  className='rounded-full object-cover'
-                  priority // إضافة الأولوية لصورة المستخدم
-                  loading="eager" // تعطيل التحميل الكسول
-                />
-              ) : (
-                <User className='h-5 w-5' />
-              )}
-              <span className='sr-only'>{t('toggleUserMenu')}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align={isRTL ? 'start' : 'end'}
-            className='w-56 bg-gray-950 text-white'
-          >
-            <DropdownMenuItem className='flex flex-col items-start gap-1 p-3'>
-              <div className='text-sm font-medium truncate w-full'>
-                {user?.name}
-              </div>
-              <div className='text-xs truncate w-full'>
-                {user?.email}
-              </div>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem asChild>
-              <Link href='/account' className='w-full p-2 hover:bg-gray-800'>
-                {t('Your account')}
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem className='p-0 hover:bg-gray-800'>
-              <form action={SignOut} className='w-full'>
-                <button
-                  type='submit'
-                  className='w-full text-left p-2 text-sm hover:text-yellow-400'
-                >
-                  {t('logout')}
-                </button>
-              </form>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
-    </header>
+    ) : null
+
+  /* ----------------------- JSX ----------------------- */
+  return (
+    <>
+      {/* ===== Desktop ===== */}
+      <aside
+        dir={isRTL ? 'rtl' : 'ltr'}
+        className={cn(
+          'fixed top-0 hidden h-screen w-64 flex-col overflow-y-auto border-r bg-gray-950 p-4 pt-5 lg:flex',
+          isRTL ? 'right-0' : 'left-0',
+          'z-30'
+        )}
+      >
+        <div className="mb-6 flex items-center gap-3 px-2">
+          <Link href="/" className="shrink-0">
+            <Image src="/icons/logo.svg" alt="Logo" width={32} height={32} />
+          </Link>
+          <h1 className="truncate text-lg font-bold text-yellow-400">
+            {t('Dashboard')}
+          </h1>
+        </div>
+
+        <UserInfo />
+        <SidebarLinks />
+      </aside>
+
+      {/* ===== Mobile ===== */}
+      <Sheet open={isOpen} onOpenChange={toggle}>
+        {/* زر الفتح – على طبقة أعلى من الهيدر */}
+        <SheetTrigger asChild>
+          <button
+            aria-label="Toggle sidebar"
+            className={cn(
+              'fixed top-4',
+              isRTL ? 'left-4' : 'right-4',
+              'rounded-lg bg-gray-950 p-2 text-yellow-400 shadow',
+              'focus:outline-none focus:ring-2 focus:ring-yellow-400',
+              'z-[60]' // أعلى من الهيدر (الذي z-50)
+            )}
+          >
+            <MenuIcon className="h-6 w-6" />
+          </button>
+        </SheetTrigger>
+
+        {/* محتوى السايدبار في الجوال */}
+        <SheetContent
+          side={isRTL ? 'right' : 'left'}
+          dir={isRTL ? 'rtl' : 'ltr'}
+          className={cn(
+            'flex max-w-full w-72 flex-col bg-gray-950/90 backdrop-blur border-l border-gray-950 p-0',
+            !isOpen && 'pointer-events-none invisible' // تمنع الحجب عند الإغلاق
+          )}
+        >
+          <SheetHeader className="border-b border-gray-950 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Image src="/icons/logo.svg" alt="Logo" width={28} height={28} />
+                <SheetTitle className="text-lg text-yellow-400">
+                  {t('Dashboard')}
+                </SheetTitle>
+              </div>
+              <SheetTrigger className="rounded-full p-1 hover:bg-gray-400">
+                <X className="h-5 w-5 text-gray-950" />
+              </SheetTrigger>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            <UserInfo />
+            <SidebarLinks />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* يشغل فراغ السايدبار في الديسكتوب */}
+      <div className="hidden w-64 flex-shrink-0 lg:block" />
+    </>
   )
 }
