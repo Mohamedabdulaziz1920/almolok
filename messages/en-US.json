@@ -517,7 +517,12 @@
     "Account": "Account",
     "Search": "Search",
     "Cart": "Cart",
-    "Help": "Help"
+    "Help": "Help",
+    "designedBy": "Designed and developed by",
+    "home": "Home",
+    "account": "Account",
+    "search": "Search",
+    "cart": "Cart"
   },
   "Loading": {
     "Loading": "Loading..."
