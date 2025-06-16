@@ -133,40 +133,40 @@ export default function AdminSidebar() {
           </button>
         </SheetTrigger>
 
-        <SheetContent
-          dir={isRTL ? 'rtl' : 'ltr'}
-          side={isRTL ? 'right' : 'left'}
-          className={cn(
-            'w-72 max-w-full bg-gray-950/90 backdrop-blur text-yellow flex flex-col p-0',
-            'border-l border-gray-950',
-            !isOpen && 'pointer-events-none invisible'
-          )}
-        >
-          <SheetHeader className='px-4 py-3 border-b border-gray-950'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-3'>
-                <Image
-                  src='/icons/logo.svg'
-                  width={28}
-                  height={28}
-                  alt='Logo'
-                  className='w-7 h-7'
-                />
-                <SheetTitle className='text-lg text-yellow-400'>
-                  {t('Dashboard')}
-                </SheetTitle>
-              </div>
-              <SheetTrigger className='p-1 rounded-full hover:bg-gray-400'>
-                <X className='h-5 w-5 text-gray-950' />
-              </SheetTrigger>
-            </div>
-          </SheetHeader>
+<SheetContent
+  dir={isRTL ? 'rtl' : 'ltr'}
+  side={isRTL ? 'right' : 'left'}
+  className={cn(
+    'w-72 max-w-full bg-gray-950/90 backdrop-blur text-yellow flex flex-col p-0',
+    'border-l border-gray-950',
+    !isOpen && 'pointer-events-none invisible'
+  )}
+>
+  <SheetHeader className='px-4 py-3 border-b border-gray-950'>
+    <div className='flex items-center justify-between'>
+      <div className='flex items-center gap-3'>
+        <Image
+          src='/icons/logo.svg'
+          width={28}
+          height={28}
+          alt='Logo'
+          className='w-7 h-7'
+        />
+        <SheetTitle className='text-lg text-yellow-400'>
+          {t('Dashboard')}
+        </SheetTitle>
+      </div>
+      <SheetTrigger className='p-1 rounded-full hover:bg-gray-400'>
+        <X className='h-5 w-5 text-gray-950' />
+      </SheetTrigger>
+    </div>
+  </SheetHeader>
 
-          <div className='p-4 overflow-y-auto flex-1'>
-            <UserInfo />
-            <SidebarLinksContent />
-          </div>
-        </SheetContent>
+  <div className='p-4 overflow-y-auto flex-1'>
+    <UserInfo />
+    <SidebarLinksContent />
+  </div>
+</SheetContent>
       </Sheet>
 
       {/* Spacer */}
