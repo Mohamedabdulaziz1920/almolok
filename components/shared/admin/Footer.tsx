@@ -1,67 +1,77 @@
 'use client'
 
-import { ChevronUp, ShoppingCart, Home, User, SearchIcon } from 'lucide-react'
+import {
+  ChevronUp,
+  ShoppingCart,
+  Home,
+  User,
+  Search,            // ✅ التسمية الصحيحة
+} from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'   // ✅ مفقود
 import useCartStore from '@/hooks/use-cart-store'
 import { Button } from '@/components/ui/button'
-import useSettingStore from '@/hooks/use-setting-store'
 import { useTranslations } from 'next-intl'
-
+// ✅ أزلنا useSettingStore لأنه غير مستخدم
 
 export default function Footer() {
   const pathname = usePathname()
   const { cart } = useCartStore()
-
-  const t = useTranslations()
+  const t = useTranslations('Footer')          // ✅ نطاق الترجمة
 
   return (
-    <footer className='bg-black text-white underline-link'>
-      <div className='w-full'>
-          <div className='mt-8 flex justify-center text-sm text-gray-400'>
-            <Link href='https://mohammed-almalgami.com/'>
-              {t('Footer.Designed and developed by')} |{' '}
-              {t('Footer.Mohammed Almalgami')}
-            </Link>
-          </div>
+    <footer className="underline-link bg-black text-white">
+      {/* ————— الروابط السفلية ————— */}
+      <div className="w-full">
+        <div className="mt-8 flex justify-center text-sm text-gray-400">
+          <Link
+            href="https://mohammed-almalgami.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('designedBy')} | Mohammed Almalgami
+          </Link>
         </div>
-    
-      {/* Mobile Bottom Navigation */}
-      <nav className='md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around py-2 shadow-lg z-50'>
+      </div>
+
+      {/* ————— شريط التصفح السفلي للموبايل ————— */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-gray-800 bg-gray-900 py-2 shadow-lg md:hidden">
         <Link
-          href='/'
-          className='flex flex-col items-center text-gray-300 hover:text-yellow-400 transition-colors'
+          href="/"
+          className="flex flex-col items-center text-gray-300 transition-colors hover:text-yellow-400"
         >
-          <Home className='w-5 h-5 text-yellow-400' />
-          <span className='text-xs mt-1'>{t('Footer.Home')}</span>
+          <Home className="h-5 w-5 text-yellow-400" />
+          <span className="mt-1 text-xs">{t('home')}</span>
         </Link>
 
         <Link
-          href='/account'
-          className='flex flex-col items-center text-gray-300 hover:text-yellow-400 transition-colors'
+          href="/account"
+          className="flex flex-col items-center text-gray-300 transition-colors hover:text-yellow-400"
         >
-          <User className='w-5 h-5 text-yellow-400' />
-          <span className='text-xs mt-1'>{t('Footer.Account')}</span>
+          <User className="h-5 w-5 text-yellow-400" />
+          <span className="mt-1 text-xs">{t('account')}</span>
         </Link>
 
         <button
+          aria-label="Scroll to top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className='flex flex-col items-center justify-center gap-1 text-sm text-muted-foreground'
+          className="flex flex-col items-center gap-1 text-xs text-gray-300 transition-colors hover:text-yellow-400"
         >
-          <SearchIcon className='w-5 h-5 text-yellow-400' />
-          <span>{t('Footer.Search')}</span>
+          <Search className="h-5 w-5 text-yellow-400" />
+          <span>{t('search')}</span>
         </button>
 
         <Link
-          href='/cart'
-          className='relative flex flex-col items-center text-gray-300 hover:text-yellow-400 transition-colors'
+          href="/cart"
+          className="relative flex flex-col items-center text-gray-300 transition-colors hover:text-yellow-400"
         >
-          <ShoppingCart className='w-5 h-5 text-yellow-400' />
-          {cart.items.length > 0 && (
-            <span className='absolute -top-1 right-0 bg-red-600 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full'>
+          <ShoppingCart className="h-5 w-5 text-yellow-400" />
+          {cart?.items?.length ? (
+            <span className="absolute -top-1 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
               {cart.items.length}
             </span>
-          )}
-          <span className='text-xs mt-1'>{t('Footer.Cart')}</span>
+          ) : null}
+          <span className="mt-1 text-xs">{t('cart')}</span>
         </Link>
       </nav>
     </footer>
