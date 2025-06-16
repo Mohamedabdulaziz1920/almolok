@@ -1,4 +1,4 @@
-'use client' 
+'use client'
 
 import Link from 'next/link'
 import Image from 'next/image'
@@ -13,163 +13,133 @@ import {
   Settings,
   FileText,
   Boxes,
-  X,
-  Menu as MenuIcon,
+  X
 } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
 import { useSidebar } from '@/context/sidebar-context'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 const sidebarLinks = [
-  { key: 'overview', href: '/admin/overview', icon: <Home size={18} /> },
+  { key: 'overview',   href: '/admin/overview',   icon: <Home size={18} /> },
   { key: 'categories', href: '/admin/categories', icon: <Boxes size={18} /> },
-  { key: 'products', href: '/admin/products', icon: <Package size={18} /> },
-  { key: 'orders', href: '/admin/orders', icon: <ShoppingCart size={18} /> },
-  { key: 'users', href: '/admin/users', icon: <Users size={18} /> },
-  { key: 'pages', href: '/admin/web-pages', icon: <FileText size={18} /> },
-  { key: 'settings', href: '/admin/settings', icon: <Settings size={18} /> },
+  { key: 'products',   href: '/admin/products',   icon: <Package size={18} /> },
+  { key: 'orders',     href: '/admin/orders',     icon: <ShoppingCart size={18} /> },
+  { key: 'users',      href: '/admin/users',      icon: <Users size={18} /> },
+  { key: 'pages',      href: '/admin/web-pages',  icon: <FileText size={18} /> },
+  { key: 'settings',   href: '/admin/settings',   icon: <Settings size={18} /> },
 ]
 
 export default function AdminSidebar() {
-  const pathname = usePathname()
-  const t = useTranslations('AdminNav')
-  const user = useCurrentUser()
-  const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const pathname  = usePathname()
+  const t         = useTranslations('AdminNav')
+  const user      = useCurrentUser()
+  const locale    = useLocale()
+  const isRTL     = locale === 'ar'
   const { isOpen, toggle } = useSidebar()
 
-  const SidebarLinksContent = () => (
-    <nav className='space-y-1 mt-4'>
-      {sidebarLinks.map((link) => (
+  /* ----------------------- عناصر مساعدة ----------------------- */
+  const SidebarLinks = () => (
+    <nav className="mt-4 space-y-1">
+      {sidebarLinks.map(({ key, href, icon }) => (
         <Link
-          key={link.href}
-          href={link.href}
-          aria-current={pathname.includes(link.href) ? 'page' : undefined}
+          key={href}
+          href={href}
+          aria-current={pathname.startsWith(href) ? 'page' : undefined}
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-            'hover:bg-gray-800 hover:text-yellow-400',
-            pathname.includes(link.href)
-              ? 'bg-gray-950 text-yellow-400 font-medium'
-              : 'text-gray-300'
+            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+            pathname.startsWith(href)
+              ? 'bg-gray-950 font-medium text-yellow-400'
+              : 'text-gray-300',
+            'hover:bg-gray-800 hover:text-yellow-400'
           )}
-          onClick={() => {
-            if (window.innerWidth < 1024) toggle()
-          }}
+          onClick={() => window.innerWidth < 1024 && toggle()}
         >
-          <span className='text-yellow-400'>{link.icon}</span>
-          <span className='text-sm'>{t(links.${link.key})}</span>
+          <span className="text-yellow-400">{icon}</span>
+          <span>{t(`links.${key}`)}</span>
         </Link>
       ))}
     </nav>
   )
 
   const UserInfo = () =>
-    user && (
-      <div className='flex flex-col gap-3 p-3 border border-black rounded-lg mb-4 bg-gray-950'>
-        <div className='flex items-center gap-3'>
-          <div className='bg-yellow-400 text-black rounded-full h-9 w-9 flex items-center justify-center'>
-            {user.name?.charAt(0).toUpperCase() || (
-              <Image src='/icons/logo.svg' width={20} height={20} alt='User' />
+    user ? (
+      <div className="mb-4 flex flex-col gap-3 rounded-lg border border-black bg-gray-950 p-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-400 text-black">
+            {user.name?.charAt(0).toUpperCase() ?? (
+              <Image src="/icons/logo.svg" alt="User" width={20} height={20} />
             )}
           </div>
-          <div className='flex-1 min-w-0'>
-            <p className='font-medium text-white truncate'>
-              {t('welcome')} {user.name}
-            </p>
-          </div>
+          <p className="truncate font-medium text-white">
+            {t('welcome')} {user.name}
+          </p>
         </div>
       </div>
-    )
+    ) : null
 
+  /* ----------------------- JSX ----------------------- */
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* ===== Desktop ===== */}
       <aside
         dir={isRTL ? 'rtl' : 'ltr'}
         className={cn(
-          'fixed top-0 h-screen z-30 hidden lg:flex flex-col',
-          'w-64 p-4 overflow-y-auto bg-gray-950 border-r border-gray-950',
+          'fixed top-0 hidden h-screen w-64 flex-col overflow-y-auto border-r bg-gray-950 p-4 pt-5 lg:flex',
           isRTL ? 'right-0' : 'left-0',
-          'pt-5'
+          'z-30'
         )}
       >
-        <div className='flex items-center gap-3 mb-6 px-2'>
-          <Link href='/' className='shrink-0'>
-            <Image
-              src='/icons/logo.svg'
-              width={32}
-              height={32}
-              alt='Logo'
-              className='w-8 h-8'
-            />
+        <div className="mb-6 flex items-center gap-3 px-2">
+          <Link href="/" className="shrink-0">
+            <Image src="/icons/logo.svg" alt="Logo" width={32} height={32} />
           </Link>
-          <h1 className='text-lg font-bold text-yellow-400 truncate'>
+          <h1 className="truncate text-lg font-bold text-yellow-400">
             {t('Dashboard')}
           </h1>
         </div>
 
         <UserInfo />
-        <SidebarLinksContent />
+        <SidebarLinks />
       </aside>
 
-      {/* Mobile Sidebar */}
-<Sheet open={isOpen} onOpenChange={toggle}>
-        <SheetTrigger asChild>
-          <button
-            className={cn(
-              'lg:hidden fixed z-50 p-2 rounded-lg bg-gray-950 text-yellow-400',
-              'focus:outline-none focus:ring-2 focus:ring-yellow-400',
-              'top-4 right-4'
-            )}
-            aria-label='Toggle sidebar'
-          >
-            <MenuIcon className='h-6 w-6' />
-          </button>
-        </SheetTrigger>
+      {/* ===== Mobile ===== */}
+      <Sheet open={isOpen} onOpenChange={toggle}>
 
-<SheetContent
-  dir={isRTL ? 'rtl' : 'ltr'}
-  side={isRTL ? 'right' : 'left'}
-  className={cn(
-    'w-72 … border-gray-950',
-    !isOpen && 'pointer-events-none invisible'  // ⬅️ يزيل التفاعل ويُخفي الطبقة
-  )}
->
-  <SheetHeader className='px-4 py-3 border-b border-gray-950'>
-    <div className='flex items-center justify-between'>
-      <div className='flex items-center gap-3'>
-        <Image
-          src='/icons/logo.svg'
-          width={28}
-          height={28}
-          alt='Logo'
-          className='w-7 h-7'
-        />
-        <SheetTitle className='text-lg text-yellow-400'>
-          {t('Dashboard')}
-        </SheetTitle>
-      </div>
-      <SheetTrigger className='p-1 rounded-full hover:bg-gray-400'>
-        <X className='h-5 w-5 text-gray-950' />
-      </SheetTrigger>
-    </div>
-  </SheetHeader>
+        {/* محتوى السايدبار في الجوال */}
+        <SheetContent
+          side={isRTL ? 'right' : 'left'}
+          dir={isRTL ? 'rtl' : 'ltr'}
+          className={cn(
+            'flex max-w-full w-72 flex-col bg-gray-950/90 backdrop-blur border-l border-gray-950 p-0',
+            !isOpen && 'pointer-events-none invisible' // تمنع الحجب عند الإغلاق
+          )}
+        >
+          <SheetHeader className="border-b border-gray-950 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Image src="/icons/logo.svg" alt="Logo" width={28} height={28} />
+                <SheetTitle className="text-lg text-yellow-400">
+                  {t('Dashboard')}
+                </SheetTitle>
+              </div>
+        
+            </div>
+          </SheetHeader>
 
-  <div className='p-4 overflow-y-auto flex-1'>
-    <UserInfo />
-    <SidebarLinksContent />
-  </div>
-</SheetContent>
+          <div className="flex-1 overflow-y-auto p-4">
+            <UserInfo />
+            <SidebarLinks />
+          </div>
+        </SheetContent>
       </Sheet>
 
-      {/* Spacer */}
-      <div className='hidden lg:block w-64 flex-shrink-0' />
+      {/* يشغل فراغ السايدبار في الديسكتوب */}
+      <div className="hidden w-64 flex-shrink-0 lg:block" />
     </>
   )
 }
