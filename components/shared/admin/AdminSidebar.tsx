@@ -21,7 +21,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
 import { useSidebar } from '@/context/sidebar-context'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
@@ -109,15 +108,17 @@ export default function AdminSidebar() {
         <SidebarLinks />
       </aside>
 
-      {/* ===== Mobile ===== */}
+      {/* ======= Mobile ======= */}
       <Sheet open={isOpen} onOpenChange={toggle}>
-        {/* محتوى السايدبار في الجوال */}
+        {/* ❷ لا SheetTrigger هنا؛ الهيدر هو من يستدعي toggle() */}
+
         <SheetContent
           side={isRTL ? 'right' : 'left'}
           dir={isRTL ? 'rtl' : 'ltr'}
           className={cn(
-            'flex max-w-full w-72 flex-col bg-gray-950/90 backdrop-blur border-l border-gray-950 p-0',
-            !isOpen && 'pointer-events-none invisible' // تمنع الحجب عند الإغلاق
+            'flex w-72 max-w-full flex-col border-l border-gray-950 bg-gray-950/90 backdrop-blur p-0',
+            // إذا أُغلق: اجعل العنصر وروحه و الـPortal بأكمله بدون تفاعل ورؤية
+            !isOpen && 'pointer-events-none invisible'
           )}
         >
           <SheetHeader className="border-b border-gray-950 px-4 py-3">
