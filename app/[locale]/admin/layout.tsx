@@ -3,7 +3,7 @@
 import { SidebarProvider } from '@/context/sidebar-context'
 import AdminSidebar  from '@/components/shared/admin/AdminSidebar'
 import AdminHeader   from '@/components/shared/admin/AdminHeader'
-import Footer        from '@/components/shared/admin/footer'   // تأكّد من المسار/حالة الأحرف
+import Footer        from '@/components/shared/admin/Footer'   // تأكّد من المسار/حالة الأحرف
 
 export default function AdminLayout({
   children,
