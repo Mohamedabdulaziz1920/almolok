@@ -1,12 +1,13 @@
 'use client'
 
+import React, { useEffect, useState, useTransition } from 'react'
+import Link from 'next/link'
 import {
   BadgeDollarSign,
   Barcode,
   CreditCard,
   Users,
 } from 'lucide-react'
-import Link from 'next/link'
 import {
   Card,
   CardContent,
@@ -29,7 +30,6 @@ import {
 } from '@/lib/utils'
 
 import SalesCategoryPieChart from './sales-category-pie-chart'
-import React, { useEffect, useState, useTransition } from 'react'
 import { DateRange } from 'react-day-picker'
 import { getOrderSommary } from '@/lib/actions/order.actions'
 import SalesAreaChart from './sales-area-chart'
@@ -40,7 +40,6 @@ import TableChart from './table-chart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
 
-// ✅ حدد نوع البيانات المرجعة
 interface IOrderSummary {
   totalSales: number
   ordersCount: number
@@ -54,7 +53,8 @@ interface IOrderSummary {
 }
 
 export default function OverviewReport() {
-   const t = useTranslations('Admin')
+  const t = useTranslations('Admin')
+
   const [date, setDate] = useState<DateRange | undefined>({
     from: calculatePastDate(30),
     to: new Date(),
@@ -62,6 +62,17 @@ export default function OverviewReport() {
 
   const [data, setData] = useState<IOrderSummary | undefined>()
   const [, startTransition] = useTransition()
+
+  // ✅ Reload once only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const alreadyRefreshed = sessionStorage.getItem('dashboardRefreshed')
+      if (!alreadyRefreshed) {
+        sessionStorage.setItem('dashboardRefreshed', 'true')
+        window.location.reload()
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (date) {
