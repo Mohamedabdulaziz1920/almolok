@@ -65,16 +65,19 @@ export default function OverviewReport() {
 
   // ✅ تحديث الصفحة تلقائيًا فقط عند الدخول إليها من صفحة أخرى (وليس عند كل refresh)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // إذا كانت الصفحة جاءت من رابط مختلف (referrer مختلف عن نفس الصفحة)
-      const fromAnotherPage =
-        document.referrer && !document.referrer.includes(window.location.href)
+  if (typeof window !== 'undefined') {
+    const reloaded = sessionStorage.getItem('reloaded')
 
-      if (fromAnotherPage) {
-        window.location.reload()
-      }
+    if (reloaded === 'true') {
+      // حذف العلامة حتى يتم تحديث الزيارة القادمة
+      sessionStorage.removeItem('reloaded')
+    } else {
+      // وضع العلامة ثم إعادة تحميل الصفحة
+      sessionStorage.setItem('reloaded', 'true')
+      window.location.reload()
     }
-  }, [])
+  }
+}, [])
 
   useEffect(() => {
     if (date) {
