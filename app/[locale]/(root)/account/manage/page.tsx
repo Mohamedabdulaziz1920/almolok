@@ -1,196 +1,97 @@
 import { Metadata } from 'next'
-
 import { SessionProvider } from 'next-auth/react'
-
 import { getTranslations } from 'next-intl/server'
 
-
-
 import { auth } from '@/auth'
-
 import Link from 'next/link'
-
 import { Card, CardContent } from '@/components/ui/card'
-
 import { Separator } from '@/components/ui/separator'
-
 import { Button } from '@/components/ui/button'
-
-
+import { deleteCurrentUser } from '@/lib/actions/account.actions'
 
 const PAGE_TITLE = 'Login & Security'
-
 export const metadata: Metadata = {
-
   title: PAGE_TITLE,
-
 }
 
-
-
 export default async function ProfilePage() {
-
   const t = await getTranslations('AccountPage')
-
   const session = await auth()
-
   const user = session?.user
 
-
-
   if (!user) {
-
     return <div>لا يوجد مستخدم مسجل الدخول</div>
-
   }
 
-
-
   return (
-
     <div className='max-w-5xl mx-auto space-y-4'>
-
       <SessionProvider session={session}>
-
         <div className='flex gap-2'>
-
           <Link href='/account'>{t('BreadcrumbAccount')}</Link>
-
           <span>›</span>
-
           <span>{t('LoginSecurity')}</span>
-
         </div>
-
         <h1 className='h1-bold py-4'>{t('LoginSecurity')}</h1>
-
         <Card className='max-w-2xl'>
-
           <CardContent className='p-4 flex justify-between flex-wrap'>
-
             <div>
-
               <h3 className='font-bold'>{t('Name')}</h3>
-
               <p>{user.name}</p>
-
             </div>
-
             <div>
-
               <Link href='/account/manage/name'>
-
                 <Button className='rounded-full w-32' variant='outline'>
-
                   {t('Edit')}
-
                 </Button>
-
               </Link>
-
             </div>
-
           </CardContent>
-
           <Separator />
-
           <CardContent className='p-4 flex justify-between flex-wrap'>
-
             <div>
-
               <h3 className='font-bold'>{t('Email')}</h3>
-
               <p>{user.email}</p>
-
               <p>{t('ComingSoon')}</p>
-
             </div>
-
             <div>
-
-              <Link href='#'>
-
-                <Button
-
-                  disabled
-
-                  className='rounded-full w-32'
-
-                  variant='outline'
-
-                >
-
-                  {t('Edit')}
-
-                </Button>
-
-              </Link>
-
+              <Button disabled className='rounded-full w-32' variant='outline'>
+                {t('Edit')}
+              </Button>
             </div>
-
           </CardContent>
-
           <Separator />
-
           <CardContent className='p-4 flex justify-between flex-wrap'>
-
             <div>
-
               <h3 className='font-bold'>{t('Password')}</h3>
-
               <p>{t('HiddenPassword')}</p>
-
               <p>{t('ComingSoon')}</p>
-
             </div>
-
             <div>
-
-              <Link href='#'>
-
-                <Button
-
-                  disabled
-
-                  className='rounded-full w-32'
-
-                  variant='outline'
-
-                >
-
-                  {t('Edit')}
-
-                </Button>
-
-              </Link>
-
+              <Button disabled className='rounded-full w-32' variant='outline'>
+                {t('Edit')}
+              </Button>
             </div>
-
           </CardContent>
-
-<Separator />
-<CardContent className='p-4 flex justify-between flex-wrap'>
-  <div>
-    <h3 className='font-bold text-red-600'>حذف الحساب</h3>
-    <p>سيتم حذف حسابك وجميع البيانات المرتبطة به نهائيًا.</p>
-  </div>
-  <div className='mt-4 sm:mt-0'>
-    <form action={deleteCurrentUser}>
-      <Button
-        type='submit'
-        size='sm'
-        className='w-32 bg-red-600 text-white hover:bg-red-700'
-      >
-        حذف الحساب
-      </Button>
-    </form>
-  </div>
-</CardContent>
-   </Card>
-
+          <Separator />
+          <CardContent className='p-4 flex justify-between flex-wrap'>
+            <div>
+              <h3 className='font-bold text-red-600'>حذف الحساب</h3>
+              <p>سيتم حذف حسابك وجميع بياناتك نهائيًا، ولن تتمكن من استعادتها.</p>
+            </div>
+            <div className='mt-4 sm:mt-0'>
+              <form action={deleteCurrentUser}>
+                <Button
+                  type='submit'
+                  size='sm'
+                  className='w-32 bg-red-600 text-white hover:bg-red-700'
+                >
+                  حذف الحساب
+                </Button>
+              </form>
+            </div>
+          </CardContent>
+        </Card>
       </SessionProvider>
     </div>
-
   )
-
 }
