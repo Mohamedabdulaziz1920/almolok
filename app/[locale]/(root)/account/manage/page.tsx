@@ -168,10 +168,27 @@ export default async function ProfilePage() {
 
           </CardContent>
 
-        </Card>
+<Separator />
+<CardContent className='p-4 flex justify-between flex-wrap'>
+  <div>
+    <h3 className='font-bold text-red-600'>حذف الحساب</h3>
+    <p>سيتم حذف حسابك وجميع البيانات المرتبطة به نهائيًا.</p>
+  </div>
+  <div className='mt-4 sm:mt-0'>
+    <form action={deleteCurrentUser}>
+      <Button
+        type='submit'
+        size='sm'
+        className='w-32 bg-red-600 text-white hover:bg-red-700'
+      >
+        حذف الحساب
+      </Button>
+    </form>
+  </div>
+</CardContent>
+   </Card>
 
       </SessionProvider>
-
     </div>
 
   )
