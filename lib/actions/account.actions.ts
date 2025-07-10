@@ -1,3 +1,4 @@
+// lib/actions/account.actions.ts أو أي مكان مناسب في مشروعك
 
 'use server'
 
@@ -20,7 +21,7 @@ export async function deleteCurrentUser() {
 
     // تسجيل الخروج وإعادة التوجيه
     await signOut({ redirect: false }) // يمنع إعادة التوجيه التلقائي
-    redirect('/') // إعادة التوجيه للصفحة الرئيسية
+    redirect('/') // التوجيه للصفحة الرئيسية
 
   } catch (error) {
     return { success: false, message: 'حدث خطأ أثناء حذف الحساب' }
