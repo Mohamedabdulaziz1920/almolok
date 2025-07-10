@@ -11,6 +11,8 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getSetting } from './setting.actions'
+import { deleteUserAccount } from '@/lib/actions/user.actions'
+
 
 // CREATE - تسجيل مستخدم جديد
 export async function registerUser(userSignUp: IUserSignUp) {
