@@ -77,9 +77,9 @@ export default function CredentialsSignInForm() {
             name='email'
             render={({ field }) => (
               <FormItem className='w-full'>
-                <FormLabel>{t('email')}</FormLabel>
+                <FormLabel className="text-gray-800">{t('email')}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t('emailPlaceholder')} {...field} />
+                  <Input className="text-gray-800" placeholder={t('emailPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -91,9 +91,9 @@ export default function CredentialsSignInForm() {
             name='password'
             render={({ field }) => (
               <FormItem className='w-full'>
-                <FormLabel>{t('password')}</FormLabel>
+                <FormLabel className="text-gray-800">{t('password')}</FormLabel>
                 <FormControl>
-                  <Input
+                  <Input className="text-gray-800"
                     type='password'
                     placeholder={t('passwordPlaceholder')}
                     {...field}
@@ -107,9 +107,9 @@ export default function CredentialsSignInForm() {
           <div>
             <Button type='submit'>{t('signIn')}</Button>
           </div>
-          <div className='text-sm'>
+          <div className="text-sm text-gray-600 text-center leading-relaxed">
             {t('agreement', { siteName: site.name })}{' '}
-            <Link href='/page/conditions-of-use'>{t('conditionsOfUse')}</Link>{' '}
+            <Link className="text-sm text-gray-600" href='/page/conditions-of-use'>{t('conditionsOfUse')}</Link>{' '}
             {t('and')}{' '}
             <Link href='/page/privacy-policy'>{t('privacyPolicy')}</Link>
           </div>
