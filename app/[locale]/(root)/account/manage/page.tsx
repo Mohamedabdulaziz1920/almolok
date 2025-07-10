@@ -1,13 +1,14 @@
 import { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react'
 import { getTranslations } from 'next-intl/server'
+import { deleteUserAccount } from '@/lib/actions/user.actions'
+import { redirect } from 'next/navigation'
 
 import { auth } from '@/auth'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { deleteCurrentUser } from '@/lib/actions/user.actions'
 
 const PAGE_TITLE = 'Login & Security'
 export const metadata: Metadata = {
@@ -54,9 +55,15 @@ export default async function ProfilePage() {
               <p>{t('ComingSoon')}</p>
             </div>
             <div>
-              <Button disabled className='rounded-full w-32' variant='outline'>
-                {t('Edit')}
-              </Button>
+              <Link href='#'>
+                <Button
+                  disabled
+                  className='rounded-full w-32'
+                  variant='outline'
+                >
+                  {t('Edit')}
+                </Button>
+              </Link>
             </div>
           </CardContent>
           <Separator />
@@ -67,31 +74,39 @@ export default async function ProfilePage() {
               <p>{t('ComingSoon')}</p>
             </div>
             <div>
-              <Button disabled className='rounded-full w-32' variant='outline'>
-                {t('Edit')}
-              </Button>
-            </div>
-          </CardContent>
-          <Separator />
-          <CardContent className='p-4 flex justify-between flex-wrap'>
-            <div>
-              <h3 className='font-bold text-red-600'>حذف الحساب</h3>
-              <p>سيتم حذف حسابك وجميع بياناتك نهائيًا، ولن تتمكن من استعادتها.</p>
-            </div>
-            <div className='mt-4 sm:mt-0'>
-              <form action={deleteCurrentUser}>
+              <Link href='#'>
                 <Button
-                  type='submit'
-                  size='sm'
-                  className='w-32 bg-red-600 text-white hover:bg-red-700'
+                  disabled
+                  className='rounded-full w-32'
+                  variant='outline'
                 >
-                  حذف الحساب
+                  {t('Edit')}
                 </Button>
-              </form>
+              </Link>
             </div>
           </CardContent>
         </Card>
       </SessionProvider>
+      <Separator />
+<CardContent className='p-4 flex justify-between flex-wrap bg-red-50'>
+  <div>
+    <h3 className='font-bold text-red-600'>حذف الحساب</h3>
+    <p className='text-sm text-red-700'>
+      عند الضغط على هذا الزر، سيتم حذف حسابك وجميع بياناتك بشكل نهائي.
+    </p>
+  </div>
+  <form action={async () => {
+    'use server'
+    if (!user?.id) return
+    await deleteUserAccount(user.id)
+    redirect('/') // إعادة التوجيه بعد الحذف
+  }}>
+    <Button type='submit' variant='destructive' className='rounded-full mt-2'>
+      حذف الحساب نهائيًا
+    </Button>
+  </form>
+</CardContent>
+
     </div>
   )
 }
