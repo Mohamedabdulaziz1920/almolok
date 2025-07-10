@@ -176,3 +176,23 @@ export async function addUserBalance(userId: string, amount: number) {
     }
   }
 }
+
+export async function deleteCurrentUser() {
+  try {
+    const session = await auth()
+    const user = session?.user
+    if (!user) throw new Error('لم يتم تسجيل الدخول')
+
+    await connectToDatabase()
+
+    const res = await User.findByIdAndDelete(user._id)
+    if (!res) throw new Error('المستخدم غير موجود')
+
+    // تسجيل الخروج وإعادة التوجيه
+    await signOut({ redirect: false }) // يمنع إعادة التوجيه التلقائي
+    redirect('/') // إعادة التوجيه للصفحة الرئيسية
+
+  } catch (error) {
+    return { success: false, message: 'حدث خطأ أثناء حذف الحساب' }
+  }
+}
