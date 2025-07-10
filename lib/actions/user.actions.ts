@@ -175,3 +175,11 @@ export async function addUserBalance(userId: string, amount: number) {
     }
   }
 }
+export async function deleteUserAccount(userId: string) {
+  try {
+    await db.user.delete({ where: { id: userId } })
+  } catch (error) {
+    console.error('Failed to delete user:', error)
+    throw new Error('Failed to delete user')
+  }
+}
