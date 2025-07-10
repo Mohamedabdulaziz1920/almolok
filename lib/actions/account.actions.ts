@@ -1,7 +1,7 @@
 'use server'
 
 import { auth } from '@/auth'
-import { User } from '../db/models/user.model'
+import User from '../db/models/user.model'
 import { connectToDatabase } from '../db'
 import { signOut } from '@/auth'
 import { redirect } from 'next/navigation'
