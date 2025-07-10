@@ -1,10 +1,8 @@
-// lib/actions/account.actions.ts أو أي مكان مناسب في مشروعك
-
 'use server'
 
 import { auth } from '@/auth'
 import { User } from '@/lib/models/user.model'
-import { connectToDatabase } from '@/lib/mongoose'
+import { connectToDatabase } from '../db'
 import { signOut } from '@/auth'
 import { redirect } from 'next/navigation'
 
