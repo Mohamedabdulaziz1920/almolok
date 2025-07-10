@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react'
 import { getTranslations } from 'next-intl/server'
+import { deleteUserAccount } from '@/lib/actions/user.actions'
+import { redirect } from 'next/navigation'
 
 import { auth } from '@/auth'
 import Link from 'next/link'
@@ -85,6 +87,26 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
       </SessionProvider>
+      <Separator />
+<CardContent className='p-4 flex justify-between flex-wrap bg-red-50'>
+  <div>
+    <h3 className='font-bold text-red-600'>حذف الحساب</h3>
+    <p className='text-sm text-red-700'>
+      عند الضغط على هذا الزر، سيتم حذف حسابك وجميع بياناتك بشكل نهائي.
+    </p>
+  </div>
+  <form action={async () => {
+    'use server'
+    if (!user?.id) return
+    await deleteUserAccount(user.id)
+    redirect('/') // إعادة التوجيه بعد الحذف
+  }}>
+    <Button type='submit' variant='destructive' className='rounded-full mt-2'>
+      حذف الحساب نهائيًا
+    </Button>
+  </form>
+</CardContent>
+
     </div>
   )
 }
