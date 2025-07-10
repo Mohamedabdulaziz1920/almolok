@@ -32,30 +32,30 @@ export default async function SignInPage(props: {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-white px-4 py-12">
-      <div className="w-full max-w-md space-y-6">
-        <Card className="shadow-2xl rounded-2xl border border-yellow-400">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-yellow-600 flex items-center justify-center gap-2">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-white px-2 py-4">
+      <div className="w-full max-w-md space-y-4">
+        <Card className="shadow-xl rounded-2xl border border-yellow-400">
+          <CardHeader className="text-center px-4 pt-6">
+            <CardTitle className="text-2xl font-bold text-yellow-600 flex items-center justify-center gap-2">
               {t('title')}
-              <LogIn className="w-6 h-6 text-yellow-500" />
+              <LogIn className="w-5 h-5 text-yellow-500" />
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-600 mt-1">
               مرحبًا بك في <strong>{site.name}</strong> 👑
             </p>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 px-4 pb-6">
             <CredentialsSignInForm />
             <SeparatorWithOr />
             <GoogleSignInForm />
           </CardContent>
         </Card>
 
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 px-4">
           <SeparatorWithOr>{t('newToSite', { siteName: site.name })}</SeparatorWithOr>
           <Link href={`/sign-up?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
             <Button
-              className="w-full flex items-center justify-center gap-2 bg-black text-white hover:bg-yellow-600 transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-black text-white hover:bg-yellow-600 transition-colors rounded-xl"
               variant="default"
             >
               <UserPlus className="w-5 h-5 text-yellow-400" />
