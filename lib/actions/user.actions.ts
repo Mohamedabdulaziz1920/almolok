@@ -1,187 +1,111 @@
-'use server'
-
-import bcrypt from 'bcryptjs'
-import { auth, signIn, signOut } from '@/auth'
-import { IUserName, IUserSignIn, IUserSignUp } from '@/types'
-import { UserSignUpSchema, UserUpdateSchema } from '../validator'
-import { connectToDatabase } from '../db'
-import User, { IUser } from '../db/models/user.model'
-import { formatError } from '../utils'
+import { Metadata } from 'next'
+import { SessionProvider } from 'next-auth/react'
+import { getTranslations } from 'next-intl/server'
+import { auth } from '@/auth'
+import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
+import { deleteUser } from '@/lib/actions/user.actions' // تم استيراد دالة الحذف
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
-import { getSetting } from './setting.actions'
-import { deleteUserAccount } from '@/lib/actions/user.actions'
 
+const PAGE_TITLE = 'Login & Security'
 
-// CREATE - تسجيل مستخدم جديد
-export async function registerUser(userSignUp: IUserSignUp) {
-  try {
-    const user = await UserSignUpSchema.parseAsync({
-      name: userSignUp.name,
-      email: userSignUp.email,
-      password: userSignUp.password,
-      confirmPassword: userSignUp.confirmPassword,
-    })
+export const metadata: Metadata = {
+  title: PAGE_TITLE,
+}
 
-    await connectToDatabase()
-    await User.create({
-      ...user,
-      password: await bcrypt.hash(user.password, 5),
-    })
+export default async function ProfilePage() {
+  const t = await getTranslations('AccountPage')
+  const session = await auth()
+  const user = session?.user
 
-    return { success: true, message: 'User created successfully' }
-  } catch (error) {
-    return { success: false, error: formatError(error) }
+  if (!user) {
+    return <div>لا يوجد مستخدم مسجل الدخول</div>
   }
-}
 
-// DELETE - حذف مستخدم
-export async function deleteUser(id: string) {
-  try {
-    await connectToDatabase()
-    const res = await User.findByIdAndDelete(id)
-    if (!res) throw new Error('Use not found')
+  return (
+    <div className='max-w-5xl mx-auto space-y-4'>
+      <SessionProvider session={session}>
+        <div className='flex gap-2'>
+          <Link href='/account'>{t('BreadcrumbAccount')}</Link>
+          <span>›</span>
+          <span>{t('LoginSecurity')}</span>
+        </div>
 
-    revalidatePath('/admin/users')
-    return {
-      success: true,
-      message: 'User deleted successfully',
-    }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
+        <h1 className='h1-bold py-4'>{t('LoginSecurity')}</h1>
 
-// UPDATE - تعديل بيانات مستخدم
-export async function updateUser(user: z.infer<typeof UserUpdateSchema>) {
-  try {
-    await connectToDatabase()
-    const dbUser = await User.findById(user._id)
-    if (!dbUser) throw new Error('User not found')
+        <Card className='max-w-2xl'>
+          <CardContent className='p-4 flex justify-between flex-wrap'>
+            <div>
+              <h3 className='font-bold'>{t('Name')}</h3>
+              <p>{user.name}</p>
+            </div>
+            <div>
+              <Link href='/account/manage/name'>
+                <Button className='rounded-full w-32' variant='outline'>
+                  {t('Edit')}
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
 
-    dbUser.name = user.name
-    dbUser.email = user.email
-    dbUser.role = user.role
-    const updatedUser = await dbUser.save()
+          <Separator />
 
-    revalidatePath('/admin/users')
+          <CardContent className='p-4 flex justify-between flex-wrap'>
+            <div>
+              <h3 className='font-bold'>{t('Email')}</h3>
+              <p>{user.email}</p>
+              <p>{t('ComingSoon')}</p>
+            </div>
+            <div>
+              <Button disabled className='rounded-full w-32' variant='outline'>
+                {t('Edit')}
+              </Button>
+            </div>
+          </CardContent>
 
-    return {
-      success: true,
-      message: 'User updated successfully',
-      data: JSON.parse(JSON.stringify(updatedUser)),
-    }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
+          <Separator />
 
-// تعديل اسم المستخدم من حسابه
-export async function updateUserName(user: IUserName) {
-  try {
-    await connectToDatabase()
-    const session = await auth()
-    const currentUser = await User.findById(session?.user?._id)
-    if (!currentUser) throw new Error('User not found')
+          <CardContent className='p-4 flex justify-between flex-wrap'>
+            <div>
+              <h3 className='font-bold'>{t('Password')}</h3>
+              <p>{t('HiddenPassword')}</p>
+              <p>{t('ComingSoon')}</p>
+            </div>
+            <div>
+              <Button disabled className='rounded-full w-32' variant='outline'>
+                {t('Edit')}
+              </Button>
+            </div>
+          </CardContent>
 
-    currentUser.name = user.name
-    const updatedUser = await currentUser.save()
+          <Separator />
 
-    return {
-      success: true,
-      message: 'User updated successfully',
-      data: JSON.parse(JSON.stringify(updatedUser)),
-    }
-  } catch (error) {
-    return { success: false, message: formatError(error) }
-  }
-}
+          {/* زر حذف الحساب */}
+          <CardContent className='p-4 flex justify-between flex-wrap bg-red-50'>
+            <div>
+              <h3 className='font-bold text-red-600'>حذف الحساب</h3>
+              <p className='text-sm text-red-700'>
+                عند الضغط على هذا الزر، سيتم حذف حسابك وجميع بياناتك نهائيًا.
+              </p>
+            </div>
 
-// تسجيل الدخول
-export async function signInWithCredentials(user: IUserSignIn) {
-  return await signIn('credentials', { ...user, redirect: false })
-}
-
-// تسجيل الدخول باستخدام Google
-export const SignInWithGoogle = async () => {
-  await signIn('google')
-}
-
-// تسجيل الخروج
-export const SignOut = async () => {
-  const redirectTo = await signOut({ redirect: false })
-  redirect(redirectTo.redirect)
-}
-
-// جلب جميع المستخدمين (للأدمن)
-export async function getAllUsers({
-  limit,
-  page,
-}: {
-  limit?: number
-  page: number
-}) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-
-  limit = limit || pageSize
-  await connectToDatabase()
-
-  const skipAmount = (Number(page) - 1) * limit
-  const users = await User.find()
-    .sort({ createdAt: 'desc' })
-    .skip(skipAmount)
-    .limit(limit)
-
-  const usersCount = await User.countDocuments()
-
-  return {
-    data: JSON.parse(JSON.stringify(users)) as IUser[],
-    totalPages: Math.ceil(usersCount / limit),
-  }
-}
-
-// جلب مستخدم حسب ID
-export async function getUserById(userId: string) {
-  await connectToDatabase()
-  const user = await User.findById(userId)
-  if (!user) throw new Error('User not found')
-  return JSON.parse(JSON.stringify(user)) as IUser
-}
-
-//
-// ✅ NEW FUNCTION: Add Balance to User
-//
-export async function addUserBalance(userId: string, amount: number) {
-  try {
-    await connectToDatabase()
-
-    const user = await User.findById(userId)
-    if (!user) throw new Error('User not found')
-
-    user.balance = (user.balance || 0) + amount
-    await user.save()
-
-    revalidatePath('/admin/users') // إعادة تحميل الصفحة بعد التحديث
-
-    return {
-      success: true,
-      message: 'تم إضافة الرصيد بنجاح',
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: formatError(error),
-    }
-  }
-}
-export async function deleteUserAccount(userId: string) {
-  try {
-    await db.user.delete({ where: { id: userId } })
-  } catch (error) {
-    console.error('Failed to delete user:', error)
-    throw new Error('Failed to delete user')
-  }
+            <form
+              action={async () => {
+                'use server'
+                if (!user?.id) return
+                await deleteUser(user.id)
+                redirect('/')
+              }}
+            >
+              <Button type='submit' variant='destructive' className='rounded-full mt-2'>
+                حذف الحساب نهائيًا
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </SessionProvider>
+    </div>
+  )
 }
