@@ -32,38 +32,39 @@ export default async function SignInPage(props: {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-white px-2 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
-      <div className="w-full max-w-md sm:max-w-sm md:max-w-md space-y-4">
-        <Card className="shadow-xl rounded-2xl border border-yellow-400">
-          <CardHeader className="text-center px-4 pt-4 sm:pt-5 md:pt-6">
-            <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-600 flex items-center justify-center gap-2">
-              {t('title')}
-              <LogIn className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
-              مرحبًا بك في <strong>{site.name}</strong> 👑
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 pb-5 sm:pb-6">
-            <CredentialsSignInForm />
-            <SeparatorWithOr />
-            <GoogleSignInForm />
-          </CardContent>
-        </Card>
+<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-white px-2 py-2 sm:py-4 md:py-6">
+  <div className="w-full max-w-md space-y-4">
+    <Card className="shadow-xl rounded-2xl border border-yellow-400">
+      <CardHeader className="text-center px-4 pt-3 sm:pt-4 md:pt-6">
+        <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-600 flex items-center justify-center gap-2">
+          {t('title')}
+          <LogIn className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+        </CardTitle>
+        <p className="text-sm text-gray-600 mt-1">
+          مرحبًا بك في <strong>{site.name}</strong> 👑
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4 px-4 pb-4 sm:pb-5">
+        <CredentialsSignInForm />
+        <SeparatorWithOr />
+        <GoogleSignInForm />
+      </CardContent>
+    </Card>
 
-        <div className="text-center space-y-3 px-4">
-          <SeparatorWithOr>{t('newToSite', { siteName: site.name })}</SeparatorWithOr>
-          <Link href={`/sign-up?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
-            <Button
-              className="w-full flex items-center justify-center gap-2 bg-black text-white hover:bg-yellow-600 transition-colors rounded-xl"
-              variant="default"
-            >
-              <UserPlus className="w-5 h-5 text-yellow-400" />
-              {t('createAccount', { siteName: site.name })}
-            </Button>
-          </Link>
-        </div>
-      </div>
+    <div className="text-center space-y-3 px-4">
+      <SeparatorWithOr>{t('newToSite', { siteName: site.name })}</SeparatorWithOr>
+      <Link href={`/sign-up?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
+        <Button
+          className="w-full flex items-center justify-center gap-2 bg-black text-white hover:bg-yellow-600 transition-colors rounded-xl"
+          variant="default"
+        >
+          <UserPlus className="w-5 h-5 text-yellow-400" />
+          {t('createAccount', { siteName: site.name })}
+        </Button>
+      </Link>
     </div>
+  </div>
+</div>
+
   )
 }
