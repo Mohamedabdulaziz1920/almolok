@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react'
 import { getTranslations } from 'next-intl/server'
-import { deleteUserAccount } from '@/lib/actions/user.actions'
+import { deleteCurrentUser } from '@/lib/actions/user.actions'
 import { redirect } from 'next/navigation'
 
 import { auth } from '@/auth'
@@ -98,7 +98,7 @@ export default async function ProfilePage() {
   <form action={async () => {
     'use server'
     if (!user?.id) return
-    await deleteUserAccount(user.id)
+    await deleteCurrentUser(user.id)
     redirect('/') // إعادة التوجيه بعد الحذف
   }}>
     <Button type='submit' variant='destructive' className='rounded-full mt-2'>
