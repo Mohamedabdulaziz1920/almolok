@@ -184,11 +184,10 @@ export async function deleteCurrentUser(id: string) {
     const res = await User.findByIdAndDelete(id)
     if (!res) throw new Error('المستخدم غير موجود')
 
-    // تسجيل الخروج وإعادة التوجيه
-    await signOut({ redirect: false }) // يمنع إعادة التوجيه التلقائي
-    redirect('/') // التوجيه للصفحة الرئيسية
-  } catch (_error) {
-    // تجاهل تحذير ESLint بعدم استخدام المتغير
+    await signOut({ redirect: false })
+    redirect('/')
+  } catch {
     return { success: false, message: 'حدث خطأ أثناء حذف الحساب' }
   }
 }
+
