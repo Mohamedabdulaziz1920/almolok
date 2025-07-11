@@ -1,4 +1,4 @@
-
+import PageReloader from '@/components/shared/PageReloader'
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -37,6 +37,7 @@ export default async function AccountPage() {
   }
 
   return (
+     <PageReloader />
     <div className='container mx-auto px-1 py-8'>
       <div className='mb-8'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
@@ -172,5 +173,6 @@ export default async function AccountPage() {
         <BrowsingHistoryList className='mt-16' />
       </div>
     </div>
+    </>
   )
 }
