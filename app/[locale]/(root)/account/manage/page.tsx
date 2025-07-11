@@ -2,7 +2,6 @@ import { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react'
 import { getTranslations } from 'next-intl/server'
 import { deleteCurrentUser } from '@/lib/actions/user.actions'
-import { redirect } from 'next/navigation'
 
 import { auth } from '@/auth'
 import Link from 'next/link'
