@@ -95,17 +95,13 @@ export default async function ProfilePage() {
       عند الضغط على هذا الزر، سيتم حذف حسابك وجميع بياناتك بشكل نهائي.
     </p>
   </div>
-  <form action={async () => {
-    'use server'
-    if (!user?.id) return
-    await deleteCurrentUser(user.id)
-    redirect('/') // إعادة التوجيه بعد الحذف
-  }}>
+  <form action={deleteCurrentUser}>
     <Button type='submit' variant='destructive' className='rounded-full mt-2'>
       حذف الحساب نهائيًا
     </Button>
   </form>
 </CardContent>
+
 
     </div>
   )
