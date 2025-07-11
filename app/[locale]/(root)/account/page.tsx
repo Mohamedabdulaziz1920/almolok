@@ -37,6 +37,7 @@ export default async function AccountPage() {
   }
 
   return (
+      <>
      <PageReloader />
     <div className='container mx-auto px-1 py-8'>
       <div className='mb-8'>
