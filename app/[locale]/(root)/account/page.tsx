@@ -1,4 +1,4 @@
-'use client'
+
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -15,7 +15,6 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { auth } from '@/auth'
 import { getUserById } from '@/lib/actions/user.actions' // المسار حسب تنظيم مشروعك
-import React, { useEffect } from 'react'
 const PAGE_TITLE = 'حسابك'
 
 export const metadata: Metadata = {
@@ -36,21 +35,7 @@ export default async function AccountPage() {
   if (!user) {
     return <div>المستخدم غير موجود</div>
   }
-  // ✅ تحديث الصفحة تلقائيًا فقط عند الدخول إليها من صفحة أخرى (وليس عند كل refresh)
-  useEffect(() => {
-  if (typeof window !== 'undefined') {
-    const reloaded = sessionStorage.getItem('reloaded')
 
-    if (reloaded === 'true') {
-      // حذف العلامة حتى يتم تحديث الزيارة القادمة
-      sessionStorage.removeItem('reloaded')
-    } else {
-      // وضع العلامة ثم إعادة تحميل الصفحة
-      sessionStorage.setItem('reloaded', 'true')
-      window.location.reload()
-    }
-  }
-}, [])
   return (
     <div className='container mx-auto px-1 py-8'>
       <div className='mb-8'>
