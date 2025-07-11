@@ -1,3 +1,4 @@
+'use client'
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
