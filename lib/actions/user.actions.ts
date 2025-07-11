@@ -179,7 +179,6 @@ export async function addUserBalance(userId: string, amount: number) {
 
 export async function deleteCurrentUser(id: string) {
   try {
-    
     await connectToDatabase()
 
     const res = await User.findByIdAndDelete(id)
@@ -187,9 +186,9 @@ export async function deleteCurrentUser(id: string) {
 
     // تسجيل الخروج وإعادة التوجيه
     await signOut({ redirect: false }) // يمنع إعادة التوجيه التلقائي
-    redirect('/') // إعادة التوجيه للصفحة الرئيسية
-
-  } catch (error) {
+    redirect('/') // التوجيه للصفحة الرئيسية
+  } catch (_error) {
+    // تجاهل تحذير ESLint بعدم استخدام المتغير
     return { success: false, message: 'حدث خطأ أثناء حذف الحساب' }
   }
 }
