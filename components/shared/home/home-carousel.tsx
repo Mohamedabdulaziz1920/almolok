@@ -66,7 +66,6 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
     "
     priority
   />
-</div>
 
 
                   {hasAdditionalContent && (
