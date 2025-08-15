@@ -46,16 +46,7 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
           return (
             <CarouselItem key={item.title || item.image}>
               <Link href={item.url || '#'}>
-                <div
-                  className="
-                   flex
-    h-auto                    /* للموبايل: لا نضع نسبة أبعاد */
-    sm:aspect-[16/9]          /* من sm وما فوق */
-    lg:aspect-[1640/924]      /* الشاشات الكبيرة */
-    items-center justify-center
-    p-0 sm:p-6                /* نزيل الـ padding في الموبايل */
-    relative -m-1"
-                >
+               <div className='flex aspect-[16/6] items-center justify-center p-6 relative -m-1'>
                   <Image
     src={item.image}
     alt={item.title || 'Carousel image'}
