@@ -46,16 +46,17 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
           return (
             <CarouselItem key={item.title || item.image}>
               <Link href={item.url || '#'}>
-                     <div
-                  className="
-                    flex
-                    aspect-[4/3]           /* للموبايل */
-                    sm:aspect-[16/9]       /* للشاشات المتوسطة */
-                    lg:aspect-[1640/924]   /* النسبة الأصلية */
-                    items-center justify-center p-6 relative -m-1
-                  "
-                >
-                  <Image
+      <div
+  className="
+    flex
+    h-auto                   /* للموبايل: ارتفاع تلقائي */
+    sm:aspect-[16/9]         /* من sm وما فوق */
+    lg:aspect-[1640/924]     /* النسبة الأصلية */
+    items-center justify-center
+    relative
+  "
+>
+  <Image
     src={item.image}
     alt={item.title || 'Carousel image'}
     fill
@@ -65,6 +66,8 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
     "
     priority
   />
+</div>
+
 
                   {hasAdditionalContent && (
                     <div className="absolute w-1/3 left-16 md:left-32 top-1/2 transform -translate-y-1/2">
