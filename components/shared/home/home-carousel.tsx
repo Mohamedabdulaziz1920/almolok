@@ -49,6 +49,7 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
                 <div
                   className="
                     flex
+                    h-auto 
                     aspect-[4/3]           /* للموبايل */
                     sm:aspect-[16/9]       /* للشاشات المتوسطة */
                     lg:aspect-[1640/924]   /* النسبة الأصلية */
