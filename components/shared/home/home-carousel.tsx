@@ -24,40 +24,50 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
   const t = useTranslations('Home')
 
   React.useEffect(() => {
-    setIsClient(true) // التأكد من أننا في بيئة المتصفح
+    setIsClient(true)
   }, [])
 
   if (!isClient) {
-    return null // لا نقوم بعرض المكون إذا كنا في الـSSR
+    return null
   }
 
   return (
     <Carousel
-      dir='ltr'
+      dir="ltr"
       plugins={[plugin.current]}
-      className='w-full mx-auto'
+      className="w-full mx-auto"
       onMouseEnter={plugin.current.stop}
       onMouseLeave={plugin.current.reset}
     >
       <CarouselContent>
         {items.map((item) => {
-          // تحديد إذا كان هناك محتوى إضافي غير الصورة
           const hasAdditionalContent = item.title || item.buttonCaption
 
           return (
             <CarouselItem key={item.title || item.image}>
               <Link href={item.url || '#'}>
-                <div className='flex aspect-[16/6] items-center justify-center p-6 relative -m-1'>
+                <div
+                  className="
+                    flex
+                    aspect-[4/3]           /* للموبايل */
+                    sm:aspect-[16/9]       /* للشاشات المتوسطة */
+                    lg:aspect-[1640/924]   /* النسبة الأصلية */
+                    items-center justify-center p-6 relative -m-1
+                  "
+                >
                   <Image
-                    src={item.image}
-                    alt={item.title || 'Carousel image'}
-                    fill
-                    className='object-cover'
-                    priority
-                  />
+    src={item.image}
+    alt={item.title || 'Carousel image'}
+    fill
+    className="
+      object-contain          /* للموبايل: عرض الصورة كاملة */
+      sm:object-cover         /* من sm وما فوق: غطاء */
+    "
+    priority
+  />
 
                   {hasAdditionalContent && (
-                    <div className='absolute w-1/3 left-16 md:left-32 top-1/2 transform -translate-y-1/2'>
+                    <div className="absolute w-1/3 left-16 md:left-32 top-1/2 transform -translate-y-1/2">
                       {item.title && (
                         <h2
                           className={cn(
@@ -68,7 +78,7 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
                         </h2>
                       )}
                       {item.buttonCaption && (
-                        <Button className='hidden md:block'>
+                        <Button className="hidden md:block">
                           {t(`${item.buttonCaption}`)}
                         </Button>
                       )}
@@ -80,8 +90,8 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
           )
         })}
       </CarouselContent>
-      <CarouselPrevious className='left-0 md:left-12' />
-      <CarouselNext className='right-0 md:right-12' />
+      <CarouselPrevious className="left-0 md:left-12" />
+      <CarouselNext className="right-0 md:right-12" />
     </Carousel>
   )
 }
